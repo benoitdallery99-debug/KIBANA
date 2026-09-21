@@ -96,7 +96,7 @@ plus que l'évitement.
 
 Engendrée et contrôlée par `formateur/matrice.py`, qui sort en erreur si un
 objectif reste sans exercice ou sans question. Résultat courant :
-**27 objectifs, 35 exercices, 15 questions, couverture 100 %.**
+**27 objectifs, 35 exercices, 17 questions, couverture 100 %.**
 
 Le détail complet est dans `formateur/matrice.md`.
 
@@ -165,6 +165,8 @@ après validation. Les voici pour la correction en salle.
 | Q13 | La data view à identifiant fixe | Un objet défini par l'API n'a aucune référence |
 | Q14 | Dernier événement vu par source | Une source muette ne produit aucun groupe |
 | Q15 | Rien sans la fiche de contexte | Le volume ne dit rien du caractère malveillant |
+| Q16 | Un filtre de type est resté coché | Liste de champs vide ≠ data view vide : regardez la table de documents, elle dit laquelle des deux pannes vous avez |
+| Q17 | Rien du tout | La loupe du bandeau cherche des applications et des objets, jamais le contenu des journaux |
 
 ## 9. Grilles d'évaluation
 

@@ -408,3 +408,40 @@ def test_les_requetes_kql_donnent_ce_qui_est_annonce(modules, reponses, lab_dema
                 defauts.append(f"{identifiant} : « attendu » inconnu — {attendu!r}")
 
     assert not defauts, "requêtes KQL :\n  " + "\n  ".join(defauts)
+
+
+def test_le_corrige_du_formateur_couvre_toutes_les_questions(config):
+    """Le formateur doit pouvoir corriger en salle CHAQUE question posée.
+
+    Le corrigé s'était arrêté à Q15 quand le quiz est passé à 17 : les deux
+    questions manquantes étaient précisément celles ajoutées pour couvrir deux
+    pièges, et le formateur ne pouvait pas les corriger. Rien ne le signalait,
+    puisque rien ne comparait les deux fichiers.
+    """
+    quiz_chemin = config.RACINE / "formateur" / "quiz.yaml"
+    guide_chemin = config.RACINE / "formateur" / "guide-formateur.md"
+    if not quiz_chemin.exists() or not guide_chemin.exists():
+        pytest.skip("NON EXÉCUTÉ : quiz.yaml ou guide-formateur.md absent.")
+
+    quiz = yaml.safe_load(quiz_chemin.read_text(encoding="utf-8")) or []
+    posees = [q["id"] for q in quiz]
+    guide = guide_chemin.read_text(encoding="utf-8")
+    corrigees = set(re.findall(r"^\|\s*(Q\d+)\s*\|", guide, re.M))
+
+    manquantes = [q for q in posees if q not in corrigees]
+    assert not manquantes, (
+        f"questions posées mais absentes du corrigé du formateur : {manquantes}"
+    )
+
+    fantomes = sorted(corrigees - set(posees))
+    assert not fantomes, (
+        f"corrigé pour des questions qui ne sont plus posées : {fantomes}"
+    )
+
+    # Le guide annonce aussi le nombre de questions : il doit dire la vérité.
+    annonces = re.findall(r"(\d+)\s+questions", guide)
+    faux = [n for n in annonces if int(n) != len(posees)]
+    assert not faux, (
+        f"le guide du formateur annonce {faux} question(s) alors que le quiz en "
+        f"pose {len(posees)}"
+    )

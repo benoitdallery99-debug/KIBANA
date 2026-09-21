@@ -11,6 +11,7 @@ sa vérification : le guide ne peut affirmer que ce que ce relevé montre.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -207,10 +208,16 @@ def relever(page, requete: str) -> dict:
     erreur = None
     for ligne in corps.split("\n"):
         ligne = ligne.strip()
-        if ligne and any(
-            marque in ligne.lower()
-            for marque in ("impossible d", "erreur", "error", "invalide")
-        ):
+        # Un bandeau d'erreur de Kibana est COURT. Une ligne de plusieurs
+        # centaines de caractères est un document déplié, pas un message :
+        # c'est ainsi qu'un vidage entier de document s'est retrouvé dans
+        # docs/pieges-lab.json, pris pour un message d'erreur.
+        if not ligne or len(ligne) > 200:
+            continue
+        # Et le mot doit être un MOT. « NOERROR », qui est un code de réponse
+        # DNS parfaitement normal, contient « error » : c'était lui, le
+        # coupable.
+        if re.search(r"\b(impossible d|erreurs?|errors?|invalide)\b", ligne, re.I):
             erreur = ligne
             break
     return {
