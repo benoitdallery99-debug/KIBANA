@@ -62,6 +62,39 @@ def css_avec_polices() -> str:
     return css
 
 
+def captures_par_module() -> dict[str, list[dict]]:
+    """Charge les captures produites et les inline en WebP base64.
+
+    Une capture manquante n'interrompt pas la construction : elle est signalée.
+    Le guide doit rester constructible avant « make captures », sinon on ne
+    peut plus travailler le texte sans lab démarré.
+    """
+    plan_chemin = conf.RACINE / "captures" / "plan.yaml"
+    if not plan_chemin.exists():
+        return {}
+    plan = yaml.safe_load(plan_chemin.read_text(encoding="utf-8")) or []
+    par_module: dict[str, list[dict]] = {}
+    manquantes = []
+    for capture in plan:
+        fichier = conf.RACINE / "captures" / "images" / f"{capture['id']}.webp"
+        if not fichier.exists():
+            manquantes.append(capture["id"])
+            continue
+        encode = base64.b64encode(fichier.read_bytes()).decode("ascii")
+        par_module.setdefault(capture["module"], []).append({
+            "id": capture["id"],
+            "titre": capture["titre"],
+            "legende": capture.get("legende", ""),
+            "alt": capture["alt"],
+            "reperes": capture.get("reperes") or [],
+            "source": f"data:image/webp;base64,{encode}",
+        })
+    if manquantes:
+        print(f"  (captures absentes, ignorées : {', '.join(manquantes)} — "
+              f"lancez « make captures »)")
+    return par_module
+
+
 def markdown_vers_html(texte: str) -> str:
     return md.markdown(
         texte,
@@ -151,10 +184,13 @@ def charger_modules() -> tuple[dict, list[dict], list[dict]]:
             for p in json.loads(chemin_pieges.read_text(encoding="utf-8"))["pieges"]
         }
 
+    captures = captures_par_module()
+
     modules = []
     for chemin in sorted((conf.RACINE / "parcours").glob("M*.md")):
         entete, corps = frontmatter(chemin.read_text(encoding="utf-8"))
         modules.append({
+            "captures": captures.get(entete["id"], []),
             "id": entete["id"],
             "ancre": f"module-{entete['id'].lower()}",
             "titre": entete["titre"],

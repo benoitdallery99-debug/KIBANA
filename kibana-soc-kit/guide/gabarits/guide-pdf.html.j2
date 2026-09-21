@@ -90,6 +90,16 @@
 
   {{ m.corps_html }}
 
+  {% for c in m.captures %}
+  <figure>
+    <img src="{{ c.source }}" alt="{{ c.alt }}" style="max-width:100%">
+    <figcaption class="lien-doc"><strong>{{ c.id }}</strong> — {{ c.titre }}.
+      {{ c.legende }}
+      {% if c.reperes %}{% for r in c.reperes %} {{ loop.index }} · {{ r.note }}.{% endfor %}{% endif %}
+    </figcaption>
+  </figure>
+  {% endfor %}
+
   {% for e in m.exercices %}
   <div class="exercice" id="{{ e.ancre }}">
     <p class="exercice__entete">

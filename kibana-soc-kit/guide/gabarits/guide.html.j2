@@ -148,6 +148,18 @@
       {% endif %}
 
       {{ m.corps_html }}
+
+      {% for c in m.captures %}
+      <figure id="fig-{{ c.id }}">
+        <img src="{{ c.source }}" alt="{{ c.alt }}" loading="lazy">
+        <figcaption>
+          <strong>{{ c.id }}</strong> — {{ c.titre }}. {{ c.legende }}
+          {% if c.reperes %}
+          <br>{% for r in c.reperes %}<span>{{ loop.index }} · {{ r.note }}{% if not loop.last %} · {% endif %}</span>{% endfor %}
+          {% endif %}
+        </figcaption>
+      </figure>
+      {% endfor %}
     </div>
 
     {% for e in m.exercices %}

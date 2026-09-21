@@ -39,12 +39,16 @@ SEL = {
     "bouton_rafraichir": "querySubmitButton",
     "nombre_de_resultats": "discoverQueryHits",
     "message_aucun_resultat": "discoverNoResults",
+    "indice_plage_de_temps": "discoverNoResultsTimefilter",
     "liste_des_champs": "fieldList",
     "selecteur_data_view": "discover-dataView-switch-link",
-    # Sélecteur de temps
-    "selecteur_temps": "superDatePickerToggleQuickMenuButton",
-    "temps_debut": "superDatePickerstartDatePopoverButton",
-    "appliquer_temps": "superDatePickerApplyTimeButton",
+    # Sélecteur de temps. En 9.5 il s'appelle « dateRangePicker… » ; les noms
+    # en « superDatePicker… » des versions précédentes n'existent plus, et les
+    # employer ne lève aucune erreur : l'élément est simplement introuvable.
+    # Relevé dans le lab le 21/09/2026.
+    "selecteur_temps": "dateRangePickerControlButton",
+    "valeur_temps": "dateRangePickerValueDisplay",
+    "fenetre_temps": "dateRangePickerTimeWindowButtons",
     # Tableaux de bord
     "panneau": "embeddablePanel",
     "titre_panneau": "dashboardPanelTitle",

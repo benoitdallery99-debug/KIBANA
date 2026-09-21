@@ -1,0 +1,66 @@
+# Catalogue des captures — SPEC §7.2.
+#
+# Chaque capture déclare : où aller, ce qu'on attend à l'écran, et les éléments
+# à annoter. Les repères numérotés sont dessinés par script à partir des boîtes
+# englobantes des éléments visés par leur « data-test-subj » : aucune retouche
+# manuelle, et une montée de version se rattrape avec « make captures ».
+#
+# « alt » décrit l'étape, pas l'image : c'est ce que lira une personne qui
+# n'accède pas à la capture.
+
+- id: M0-C1
+  module: M0
+  titre: Discover, ses trois repères
+  chemin: "/app/discover#/?_g=(time:(from:now-7d,to:now))&_a=(index:'formation-logs',query:(language:kuery,query:''))"
+  attendre: fieldList
+  legende: >-
+    Discover sur sept jours de données. Les trois repères à connaître avant
+    toute recherche.
+  alt: >-
+    L'écran Discover. Le sélecteur de source de données est en haut à gauche,
+    la barre de requête au centre en haut, le sélecteur de plage de temps à sa
+    droite, et la liste des champs occupe la colonne de gauche.
+  reperes:
+    - cible: discover-dataView-switch-link
+      note: La source de données interrogée
+    - cible: queryInput
+      note: La barre de requête
+    - cible: dateRangePickerControlButton
+      note: La plage de temps
+    - cible: fieldList
+      note: Les champs disponibles et leurs valeurs
+
+- id: M0-C2
+  module: M0
+  titre: Quinze minutes ne suffisent pas
+  chemin: "/app/discover#/?_g=(time:(from:now-15m,to:now))&_a=(index:'formation-logs',query:(language:kuery,query:''))"
+  attendre: discoverNoResults
+  legende: >-
+    La même vue, sur la plage de temps par défaut de Kibana : l'écran est vide
+    alors que les données sont là.
+  alt: >-
+    Discover affiche « Aucun résultat ne correspond à vos critères de
+    recherche » parce que la plage de temps ne couvre que les quinze dernières
+    minutes, alors que le jeu de données s'étend sur sept jours.
+  reperes:
+    - cible: dateRangePickerControlButton
+      note: La plage de temps, trop courte
+    - cible: discoverNoResultsTimefilter
+      note: Kibana suggère lui-même d'élargir la plage
+
+- id: M1-C1
+  module: M1
+  titre: Une requête KQL et son résultat
+  chemin: "/app/discover#/?_g=(time:(from:now-7d,to:now))&_a=(index:'formation-logs',query:(language:kuery,query:'event.code%20:%20%224625%22'))"
+  attendre: discoverQueryHits
+  legende: >-
+    Une requête KQL filtrant les échecs d'ouverture de session Windows, et le
+    nombre de documents qu'elle retient.
+  alt: >-
+    La barre de requête contient « event.code : "4625" ». Kibana affiche
+    au-dessus de la table le nombre de documents retenus par cette requête.
+  reperes:
+    - cible: queryInput
+      note: La requête saisie
+    - cible: discoverQueryHits
+      note: Le nombre de résultats
