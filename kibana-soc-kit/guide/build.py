@@ -133,7 +133,12 @@ def exercice_public(exercice: dict, reponses: dict, pieges: dict, module_id: str
     return sortie
 
 
-def main() -> int:
+def contexte_du_manifeste(manifeste: dict) -> dict:
+    return manifeste["contexte"]
+
+
+def charger_modules() -> tuple[dict, list[dict], list[dict]]:
+    """Charge manifeste, modules et glossaire. Source unique du HTML et des PDF."""
     manifeste = json.loads((conf.RACINE / "data" / "manifest.json").read_text(encoding="utf-8"))
     blocs = [manifeste["reperes"], *manifeste["scenarios"]]
     reponses = {f"{b['id']}.{r['cle']}": r for b in blocs for r in b["reponses"]}
@@ -167,6 +172,11 @@ def main() -> int:
         raise SystemExit("aucun module dans parcours/ : rien à construire")
 
     glossaire = yaml.safe_load((GUIDE / "glossaire.yaml").read_text(encoding="utf-8"))
+    return manifeste, modules, glossaire
+
+
+def main() -> int:
+    manifeste, modules, glossaire = charger_modules()
 
     env = Environment(
         loader=FileSystemLoader(str(GUIDE / "gabarits")),

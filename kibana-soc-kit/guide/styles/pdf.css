@@ -1,0 +1,147 @@
+/* Feuille de style des documents imprimables (WeasyPrint).
+   Même source que le HTML, mise en page différente : on imprime pour lire au
+   calme, pas pour cliquer. */
+
+@page {
+  size: A4;
+  margin: 20mm 18mm 18mm;
+  @top-left {
+    content: string(module-courant);
+    font-family: "Atkinson Hyperlegible Next";
+    font-size: 8pt;
+    color: #44515f;
+  }
+  @top-right {
+    content: "Kibana pour analystes SOC";
+    font-family: "Atkinson Hyperlegible Next";
+    font-size: 8pt;
+    color: #44515f;
+  }
+  @bottom-center {
+    content: counter(page) " / " counter(pages);
+    font-family: "Atkinson Hyperlegible Mono";
+    font-size: 8pt;
+    color: #44515f;
+  }
+}
+
+@page :first {
+  @top-left { content: none; }
+  @top-right { content: none; }
+  @bottom-center { content: none; }
+}
+
+@page sommaire {
+  @top-left { content: "Sommaire"; }
+}
+
+html { font-family: "Atkinson Hyperlegible Next"; font-size: 10.5pt; line-height: 1.5; color: #101720; }
+body { margin: 0; }
+
+/* --- Page de titre ------------------------------------------------------- */
+.titre-page {
+  page: first;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  break-after: page;
+}
+.titre-page h1 { font-size: 28pt; margin: 0 0 6pt; line-height: 1.15; }
+.titre-page .sous-titre { font-size: 13pt; color: #44515f; margin: 0 0 24pt; }
+.titre-page .meta {
+  font-family: "Atkinson Hyperlegible Mono";
+  font-size: 9pt;
+  color: #44515f;
+  border-top: 1pt solid #c3ccd6;
+  padding-top: 8pt;
+}
+.titre-page .avertissement {
+  margin-top: 18pt;
+  font-size: 8.5pt;
+  color: #44515f;
+  border-left: 2pt solid #c3ccd6;
+  padding-left: 8pt;
+}
+
+/* --- Sommaire paginé ----------------------------------------------------- */
+.sommaire-pdf { page: sommaire; break-after: page; }
+.sommaire-pdf h2 { margin-top: 0; }
+.sommaire-pdf ol { list-style: none; padding: 0; margin: 0; }
+.sommaire-pdf li { margin: 3pt 0; }
+.sommaire-pdf li.niveau-2 { margin-left: 12pt; font-size: 9.5pt; color: #44515f; }
+.sommaire-pdf a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+/* Le numéro de page est calculé par WeasyPrint à partir de la cible du lien. */
+.sommaire-pdf a::after {
+  content: " " leader(".") " " target-counter(attr(href), page);
+  font-family: "Atkinson Hyperlegible Mono";
+  font-size: 9pt;
+  color: #44515f;
+}
+
+/* --- Signets PDF --------------------------------------------------------- */
+h1 { bookmark-level: 1; bookmark-label: content(text); }
+h2 { bookmark-level: 2; bookmark-label: content(text); string-set: module-courant content(text); }
+h3 { bookmark-level: 3; bookmark-label: content(text); }
+
+h1, h2, h3, h4 { break-after: avoid; line-height: 1.25; }
+h2 { font-size: 16pt; margin: 18pt 0 6pt; break-before: page; }
+.sommaire-pdf h2, .titre-page h1 { break-before: auto; }
+h3 { font-size: 12pt; margin: 12pt 0 4pt; }
+p { margin: 0 0 6pt; orphans: 3; widows: 3; }
+
+/* --- Contenu ------------------------------------------------------------- */
+code, pre { font-family: "Atkinson Hyperlegible Mono"; }
+pre {
+  background: #f0f2f5;
+  border: 0.5pt solid #c3ccd6;
+  padding: 5pt 7pt;
+  font-size: 9pt;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  break-inside: avoid;
+}
+:not(pre) > code { background: #f0f2f5; padding: 0.5pt 2pt; font-size: 9.5pt; }
+
+table { border-collapse: collapse; width: 100%; font-size: 9.5pt; margin: 6pt 0; }
+th, td { border-bottom: 0.5pt solid #c3ccd6; padding: 3pt 5pt; text-align: left; }
+th { color: #44515f; }
+table, tr { break-inside: avoid; }
+
+.exercice { break-inside: avoid; margin: 12pt 0; padding-top: 6pt; border-top: 0.5pt solid #c3ccd6; }
+.exercice__entete { font-weight: 700; }
+.exercice__id { font-family: "Atkinson Hyperlegible Mono"; font-size: 9pt; color: #44515f; }
+.exercice__contexte { color: #44515f; border-left: 2pt solid #c3ccd6; padding-left: 7pt; margin: 4pt 0; }
+
+.action {
+  border-left: 3pt solid #101720;
+  background: #f0f2f5;
+  padding: 5pt 8pt;
+  margin: 6pt 0;
+  break-inside: avoid;
+}
+.action__etiquette {
+  font-family: "Atkinson Hyperlegible Mono";
+  font-size: 8pt;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 2pt;
+}
+.piege { border-left: 3pt solid #101720; padding: 5pt 8pt; margin: 6pt 0; break-inside: avoid; }
+.piege__titre { font-weight: 700; display: block; }
+
+.champ-reponse {
+  border: 0.5pt solid #c3ccd6;
+  height: 22pt;
+  margin: 4pt 0 2pt;
+}
+.champ-reponse__libelle { font-size: 8.5pt; color: #44515f; }
+
+.annexe { break-before: page; }
+
+a { color: #101720; }
+.lien-doc { font-size: 8.5pt; color: #44515f; word-break: break-all; }

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Fiche mémo — Kibana pour analystes SOC</title>
+<style>{{ css_polices }}</style>
+<style>
+@page { size: A4; margin: 12mm 11mm; }
+@page { @bottom-right { content: counter(page) " / 2"; font-size: 7.5pt; color: #44515f;
+        font-family: "Atkinson Hyperlegible Mono"; } }
+html { font-family: "Atkinson Hyperlegible Next"; font-size: 8.6pt; line-height: 1.35; color: #000; }
+body { margin: 0; }
+h1 { font-size: 15pt; margin: 0 0 1mm; }
+.face { break-after: page; }
+.face:last-child { break-after: auto; }
+.chapeau { font-size: 8pt; color: #44515f; margin: 0 0 3mm;
+           border-bottom: 0.6pt solid #999; padding-bottom: 1.5mm; }
+.bloc { break-inside: avoid; margin-bottom: 3.5mm; }
+.bloc h2 { font-size: 9.6pt; margin: 0 0 1.2mm; padding-bottom: 0.6mm;
+           border-bottom: 0.6pt solid #000; }
+table { border-collapse: collapse; width: 100%; }
+td { padding: 0.7mm 1.2mm 0.7mm 0; vertical-align: top; border-bottom: 0.3pt solid #ccc; }
+td.quoi { width: 27%; font-weight: 700; }
+td.comment { width: 38%; font-family: "Atkinson Hyperlegible Mono"; font-size: 8pt; }
+td.note { color: #333; }
+ol, ul { margin: 0.6mm 0 0; padding-left: 4.5mm; }
+li { margin: 0.6mm 0; }
+code { font-family: "Atkinson Hyperlegible Mono"; }
+.pied { margin-top: 3mm; font-size: 7.2pt; color: #44515f;
+        border-top: 0.6pt solid #999; padding-top: 1.2mm; }
+</style>
+</head>
+<body>
+{% for face in (recto, verso) %}
+<section class="face">
+  <h1>{{ face.titre }}</h1>
+  <p class="chapeau">Kibana {{ version }} · licence {{ licence }} · interface {{ locale }} —
+    {{ "recto" if loop.first else "verso" }}</p>
+  {% for bloc in face.blocs %}
+  <div class="bloc">
+    <h2>{{ bloc.titre }}</h2>
+    {% if bloc.lignes %}
+    <table><tbody>
+      {% for ligne in bloc.lignes %}
+      <tr>
+        <td class="quoi">{{ ligne[0] }}</td>
+        <td class="comment">{{ ligne[1] }}</td>
+        <td class="note">{{ ligne[2] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody></table>
+    {% endif %}
+    {% if bloc.liste %}
+    <ul>{% for item in bloc.liste %}<li>{{ item }}</li>{% endfor %}</ul>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% if loop.last %}
+  <p class="pied">{{ avertissement_donnees }}</p>
+  {% endif %}
+</section>
+{% endfor %}
+</body>
+</html>

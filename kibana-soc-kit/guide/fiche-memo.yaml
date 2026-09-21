@@ -1,0 +1,85 @@
+# Fiche mémo — A4 recto verso, lisible en noir et blanc (SPEC §8).
+# Recto : KQL. Verso : choisir une visualisation, check-list d'un tableau de bord.
+
+recto:
+  titre: KQL — l'essentiel
+  blocs:
+    - titre: La syntaxe, en six lignes
+      lignes:
+        - ["Égalité", 'champ : "valeur"', "La casse compte sur un champ keyword."]
+        - ["Et / ou / non", "a : 1 and b : 2", "and, or, not — en minuscules."]
+        - ["Comparaison", "destination.port >= 1025", ">= > <= < sur un champ numérique."]
+        - ["Existence", "rule.name : *", "Le champ est renseigné."]
+        - ["Joker", 'url.domain : *.example', "Sur du texte, pas sur une adresse."]
+        - ["Réseau", 'source.ip : "10.0.0.0/8"', "CIDR, directement sur un champ ip."]
+
+    - titre: Exemples de salle
+      lignes:
+        - ["Échecs Windows", 'event.code : "4625"', "Ouverture de session refusée."]
+        - ["Échecs SSH", 'event.dataset : "linux.auth" and event.outcome : "failure"', ""]
+        - ["Alertes graves", "event.kind : \"alert\" and event.severity >= 3", ""]
+        - ["Sortie vers l'extérieur", "not destination.ip : \"10.0.0.0/8\"", ""]
+        - ["Résolutions en échec", 'dns.response_code : "NXDOMAIN"', ""]
+        - ["Téléversements", "http.request.method : \"POST\" and source.bytes > 1000000", ""]
+
+    - titre: KQL n'est pas Lucene
+      lignes:
+        - ["Plage", "KQL : champ >= 1025", "Lucene : champ:[1025 TO *]"]
+        - ["Existence", "KQL : champ : *", "Lucene : _exists_:champ"]
+        - ["Attention", "Une syntaxe Lucene tapée en KQL ne prévient pas toujours.", ""]
+
+    - titre: Zéro résultat ? Dans cet ordre
+      liste:
+        - La bonne data view est-elle active ?
+        - La plage de temps couvre-t-elle les données ? Par défaut elle est courte.
+        - Le langage est-il KQL, ou Lucene ?
+        - La valeur existe-t-elle ? Lisez-la dans la barre latérale, ne la devinez pas.
+        - Le champ est-il keyword (casse exacte) ou text (analysé) ?
+
+verso:
+  titre: Visualiser, puis publier
+  blocs:
+    - titre: Quelle visualisation pour quelle question
+      lignes:
+        - ["Combien ?", "Métrique", "Un chiffre, éventuellement avec sa tendance."]
+        - ["Comment ça évolue ?", "Ligne ou barres empilées", "Toujours en histogramme de dates."]
+        - ["Qui domine ?", "Barres horizontales", "Classement lisible dès 5 valeurs."]
+        - ["Comment ça se répartit ?", "Secteurs", "Au plus 5 parts, sinon des barres."]
+        - ["Quelles valeurs exactes ?", "Tableau", "Quand le chiffre compte plus que la forme."]
+        - ["Où est-ce dense ?", "Heatmap", "Croisement de deux dimensions."]
+
+    - titre: Ce qui fait mentir une visualisation
+      liste:
+        - >-
+          Le décompte de valeurs distinctes est APPROXIMATIF au-delà de 3000 :
+          au-dessus, ne l'employez pas pour une réponse chiffrée.
+        - >-
+          Les valeurs principales ne sont pas toujours exactes : ce sont les
+          premières de chaque fragment d'index, agrégées ensuite.
+        - >-
+          Un intervalle d'histogramme choisi automatiquement change avec la
+          plage de temps : deux captures ne sont pas forcément comparables.
+        - >-
+          Une source muette ne produit AUCUN groupe : elle disparaît d'un
+          décompte par source au lieu d'y figurer à zéro.
+
+    - titre: Check-list d'un tableau de bord qui sert
+      liste:
+        - Un public, une question. Si vous hésitez, c'est deux tableaux de bord.
+        - Les indicateurs clés en haut à gauche : c'est là que l'œil se pose.
+        - Douze panneaux au plus.
+        - Des titres formulés en questions, pas en noms de champs.
+        - Des unités et des couleurs cohérentes d'un panneau à l'autre.
+        - Un indicateur qui ne peut pas passer au rouge n'est pas un indicateur.
+        - La plage de temps par défaut du tableau de bord est-elle la bonne ?
+
+    - titre: Publier et réutiliser
+      liste:
+        - Un export ndjson se réimporte dans la même version, une mineure plus récente, ou la majeure suivante.
+        - >-
+          Importer un identifiant qui existe déjà dans un autre Space crée une
+          COPIE sous un nouvel identifiant, sans prévenir.
+        - >-
+          En licence Basic, les rapports PDF et PNG n'existent pas, ni la
+          planification d'envois — même en CSV. L'export CSV manuel, lui, existe.
+        - "Connecteurs d'alerte disponibles en Basic : Index et Server log, rien d'autre."

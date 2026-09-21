@@ -71,6 +71,7 @@ captures:
 
 guide:
 	@$(PY) guide/build.py
+	@$(PY) guide/pdf.py
 
 package:
 	@bash outils/empaqueter.sh
