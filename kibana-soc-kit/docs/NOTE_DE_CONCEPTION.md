@@ -46,7 +46,7 @@ partageable entre clients.
 
 *Conséquence gagnée, inattendue* : parce que les données sont engendrées, **les
 réponses attendues sont connues du programme qui les fabrique**. Le kit n'a
-jamais besoin qu'un humain écrive « la réponse est 10.10.13.23 ». Il lit la
+jamais besoin qu'un humain écrive « la réponse est telle adresse ». Il lit la
 réponse dans le manifeste du générateur, et la revérifie par une requête sur le
 lab. Cette propriété est ce qui rend le reste possible.
 

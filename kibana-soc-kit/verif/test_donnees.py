@@ -32,14 +32,6 @@ PLAGES_AUTORISEES = [
 SUFFIXES_AUTORISES = (".test", ".example", ".invalid", ".localhost")
 
 
-@pytest.fixture(scope="module")
-def manifeste(config):
-    chemin = config.RACINE / "data" / "manifest.json"
-    if not chemin.exists():
-        pytest.skip("NON EXÉCUTÉ : data/manifest.json absent. Lancez « make data ».")
-    return json.loads(chemin.read_text(encoding="utf-8"))
-
-
 def _chercher(es, index: str, requete: dict) -> dict:
     r = es.post(f"{es.base}/{index}/_search", json=requete, timeout=120)
     assert r.status_code == 200, f"recherche {index} : HTTP {r.status_code} {r.text[:300]}"

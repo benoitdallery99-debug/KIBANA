@@ -5,6 +5,7 @@ Toutes les suites lisent kit.config.yaml : aucun paramètre n'est écrit en dur.
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -44,6 +45,19 @@ def kbn(auth):
     s.headers.update({"kbn-xsrf": "true", "Content-Type": "application/json"})
     s.base = conf.url_kibana()
     return s
+
+
+@pytest.fixture(scope="session")
+def manifeste(config):
+    """Manifeste du jeu du parcours, partagé par toutes les suites.
+
+    Il était défini à l'identique dans trois fichiers de test ; une quatrième
+    copie aurait suivi. Une seule définition, ici.
+    """
+    chemin = config.RACINE / "data" / "manifest.json"
+    if not chemin.exists():
+        pytest.skip("NON EXÉCUTÉ : data/manifest.json absent. Lancez « make data ».")
+    return json.loads(chemin.read_text(encoding="utf-8"))
 
 
 @pytest.fixture(scope="session")

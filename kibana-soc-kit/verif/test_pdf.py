@@ -176,3 +176,70 @@ def test_aucune_ponctuation_rejetee_en_debut_de_ligne(pdfs):
         f"{len(defauts)} ponctuation(s) rejetée(s) en début de ligne :\n  "
         + "\n  ".join(defauts[:10])
     )
+
+
+# --------------------------------------------------------------------------
+# Aucune réponse attendue dans un document REMIS AU STAGIAIRE
+#
+# Le contrôle équivalent de verif-guide ne regardait que dist/guide.html. Les
+# autres livrables destinés au stagiaire — le guide imprimé, la fiche mémo, le
+# quiz à distribuer — n'étaient contrôlés par personne. C'est par là qu'une
+# réponse attendue est partie dans un PDF livré (S2.source_ip, écrite à la main
+# dans la note de conception).
+#
+# Les documents du FORMATEUR sont hors périmètre, et c'est voulu : le guide du
+# formateur porte le corrigé complet, et la note de conception discute les
+# scénarios. Les y interdire n'aurait aucun sens. La liste est donc explicite
+# des deux côtés, pour que personne n'ait à deviner de quel côté tombe un
+# document nouveau.
+# --------------------------------------------------------------------------
+
+DOCUMENTS_DU_STAGIAIRE = ("guide.pdf", "fiche-memo.pdf", "quiz-imprimable.pdf")
+DOCUMENTS_DU_FORMATEUR = (
+    "guide-formateur.pdf",   # porte le corrigé : les réponses y sont attendues
+    "corriges.pdf",          # démarches et requêtes, destinées au formateur
+    "note-de-conception.pdf",  # document de projet
+    "rapport-recette.pdf",   # document de projet
+)
+
+
+def test_aucune_reponse_attendue_dans_les_documents_du_stagiaire(config, manifeste):
+    """Ce que le stagiaire emporte ne doit contenir aucune réponse en clair."""
+    from outils.fuites import chercher as chercher_fuites
+
+    dist = config.RACINE / "dist"
+    controles, fuites = [], []
+    for nom in DOCUMENTS_DU_STAGIAIRE:
+        chemin = dist / nom
+        if not chemin.exists():
+            continue
+        texte = "\n".join(_pages(chemin))
+        controles.append(nom)
+        for fuite in chercher_fuites(texte, manifeste):
+            fuites.append(f"{nom} : {fuite}")
+
+    if not controles:
+        pytest.skip("NON EXÉCUTÉ : aucun document du stagiaire dans dist/.")
+    assert not fuites, (
+        "réponses attendues publiées dans un document remis au stagiaire :\n  "
+        + "\n  ".join(fuites)
+    )
+
+
+def test_le_partage_stagiaire_formateur_couvre_tous_les_pdf(config):
+    """Un PDF livré doit tomber d'un côté ou de l'autre, jamais entre les deux.
+
+    Sans ce contrôle, un document ajouté plus tard échapperait au contrôle
+    précédent sans que rien ne le signale — exactement ce qui s'est produit.
+    """
+    dist = config.RACINE / "dist"
+    if not dist.exists():
+        pytest.skip("NON EXÉCUTÉ : dist/ absent.")
+    connus = set(DOCUMENTS_DU_STAGIAIRE) | set(DOCUMENTS_DU_FORMATEUR)
+    presents = {p.name for p in dist.glob("*.pdf")}
+    orphelins = presents - connus
+    assert not orphelins, (
+        "PDF livrés que personne n'a classés stagiaire ou formateur : "
+        f"{sorted(orphelins)} — ajoutez-les à l'une des deux listes de "
+        "verif/test_pdf.py"
+    )

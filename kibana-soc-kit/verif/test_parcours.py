@@ -49,14 +49,6 @@ def modules(config):
 
 
 @pytest.fixture(scope="module")
-def manifeste(config):
-    chemin = config.RACINE / "data" / "manifest.json"
-    if not chemin.exists():
-        pytest.skip("NON EXÉCUTÉ : data/manifest.json absent. Lancez « make data ».")
-    return json.loads(chemin.read_text(encoding="utf-8"))
-
-
-@pytest.fixture(scope="module")
 def reponses(manifeste):
     """Index « S1.source_ip » → réponse du manifeste."""
     blocs = [manifeste["reperes"], *manifeste["scenarios"]]

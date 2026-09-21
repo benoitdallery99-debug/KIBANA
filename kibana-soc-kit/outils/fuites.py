@@ -23,7 +23,16 @@ from typing import Any
 def valeurs_publiees_par_le_contexte(contexte: dict[str, Any]) -> set[str]:
     """Tout ce que la fiche de contexte publie légitimement."""
     publiees: set[str] = set()
+    # SEULS les hôtes que la fiche de contexte rend vraiment. Le gabarit du
+    # guide n'affiche que « les serveurs critiques » — {% for h in
+    # contexte.hotes if h.critique %} —, soit neuf machines sur vingt et une.
+    # Exempter les vingt et une revenait à ne plus surveiller du tout les postes
+    # de travail, et donc trois réponses de scénario sur sept : S2.source_ip,
+    # S3.hote et S4.hote. Le stagiaire ne voit ces noms nulle part ; ils ne se
+    # « perdent parmi leurs semblables » sur aucune page.
     for hote in contexte.get("hotes", []):
+        if not hote.get("critique"):
+            continue
         publiees.add(str(hote.get("nom", "")))
         publiees.add(str(hote.get("ip", "")))
     for compte in contexte.get("comptes_de_service", []):

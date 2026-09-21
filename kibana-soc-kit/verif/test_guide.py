@@ -8,7 +8,6 @@ réponse attendue publiée en clair.
 
 from __future__ import annotations
 
-import json
 import re
 from pathlib import Path
 
@@ -36,14 +35,6 @@ def guide(config):
 @pytest.fixture(scope="module")
 def html(guide):
     return guide.read_text(encoding="utf-8")
-
-
-@pytest.fixture(scope="module")
-def manifeste(config):
-    chemin = config.RACINE / "data" / "manifest.json"
-    if not chemin.exists():
-        pytest.skip("NON EXÉCUTÉ : data/manifest.json absent.")
-    return json.loads(chemin.read_text(encoding="utf-8"))
 
 
 @pytest.fixture(scope="module")
