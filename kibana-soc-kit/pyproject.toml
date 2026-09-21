@@ -1,0 +1,32 @@
+# Configuration des outils Python du kit.
+# Le code du kit est vérifié par ruff (CLAUDE.md : « Python à ruff »).
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+exclude = [".venv", "dist", "lab/generated"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle : erreurs (dont E402, import après du code)
+    "F",    # pyflakes
+    "I",    # isort : ordre des imports
+    "UP",   # pyupgrade
+    "B",    # bugbear
+    "RUF",  # règles propres à ruff
+]
+
+[tool.pytest.ini_options]
+testpaths = ["verif"]
+python_files = ["test_*.py"]
+# Sortie lisible : c'est elle qui sert de preuve dans le rapport de recette.
+addopts = "-v --tb=short --color=yes"
+markers = [
+    "lab: contrôles du lab (SPEC §10, verif-lab)",
+    "donnees: contrôles des données synthétiques (verif-donnees)",
+    "parcours: contrôles du parcours (verif-parcours)",
+    "corriges: contrôles des tableaux de bord corrigés (verif-corriges)",
+    "guide: contrôles du guide HTML (verif-guide)",
+    "pdf: contrôles des PDF (verif-pdf)",
+    "package: contrôles de l'archive livrable (verif-package)",
+]

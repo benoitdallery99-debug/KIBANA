@@ -1,0 +1,7 @@
+version: 9.5.3
+commentaire: Digests relevés sur la chaîne de fabrication. docker.elastic.co étant
+  bloqué par la politique d'egress du poste de fabrication, les images officielles
+  ont été obtenues par le miroir mirror.gcr.io ; le digest de configuration est identique
+  à celui publié par Docker Hub. Voir docs/JOURNAL.md, décision D4.
+elasticsearch: mirror.gcr.io/library/elasticsearch@sha256:9020a0ab30021380250128096108602f93a98d04d03c99a03cf9b72c5213497b
+kibana: mirror.gcr.io/library/kibana@sha256:4e74d328de5d1049173713dfc2d4a4ceef3f3b3bb12939dff29cd60974f687e7

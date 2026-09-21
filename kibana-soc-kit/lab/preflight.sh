@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+# lab/preflight.sh — contrôles préalables au démarrage du lab.
+#
+# Principe : chaque échec dit QUOI FAIRE, pas seulement ce qui ne va pas (SPEC §4.2).
+# Aucune commande « sudo » n'est exécutée ici : elle est affichée, l'humain décide
+# (CLAUDE.md). Le script sort en 1 au premier blocage, 0 si tout est réunis.
+
+set -euo pipefail
+
+RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PORT_ES="${KIT_PORT_ES:-9200}"
+PORT_KIBANA="${KIT_PORT_KIBANA:-5601}"
+
+# Seuils, documentés dans docs/PLAN.md et le guide formateur.
+MIN_MAX_MAP_COUNT=262144
+MIN_RAM_GO=6
+MIN_DISQUE_GO=10
+MIN_PODMAN="4.4"
+
+bloquants=0
+avertissements=0
+
+titre() { printf '\n\033[1m%s\033[0m\n' "$1"; }
+ok()    { printf '  \033[32m[OK]\033[0m    %s\n' "$1"; }
+alerte(){ printf '  \033[33m[ATTN]\033[0m  %s\n' "$1"; avertissements=$((avertissements + 1)); }
+echec() { printf '  \033[31m[ÉCHEC]\033[0m %s\n' "$1"; bloquants=$((bloquants + 1)); }
+faire() { printf '           \033[36m→ %s\033[0m\n' "$1"; }
+
+version_ge() { printf '%s\n%s\n' "$2" "$1" | sort -V -C; }
+
+titre "1. Runtime de conteneurs"
+if ! command -v podman >/dev/null 2>&1; then
+  echec "podman est introuvable."
+  faire "Installez podman : https://podman.io/docs/installation"
+  faire "Le lab est lancé par « podman kube play » : docker n'est pas prévu."
+else
+  v="$(podman --version | awk '{print $3}')"
+  if version_ge "$v" "$MIN_PODMAN"; then
+    ok "podman $v (minimum $MIN_PODMAN)"
+  else
+    echec "podman $v est trop ancien (minimum $MIN_PODMAN pour « kube play »)."
+    faire "Mettez podman à jour."
+  fi
+fi
+
+titre "2. Paramètres noyau"
+if [ -r /proc/sys/vm/max_map_count ]; then
+  mmc="$(cat /proc/sys/vm/max_map_count)"
+  if [ "$mmc" -ge "$MIN_MAX_MAP_COUNT" ]; then
+    ok "vm.max_map_count = $mmc (minimum $MIN_MAX_MAP_COUNT)"
+  else
+    echec "vm.max_map_count = $mmc, or Elasticsearch exige au moins $MIN_MAX_MAP_COUNT."
+    faire "Pour la session courante :  sudo sysctl -w vm.max_map_count=$MIN_MAX_MAP_COUNT"
+    faire "Pour rendre le réglage permanent :"
+    faire "  echo 'vm.max_map_count=$MIN_MAX_MAP_COUNT' | sudo tee /etc/sysctl.d/99-elasticsearch.conf"
+    faire "Ces commandes ne sont PAS exécutées automatiquement : à vous de les lancer."
+  fi
+else
+  alerte "vm.max_map_count illisible : vous n'êtes probablement pas sous Linux."
+  faire "Sous macOS ou Windows, podman tourne dans une machine virtuelle."
+  faire "Réglez le paramètre DANS cette VM :"
+  faire "  podman machine ssh 'sudo sysctl -w vm.max_map_count=$MIN_MAX_MAP_COUNT'"
+fi
+
+titre "3. Mémoire"
+if [ -r /proc/meminfo ]; then
+  ram_ko="$(awk '/MemAvailable/ {print $2}' /proc/meminfo)"
+  ram_go=$((ram_ko / 1024 / 1024))
+  if [ "$ram_go" -ge "$MIN_RAM_GO" ]; then
+    ok "${ram_go} Go de mémoire disponible (minimum ${MIN_RAM_GO} Go)"
+  else
+    echec "${ram_go} Go disponibles, or le lab en demande ${MIN_RAM_GO} (heap Elasticsearch 2 Go + Kibana)."
+    faire "Fermez des applications, ou augmentez la mémoire de la VM podman :"
+    faire "  podman machine stop && podman machine set --memory 8192 && podman machine start"
+  fi
+else
+  alerte "Mémoire disponible non mesurable sur ce système."
+  faire "Assurez-vous d'avoir au moins ${MIN_RAM_GO} Go libres, dont 2 Go pour le heap Elasticsearch."
+fi
+
+titre "4. Espace disque"
+dispo_go="$(df -BG --output=avail "$RACINE" 2>/dev/null | tail -1 | tr -dc '0-9' || echo 0)"
+if [ -n "$dispo_go" ] && [ "$dispo_go" -ge "$MIN_DISQUE_GO" ]; then
+  ok "${dispo_go} Go libres (minimum ${MIN_DISQUE_GO} Go)"
+else
+  echec "${dispo_go:-0} Go libres, minimum ${MIN_DISQUE_GO} Go."
+  faire "Libérez de l'espace, ou déplacez le kit sur un volume plus grand."
+fi
+# Elasticsearch refuse d'allouer un shard au-delà de ses seuils d'occupation.
+# Le lab les exprime en valeur absolue (voir lab/pod.yaml.tmpl) : il suffit donc
+# d'avoir l'espace réel, même sur un disque déjà bien rempli en pourcentage.
+pct="$(df --output=pcent "$RACINE" 2>/dev/null | tail -1 | tr -dc '0-9' || echo 0)"
+if [ -n "$pct" ] && [ "$pct" -ge 90 ]; then
+  alerte "Le système de fichiers est occupé à ${pct} %."
+  faire "Sans réglage, Elasticsearch bloquerait toute allocation au-delà de 90 %."
+  faire "Le lab fixe des seuils absolus (5/3/2 Go) : ce n'est donc pas bloquant ici."
+fi
+
+titre "5. Réseau interne (isolation)"
+# Sur un réseau podman « --internal », le trafic entre conteneurs passe par le
+# pont. Si br_netfilter renvoie ce trafic vers iptables (bridge-nf-call-iptables
+# à 1, ce que fait l'installation de Docker), la règle de blocage posée par
+# netavark pour l'isolation coupe AUSSI les échanges internes : le lab devient
+# injoignable depuis son propre réseau. Constaté en lab le 21/09/2026.
+if [ -r /proc/sys/net/bridge/bridge-nf-call-iptables ]; then
+  bnf="$(cat /proc/sys/net/bridge/bridge-nf-call-iptables)"
+  if [ "$bnf" = "0" ]; then
+    ok "bridge-nf-call-iptables = 0 (réseau podman --internal fonctionnel)"
+  else
+    alerte "bridge-nf-call-iptables = $bnf : un réseau podman « --internal » bloquerait aussi le trafic interne."
+    faire "Sans effet sur un lab lancé sur le réseau podman par défaut."
+    faire "Pour exploiter le lab sur un réseau isolé :  sudo sysctl -w net.bridge.bridge-nf-call-iptables=0"
+    faire "Cette commande n'est PAS exécutée automatiquement."
+  fi
+else
+  ok "br_netfilter non chargé : rien ne gêne les réseaux podman « --internal »"
+fi
+
+titre "6. Ports"
+port_occupe() {
+  if command -v ss >/dev/null 2>&1; then ss -ltn 2>/dev/null | grep -qE "[:.]$1[[:space:]]"
+  elif command -v lsof >/dev/null 2>&1; then lsof -iTCP:"$1" -sTCP:LISTEN >/dev/null 2>&1
+  else return 1; fi
+}
+for p in "$PORT_ES" "$PORT_KIBANA"; do
+  if port_occupe "$p"; then
+    # Un lab déjà démarré n'est pas une erreur : « make lab-up » est idempotent.
+    if podman pod exists "${KIT_NOM_POD:-kibana-soc-lab}" 2>/dev/null; then
+      ok "port $p occupé par le lab lui-même (déjà démarré)"
+    else
+      echec "port $p déjà occupé par un autre programme."
+      faire "Libérez-le, ou choisissez un autre port :  KIT_PORT_ES=19200 KIT_PORT_KIBANA=15601 make lab-up"
+    fi
+  else
+    ok "port $p libre"
+  fi
+done
+
+titre "7. Images (le lab ne télécharge jamais rien)"
+version_stack="$(sed -n 's/^  version:[[:space:]]*"\{0,1\}\([0-9.]*\)"\{0,1\}.*/\1/p' "$RACINE/kit.config.yaml" | head -1)"
+if [ -z "$version_stack" ]; then
+  echec "Impossible de lire stack.version dans kit.config.yaml."
+else
+  manquantes=0
+  for depot in elasticsearch kibana; do
+    if podman image exists "${KIT_DEPOT_IMAGES:-mirror.gcr.io/library}/$depot:$version_stack" 2>/dev/null; then
+      ok "image $depot:$version_stack présente localement"
+    else
+      manquantes=$((manquantes + 1))
+      echec "image $depot:$version_stack absente du magasin local."
+    fi
+  done
+  if [ "$manquantes" -gt 0 ]; then
+    faire "Livraison hors ligne : podman load -i images/elasticsearch.tar ; podman load -i images/kibana.tar"
+    faire "Chaîne de fabrication (en ligne) :  make lab-images"
+  fi
+fi
+
+titre "Résultat"
+if [ "$bloquants" -gt 0 ]; then
+  printf '  \033[31m%d blocage(s)\033[0m, %d avertissement(s). Le lab ne peut pas démarrer en l'\''état.\n\n' "$bloquants" "$avertissements"
+  exit 1
+fi
+printf '  \033[32mTout est réuni\033[0m (%d avertissement(s)).\n\n' "$avertissements"
+exit 0

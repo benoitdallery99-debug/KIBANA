@@ -1,0 +1,157 @@
+# lab/pod.yaml.tmpl — gabarit du pod du lab, rendu par lab/rendre_pod.py vers
+# lab/generated/pod.yaml (gitignoré : il contient les secrets engendrés à l'installation).
+#
+# Lancé par « podman kube play », natif, sans compose (CLAUDE.md).
+# Les deux conteneurs partagent l'espace réseau du pod : Kibana joint Elasticsearch
+# sur http://localhost:9200, ce qui reste vrai même sur un réseau podman --internal.
+#
+# Images épinglées par digest et jamais téléchargées à l'exécution
+# (imagePullPolicy: Never) : le lab doit fonctionner hors ligne.
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: __NOM_POD__-es-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: __NOM_POD__
+  labels:
+    app: __NOM_POD__
+    kit: kibana-soc
+spec:
+  restartPolicy: OnFailure
+  containers:
+    - name: elasticsearch
+      image: __IMAGE_ES__
+      imagePullPolicy: Never
+      ports:
+        - containerPort: 9200
+          hostPort: __PORT_ES__
+      env:
+        # Nœud unique : pas de découverte, et réplicas ramenés à 0 par le
+        # gabarit d'index (data/templates) pour obtenir une santé « green ».
+        - name: discovery.type
+          value: "single-node"
+        - name: cluster.name
+          value: "__NOM_POD__"
+        # Licence Basic, jamais de trial (CLAUDE.md, SPEC §4.1).
+        - name: xpack.license.self_generated.type
+          value: "basic"
+        # Authentification activée. TLS HTTP désactivé : écart assumé et documenté
+        # (SPEC §4.1), le lab étant isolé sur un réseau podman interne.
+        - name: xpack.security.enabled
+          value: "true"
+        - name: xpack.security.http.ssl.enabled
+          value: "false"
+        - name: xpack.security.transport.ssl.enabled
+          value: "false"
+        - name: ELASTIC_PASSWORD
+          value: "__MDP_ELASTIC__"
+        # Heap fixé et documenté (SPEC §4.1). Règle : moitié de la RAM allouable,
+        # sans dépasser 2 Go, ce qui suffit largement au volume du lab.
+        - name: ES_JAVA_OPTS
+          value: "-Xms__HEAP__ -Xmx__HEAP__"
+        - name: bootstrap.memory_lock
+          value: "false"
+        # Seuils d'occupation disque exprimés en valeur ABSOLUE et non en
+        # pourcentage. Par défaut Elasticsearch refuse d'allouer le moindre shard
+        # dès que le système de fichiers dépasse 90 % d'occupation — y compris
+        # quand il reste des dizaines de gigaoctets libres, ce qui est le cas
+        # courant d'un poste de travail au disque bien rempli ou d'un volume
+        # partagé. Le lab tient dans quelques gigaoctets : raisonner en espace
+        # libre réel est à la fois plus juste et plus robuste.
+        # Constaté en lab le 21/09/2026 : cluster « red », .security-7 non alloué,
+        # « the node is above the high watermark », 24,9 Go pourtant disponibles.
+        - name: cluster.routing.allocation.disk.watermark.low
+          value: "5gb"
+        - name: cluster.routing.allocation.disk.watermark.high
+          value: "3gb"
+        - name: cluster.routing.allocation.disk.watermark.flood_stage
+          value: "2gb"
+        # NB : Elasticsearch n'a pas de réglage « telemetry.enabled » (il refuse de
+        # démarrer si on l'ajoute, constaté en lab le 21/09/2026). La télémétrie est
+        # une affaire de Kibana : elle est coupée dans le conteneur kibana ci-dessous.
+      volumeMounts:
+        - name: es-data
+          mountPath: /usr/share/elasticsearch/data
+      readinessProbe:
+        exec:
+          command:
+            - sh
+            - -c
+            - "curl -sf -u elastic:$ELASTIC_PASSWORD http://localhost:9200/_cluster/health"
+        initialDelaySeconds: 20
+        periodSeconds: 10
+        failureThreshold: 30
+
+    - name: kibana
+      image: __IMAGE_KIBANA__
+      imagePullPolicy: Never
+      ports:
+        - containerPort: 5601
+          hostPort: __PORT_KIBANA__
+      env:
+        - name: SERVER_NAME
+          value: "__NOM_POD__"
+        - name: SERVER_HOST
+          value: "0.0.0.0"
+        # Même pod : Elasticsearch est sur localhost.
+        - name: ELASTICSEARCH_HOSTS
+          value: "http://localhost:9200"
+        # Depuis 8.0, Kibana ne peut plus se connecter avec le superutilisateur
+        # « elastic » : il utilise le compte de service kibana_system, dont le mot
+        # de passe est fixé par l'initialisation (SPEC §4.1).
+        - name: ELASTICSEARCH_USERNAME
+          value: "kibana_system"
+        - name: ELASTICSEARCH_PASSWORD
+          value: "__MDP_KIBANA_SYSTEM__"
+        # Clés de chiffrement engendrées à l'installation : sans
+        # xpack.encryptedSavedObjects.encryptionKey, l'alerting du module M5
+        # est indisponible (SPEC §4.1).
+        - name: XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY
+          value: "__CLE_SAVED_OBJECTS__"
+        - name: XPACK_REPORTING_ENCRYPTIONKEY
+          value: "__CLE_REPORTING__"
+        - name: XPACK_SECURITY_ENCRYPTIONKEY
+          value: "__CLE_SECURITY__"
+        # Langue de l'interface : kibana.locale de kit.config.yaml.
+        - name: I18N_LOCALE
+          value: "__LOCALE__"
+        # Cartes : sans cette ligne, Lens et Maps attendent le service en ligne
+        # Elastic Maps Service et le lab hors ligne se fige (SPEC §4.1).
+        - name: MAP_INCLUDEELASTICMAPSSERVICE
+          value: "false"
+        # Télémétrie et fil d'actualités coupés : aucune requête sortante.
+        - name: TELEMETRY_ENABLED
+          value: "false"
+        - name: TELEMETRY_OPTIN
+          value: "false"
+        - name: TELEMETRY_ALLOWCHANGINGOPTINSTATUS
+          value: "false"
+        - name: NEWSFEED_ENABLED
+          value: "false"
+        # Tous les autres réglages restent aux valeurs par défaut de Kibana,
+        # y compris la plage de temps par défaut, courte : c'est un piège réel,
+        # enseigné en M0 (SPEC §4.1, §6.3).
+      readinessProbe:
+        exec:
+          command:
+            - sh
+            - -c
+            - "curl -sf http://localhost:5601/api/status"
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        failureThreshold: 40
+
+  volumes:
+    - name: es-data
+      persistentVolumeClaim:
+        claimName: __NOM_POD__-es-data
