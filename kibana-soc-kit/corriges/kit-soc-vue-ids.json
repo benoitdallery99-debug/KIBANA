@@ -1,0 +1,218 @@
+{
+  "title": "Vue IDS",
+  "description": "Public : l'analyste de permanence. Question : que me signale la sonde IDS, et par où commencer ? Tableau de bord corrigé du module M4.",
+  "tags": [],
+  "time_range": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "grid": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 6
+      },
+      "type": "vis",
+      "config": {
+        "type": "metric",
+        "title": "Combien d'alertes sur la période ?",
+        "data_source": {
+          "type": "data_view_spec",
+          "index_pattern": "logs-ids.alert-formation",
+          "time_field": "@timestamp"
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "operation": "count",
+            "label": "Alertes IDS",
+            "background_chart": {
+              "type": "trend"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "grid": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 6
+      },
+      "type": "vis",
+      "config": {
+        "type": "metric",
+        "title": "Combien de signatures distinctes ?",
+        "data_source": {
+          "type": "data_view_spec",
+          "index_pattern": "logs-ids.alert-formation",
+          "time_field": "@timestamp"
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "operation": "unique_count",
+            "field": "rule.name",
+            "label": "Signatures distinctes"
+          }
+        ]
+      }
+    },
+    {
+      "grid": {
+        "x": 24,
+        "y": 0,
+        "w": 24,
+        "h": 12
+      },
+      "type": "vis",
+      "config": {
+        "type": "xy",
+        "title": "Comment les alertes se répartissent-elles par gravité ?",
+        "layers": [
+          {
+            "type": "bar_stacked",
+            "data_source": {
+              "type": "esql",
+              "query": "FROM logs-ids.alert-formation | STATS alertes = COUNT(*) BY gravite = event.severity | SORT gravite ASC"
+            },
+            "x": {
+              "column": "gravite"
+            },
+            "y": [
+              {
+                "column": "alertes"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "grid": {
+        "x": 0,
+        "y": 6,
+        "w": 24,
+        "h": 12
+      },
+      "type": "vis",
+      "config": {
+        "type": "data_table",
+        "title": "Quelles signatures se déclenchent le plus ?",
+        "data_source": {
+          "type": "esql",
+          "query": "FROM logs-ids.alert-formation | STATS alertes = COUNT(*), gravite_max = MAX(event.severity) BY signature = rule.name | SORT alertes DESC | LIMIT 10"
+        },
+        "rows": [
+          {
+            "column": "signature"
+          }
+        ],
+        "metrics": [
+          {
+            "column": "alertes"
+          },
+          {
+            "column": "gravite_max"
+          }
+        ]
+      }
+    },
+    {
+      "grid": {
+        "x": 24,
+        "y": 12,
+        "w": 24,
+        "h": 12
+      },
+      "type": "vis",
+      "config": {
+        "type": "data_table",
+        "title": "Quelles sources déclenchent le plus d'alertes ?",
+        "data_source": {
+          "type": "esql",
+          "query": "FROM logs-ids.alert-formation | STATS alertes = COUNT(*), signatures = COUNT_DISTINCT(rule.name) BY source = source.ip | SORT alertes DESC | LIMIT 10"
+        },
+        "rows": [
+          {
+            "column": "source"
+          }
+        ],
+        "metrics": [
+          {
+            "column": "alertes"
+          },
+          {
+            "column": "signatures"
+          }
+        ]
+      }
+    },
+    {
+      "grid": {
+        "x": 0,
+        "y": 18,
+        "w": 24,
+        "h": 12
+      },
+      "type": "vis",
+      "config": {
+        "type": "data_table",
+        "title": "Quelles destinations sont les plus visées ?",
+        "data_source": {
+          "type": "esql",
+          "query": "FROM logs-ids.alert-formation | STATS alertes = COUNT(*) BY destination = destination.ip | SORT alertes DESC | LIMIT 10"
+        },
+        "rows": [
+          {
+            "column": "destination"
+          }
+        ],
+        "metrics": [
+          {
+            "column": "alertes"
+          }
+        ]
+      }
+    },
+    {
+      "grid": {
+        "x": 24,
+        "y": 24,
+        "w": 24,
+        "h": 12
+      },
+      "type": "vis",
+      "config": {
+        "type": "data_table",
+        "title": "Quelles sont les dernières alertes reçues ?",
+        "data_source": {
+          "type": "esql",
+          "query": "FROM logs-ids.alert-formation | SORT @timestamp DESC | KEEP @timestamp, rule.name, source.ip, destination.ip, event.severity | LIMIT 20"
+        },
+        "rows": [
+          {
+            "column": "@timestamp"
+          },
+          {
+            "column": "rule.name"
+          },
+          {
+            "column": "source.ip"
+          },
+          {
+            "column": "destination.ip"
+          }
+        ],
+        "metrics": [
+          {
+            "column": "event.severity"
+          }
+        ]
+      }
+    }
+  ]
+}

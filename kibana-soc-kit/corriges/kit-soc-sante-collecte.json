@@ -1,0 +1,183 @@
+{
+  "title": "Santé de la collecte",
+  "description": "Public : le chef de salle. Question : mes sources envoient-elles toutes, et sans interruption ? Tableau de bord corrigé du module M4.",
+  "tags": [],
+  "time_range": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "grid": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 6
+      },
+      "type": "vis",
+      "config": {
+        "type": "metric",
+        "title": "Combien d'événements sur la période ?",
+        "data_source": {
+          "type": "data_view_spec",
+          "index_pattern": "logs-*-formation",
+          "time_field": "@timestamp"
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "operation": "count",
+            "label": "Événements collectés",
+            "format": {
+              "type": "number",
+              "decimals": 0
+            },
+            "background_chart": {
+              "type": "trend"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "grid": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 6
+      },
+      "type": "vis",
+      "config": {
+        "type": "metric",
+        "title": "Combien de sources ont émis dans la dernière heure ?",
+        "data_source": {
+          "type": "esql",
+          "query": "FROM logs-*-formation | WHERE @timestamp > NOW() - 1 hour | STATS sources = COUNT_DISTINCT(event.dataset)"
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "sources",
+            "label": "Sources actives (1 h)",
+            "color": {
+              "type": "dynamic",
+              "range": "absolute",
+              "steps": [
+                {
+                  "lt": 6,
+                  "color": "#f6726a"
+                },
+                {
+                  "gte": 6,
+                  "color": "#24c292"
+                }
+              ]
+            },
+            "apply_color_to": "background"
+          }
+        ]
+      }
+    },
+    {
+      "grid": {
+        "x": 24,
+        "y": 0,
+        "w": 24,
+        "h": 12
+      },
+      "type": "vis",
+      "config": {
+        "type": "xy",
+        "title": "Le volume de chaque source tient-il dans le temps ?",
+        "layers": [
+          {
+            "type": "bar_stacked",
+            "data_source": {
+              "type": "data_view_spec",
+              "index_pattern": "logs-*-formation",
+              "time_field": "@timestamp"
+            },
+            "x": {
+              "operation": "date_histogram",
+              "field": "@timestamp"
+            },
+            "y": [
+              {
+                "operation": "count"
+              }
+            ],
+            "breakdown_by": {
+              "operation": "terms",
+              "fields": [
+                "event.dataset"
+              ],
+              "limit": 8
+            }
+          }
+        ]
+      }
+    },
+    {
+      "grid": {
+        "x": 0,
+        "y": 6,
+        "w": 24,
+        "h": 12
+      },
+      "type": "vis",
+      "config": {
+        "type": "data_table",
+        "title": "Quand chaque source a-t-elle émis pour la dernière fois ?",
+        "data_source": {
+          "type": "esql",
+          "query": "FROM logs-*-formation | STATS dernier_evenement = MAX(@timestamp), volume = COUNT(*) BY source = event.dataset | SORT dernier_evenement ASC"
+        },
+        "rows": [
+          {
+            "column": "source"
+          },
+          {
+            "column": "dernier_evenement"
+          }
+        ],
+        "metrics": [
+          {
+            "column": "volume"
+          }
+        ]
+      }
+    },
+    {
+      "grid": {
+        "x": 0,
+        "y": 18,
+        "w": 48,
+        "h": 11
+      },
+      "type": "vis",
+      "config": {
+        "type": "xy",
+        "title": "Le rythme horaire de la collecte est-il régulier ?",
+        "layers": [
+          {
+            "type": "line",
+            "data_source": {
+              "type": "data_view_spec",
+              "index_pattern": "logs-*-formation",
+              "time_field": "@timestamp"
+            },
+            "x": {
+              "operation": "date_histogram",
+              "field": "@timestamp"
+            },
+            "y": [
+              {
+                "operation": "count"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

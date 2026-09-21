@@ -126,6 +126,59 @@ porte à des valeurs en dur — précisément ce que CLAUDE.md interdit.
 
 ---
 
+## P4 — Tableaux de bord corrigés — TERMINÉ (fait avant P3, voir D9)
+
+### Preuve
+`make verif-corriges` : **8 tests passés, sortie 0**, en 59 s. Import dans un Space vierge sans erreur
+ni référence manquante, panneaux non vides après import, rendu des 12 panneaux sans erreur (Playwright),
+valeur affichée égale au décompte d'Elasticsearch sur la même fenêtre, et le corrigé révèle bien S6.
+
+### Décisions
+
+**D9 — P4 traité avant P3.**
+Le module M4 demande au stagiaire de construire ces deux tableaux de bord. Les décrire avant d'avoir
+prouvé qu'ils se construisent, se rendent et disent le vrai aurait exposé à réécrire le module. Les
+corrigés servent donc de vérification technique préalable au parcours.
+*Alternative écartée* : suivre l'ordre littéral P3 puis P4, au prix d'une réécriture probable de M4.
+
+**D10 — Tableaux de bord définis en code, par l'API Dashboards.**
+`stack.version` = 9.5.3 ≥ 9.5 : CLAUDE.md prescrit l'API Dashboards. Confirmé sur le lab en licence
+Basic. Routes réelles : `PUT /api/dashboards/{id}` (idempotent, recommandé pour du versionné) et
+`POST /api/dashboards` (engendre un nouvel identifiant). La route n'est pas `/api/dashboards/dashboard/{id}` :
+erreur commise, corrigée par lecture de la doc officielle puis essai sur le lab.
+*Conséquence* : aucun JSON Lens écrit de zéro, ce que CLAUDE.md interdit.
+
+**D11 — Portabilité : ce que le lab a réellement montré, et ce que M5 enseignera.**
+SPEC §4.3 prévoit des data views à ID fixe pour rendre les tableaux de bord réutilisables sur la cible.
+Trois constats de lab nuancent ce récit, et M5 les enseignera tels quels plutôt que la version simplifiée :
+1. L'API Dashboards REFUSE une source de données référençant une data view par son identifiant
+   (`data_view` rejeté en HTTP 400) ; seul `data_view_spec`, qui décrit le motif en ligne, est admis.
+2. En conséquence, l'export ndjson de ces tableaux ne porte AUCUNE référence : ils sont autonomes,
+   s'importent partout sans référence manquante, mais leur motif d'index est inscrit dans l'objet.
+3. Un tableau de bord est un objet PARTAGEABLE entre Spaces. Importer un identifiant qui existe déjà
+   dans un autre Space ne l'écrase pas et n'échoue pas : Kibana crée une copie sous un nouvel
+   identifiant, rendu dans `destinationId` — même avec `createNewCopies=false`.
+*Conséquence pédagogique* : l'ID fixe de data view garde tout son sens pour les objets construits dans
+l'interface sur une data view enregistrée, que le stagiaire produira lui-même en M4 et exportera en M5.
+Le contraste entre ses exports et ceux des corrigés est la matière même du module.
+
+**D12 — Un indicateur de santé se mesure sur une fenêtre courte.**
+Premier jet : « combien de sources émettent ? » en `unique_count` sur sept jours — affichait 6, au vert,
+alors qu'une source était muette depuis deux heures. Corrigé en « combien de sources ont émis dans la
+dernière heure ? » (ES|QL, `WHERE @timestamp > NOW() - 1 hour`) : affiche 5, au rouge. Un indicateur
+qui ne peut pas passer au rouge n'est pas un indicateur.
+
+### Détails relevés en lab
+- Types de panneaux acceptés par l'API : `data_table`, `gauge`, `heatmap`, `legacy_metric`, `metric`,
+  `mosaic`, `pie`, `region_map`, `tag_cloud`, `treemap`, `waffle`, `xy`.
+- Un filtre au niveau du panneau (`filter`) est refusé : pour restreindre un panneau à une source, on
+  vise son motif d'index, ce qui est de toute façon plus lisible.
+- Playwright : l'élément `globalLoadingIndicator-hidden` est TOUJOURS présent dans le DOM mais masqué
+  en CSS ; il faut attendre son rattachement (`state="attached"`), jamais sa visibilité.
+- Import ndjson par `requests` : retirer l'en-tête `Content-Type` de la session, sinon HTTP 415.
+
+---
+
 ## Écarts ouverts
 
 | ID | Écart | Gravité | Statut | Parade |
