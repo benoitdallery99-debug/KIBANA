@@ -1,0 +1,28 @@
+# kit.config.yaml — paramètres du kit : SEULE source de vérité.
+# N'y mettre que ces valeurs : rien d'autre sur la plateforme cible ne doit entrer dans ce dépôt.
+
+stack:
+  version: "9.5.3"      # version EXACTE d'Elasticsearch/Kibana de la cible
+  licence: basic              # ne pas modifier : le parcours n'enseigne que ce qui existe en Basic
+
+kibana:
+  locale: fr-FR          # langue de la cible : les libellés cités dans le guide en dépendent
+  vue_solution: classic       # vue de solution du Space (8.16+) : identique à la cible
+
+formation:
+  space_id: formation
+  duree_cible_heures: 6
+
+donnees:
+  graine: 20260921            # graine fixe → données et réponses déterministes
+  fenetre_jours: 7            # fenêtre glissante se terminant à l'instant du chargement
+  fuseau_metier: Europe/Paris # heures ouvrées définies dans ce fuseau, horodatages stockés en UTC
+  namespace: formation        # data streams logs-<source>.<type>-formation
+  data_view_id: formation-logs          # ID FIXE : permet de recréer la même data view sur la cible
+  data_view_motif: "logs-*-formation"   # motif du lab (sur la cible : même ID, motif de production)
+
+epreuve:
+  graine: 7310                # jeu de l'épreuve pratique : mêmes structures, réponses différentes
+  namespace: epreuve
+  data_view_id: epreuve-logs
+  data_view_motif: "logs-*-epreuve"

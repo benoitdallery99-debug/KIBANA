@@ -1,0 +1,49 @@
+PROVENANCE DU KIT
+=================
+
+Le prompt d'origine n'existait pas sous forme de fichier dans le répertoire de travail : il a été
+transmis directement dans le message d'ouverture de session (21/09/2026). Aucun fichier n'a donc été
+déplacé ; cette note en tient lieu, conformément à l'étape 2 de l'amorçage.
+
+Contenu du prompt d'origine, intégralement reporté dans le dépôt :
+  - <fichier chemin="kit.config.yaml">            -> kit.config.yaml
+  - <fichier chemin="CLAUDE.md">                  -> CLAUDE.md
+  - <fichier chemin="docs/ORCHESTRATION.md">      -> docs/ORCHESTRATION.md
+  - <fichier chemin="docs/SPEC.md">               -> docs/SPEC.md
+  - <fichier chemin=".claude/agents/relecteur-expert.md">  -> .claude/agents/relecteur-expert.md
+  - <fichier chemin=".claude/agents/stagiaire-candide.md"> -> .claude/agents/stagiaire-candide.md
+  - <fichier chemin=".gitignore">                 -> .gitignore
+Ces fichiers ont été créés à l'identique, sans reformulation ni complément. Seule modification prévue
+par l'amorçage : substitution des paramètres dans kit.config.yaml.
+
+PARAMÈTRES RETENUS (questions posées à l'humain, réponses du 21/09/2026)
+-----------------------------------------------------------------------
+  VERSION_STACK = 9.5.3     (et non 9.5.4 : voir écart E1 ci-dessous)
+  LOCALE_KIBANA = fr-FR
+  VUE_SOLUTION  = classic
+
+EMPLACEMENT
+-----------
+Le répertoire de travail n'était pas vide : il contenait le dépôt applicatif PHP « picturegallery ».
+L'amorçage imposait de s'arrêter et de demander. Décision de l'humain : construire le kit dans le
+sous-répertoire kibana-soc-kit/ du dépôt, sur la branche claude/kibana-soc-training-kit-yf6jr7, sans
+toucher aux fichiers existants. La racine du kit au sens de SPEC §3.2 est donc kibana-soc-kit/.
+
+CONTRAINTES D'ENVIRONNEMENT CONSTATÉES À L'AMORÇAGE
+---------------------------------------------------
+E1. www.elastic.co et docker.elastic.co sont bloqués par la politique d'egress de l'organisation
+    (CONNECT tunnel failed, 403). Le README du proxy (/root/.ccr/README.md) interdit explicitement de
+    contourner un refus de politique. Conséquences :
+      - images : tirées depuis Docker Hub (docker.io/library/elasticsearch, docker.io/library/kibana),
+        qui publie les mêmes builds officiels Elastic. La version 9.5.4 n'y est pas présente ; 9.5.3 est
+        la dernière 9.5.x disponible, d'où le choix de version.
+      - documentation : la doc Elastic est un logiciel libre publié sur github.com (accessible). La
+        vérification documentaire s'appuie donc sur les sources officielles hébergées sur GitHub, et
+        surtout sur le lab lui-même, qui reste la preuve la plus forte (CLAUDE.md : « une fonctionnalité
+        absente du lab n'existe pas pour le parcours »).
+E2. podman n'était pas installé : podman 4.9.3 installé depuis les dépôts Ubuntu noble. « podman kube
+    play » est disponible, la fidélité à SPEC §4.1 est donc préservée.
+E3. vm.max_map_count valait 65530 (< 262144 requis par Elasticsearch). Porté à 262144 par
+    « sysctl -w vm.max_map_count=262144 ». Aucune commande sudo n'a été exécutée : la session est déjà
+    root dans un conteneur éphémère. Sur un poste cible non root, preflight.sh affichera la commande
+    sudo sans l'exécuter, conformément à CLAUDE.md.
