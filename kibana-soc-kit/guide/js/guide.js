@@ -436,3 +436,28 @@
     init();
   }
 })();
+
+// --- Glossaire en infobulle -------------------------------------------------
+// WCAG 2.1 §1.4.13 « Content on Hover or Focus » exige qu'une bulle apparue au
+// survol ou au focus soit RENVOYABLE sans déplacer le pointeur ni le focus.
+// Le CSS seul ne sait pas faire cela : d'où ces quelques lignes.
+(function () {
+  function refermer() {
+    document.querySelectorAll(".glossaire-lien__bulle[hidden]").forEach(function (b) {
+      b.removeAttribute("hidden");
+    });
+  }
+  document.addEventListener("keydown", function (evt) {
+    if (evt.key !== "Escape") return;
+    var actif = document.activeElement;
+    if (!actif || !actif.classList.contains("glossaire-lien__terme")) return;
+    var bulle = actif.nextElementSibling;
+    if (bulle && bulle.classList.contains("glossaire-lien__bulle")) {
+      bulle.setAttribute("hidden", "");
+    }
+  });
+  // La bulle réapparaît dès qu'on revient sur le terme : « hidden » ne vaut que
+  // pour la fois où l'on a appuyé sur Échap.
+  document.addEventListener("focusout", refermer);
+  document.addEventListener("mouseleave", refermer, true);
+})();

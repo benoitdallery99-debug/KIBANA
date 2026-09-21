@@ -115,8 +115,25 @@ def reponses_a_surveiller(manifeste: dict[str, Any]) -> list[tuple[str, str, str
     return a_surveiller
 
 
+# Les données encodées en base64 — polices, captures inlinées — ne sont pas du
+# texte : personne n'y lira jamais une réponse. Mais leur alphabet contient
+# « + » et « / », qui ne sont pas alphanumériques : une suite « +889/ » au
+# milieu d'une image satisfait donc les délimiteurs d'un nombre cherché isolé.
+# Constaté : une capture régénérée a fait échouer la construction sur
+# S4.volume_mo, sans qu'aucune réponse n'ait fui nulle part. Un garde qui
+# dépend des octets d'une image n'est pas un garde — il est un tirage au sort,
+# et il peut aussi bien taire une vraie fuite dans son bruit.
+_BASE64 = re.compile(r'data:[^;,\s"\']*;base64,[A-Za-z0-9+/=]+')
+
+
+def sans_donnees_encodees(texte: str) -> str:
+    """Retire les charges utiles base64, qui ne sont pas du texte lisible."""
+    return _BASE64.sub("data:…", texte)
+
+
 def chercher(texte: str, manifeste: dict[str, Any]) -> list[str]:
     """Liste les réponses trouvées en clair dans « texte »."""
+    texte = sans_donnees_encodees(texte)
     fuites = []
     for cle, valeur, type_ in reponses_a_surveiller(manifeste):
         if type_ == "entier_en_lettres":

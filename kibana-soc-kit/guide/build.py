@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from outils import conf
 from outils.fuites import chercher as chercher_fuites
+from outils.glossaire import lier as lier_glossaire
 from outils.typographie import corriger_html
 
 GUIDE = conf.RACINE / "guide"
@@ -228,6 +229,14 @@ def charger_modules() -> tuple[dict, list[dict], list[dict]]:
         raise SystemExit("aucun module dans parcours/ : rien à construire")
 
     glossaire = yaml.safe_load((GUIDE / "glossaire.yaml").read_text(encoding="utf-8"))
+
+    # Les infobulles de SPEC §7.1. On relie APRÈS avoir chargé tous les
+    # modules, et une seule fois pour l'ensemble : un terme n'est marqué qu'à sa
+    # toute première apparition du parcours, pas une fois par module — sans quoi
+    # le lecteur retrouverait la même bulle six fois.
+    for module in modules:
+        module["corps_html"] = lier_glossaire(module["corps_html"], glossaire)
+
     return manifeste, modules, glossaire
 
 

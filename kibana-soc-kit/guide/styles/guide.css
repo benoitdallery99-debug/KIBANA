@@ -480,3 +480,59 @@ mark { background: var(--action-fond); color: var(--encre); padding: 0 0.1em; }
   outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* --- Glossaire en infobulle (SPEC §7.1) ------------------------------------
+   Le terme est un « button » : atteignable au clavier, et relié à sa
+   définition par aria-describedby. La bulle s'affiche au survol ET au focus,
+   et se referme par Échap — WCAG 2.1 §1.4.13 exige les trois. */
+.glossaire-lien { position: relative; }
+
+.glossaire-lien__terme {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: help;
+  /* Un pointillé, pas un soulignement plein : le terme n'est pas un lien et ne
+     doit pas s'en donner l'air. */
+  border-bottom: 1px dotted var(--action);
+}
+.glossaire-lien__terme:focus-visible {
+  outline: 3px solid var(--action);
+  outline-offset: 2px;
+}
+
+.glossaire-lien__bulle {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 1.6em;
+  z-index: 30;
+  width: min(32ch, 80vw);
+  padding: 0.6rem 0.75rem;
+  background: var(--papier-appui);
+  color: var(--encre);
+  border: 1px solid var(--filet);
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.18);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.glossaire-lien__terme:hover + .glossaire-lien__bulle,
+.glossaire-lien__terme:focus + .glossaire-lien__bulle,
+.glossaire-lien__bulle:hover {
+  display: block;
+}
+/* Refermée par Échap : le script pose cet attribut, et il l'emporte. */
+.glossaire-lien__bulle[hidden] { display: none !important; }
+
+@media print {
+  /* À l'impression, la bulle devient une parenthèse : rien ne survole du papier. */
+  .glossaire-lien__terme { border-bottom: 0; }
+  .glossaire-lien__bulle { display: inline; position: static; width: auto;
+    border: 0; box-shadow: none; background: none; font-size: 0.85em;
+    padding: 0 0 0 0.25em; }
+  .glossaire-lien__bulle::before { content: "( "; }
+  .glossaire-lien__bulle::after { content: " )"; }
+}

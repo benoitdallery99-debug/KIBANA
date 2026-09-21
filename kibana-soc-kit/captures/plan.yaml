@@ -145,3 +145,22 @@
       note: De quoi retrouver un objet parmi des centaines
     - cible: importObjects
       note: L'import d'un ndjson venu d'un autre Space
+
+- id: M1-C2
+  module: M1
+  titre: Une syntaxe Lucene tapée en KQL
+  chemin: "/app/discover#/?_g=(time:(from:now-7d,to:now))&_a=(index:'formation-logs',query:(language:kuery,query:'destination.port%20:%20%5B1025%20TO%20*%5D'))"
+  attendre: discoverErrorCalloutTitle
+  legende: >-
+    La syntaxe de plage de Lucene, tapée dans une barre réglée sur KQL. Kibana
+    refuse, et le dit — contrairement à « _exists_ », qui ne dit rien.
+  alt: >-
+    La barre de requête de Discover contient « destination.port : [1025 TO *] »,
+    une syntaxe qui appartient à Lucene. À la place des résultats, Kibana
+    affiche un encadré d'erreur intitulé « Impossible d'extraire les résultats
+    de recherche ».
+  reperes:
+    - cible: queryInput
+      note: La syntaxe Lucene, tapée en KQL
+    - cible: discoverErrorCalloutTitle
+      note: Kibana refuse, et l'annonce
