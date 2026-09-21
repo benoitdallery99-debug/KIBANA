@@ -208,7 +208,13 @@ def reperes(base: dict[str, list[dict]]) -> dict:
     # engendrées et recalculable par une requête, comme tous les autres.
     moins_volumineuse = min(par_dataset, key=lambda d: par_dataset[d])
 
-    nb_auth = par_dataset.get("windows.security", 0) + par_dataset.get("linux.auth", 0)
+    # Les codes d'événement que porte la source Windows : un fait de STRUCTURE,
+    # fixé par les gabarits, donc identique d'une génération à l'autre.
+    codes_windows = {
+        d.get("event", {}).get("code")
+        for d in base.get("windows.security", [])
+        if d.get("event", {}).get("code")
+    }
 
     ports = [
         d["destination"]["port"]
@@ -216,7 +222,20 @@ def reperes(base: dict[str, list[dict]]) -> dict:
         if isinstance(d.get("destination"), dict) and d["destination"].get("port")
     ]
     port_max = max(ports) if ports else 0
-    nb_ports_hauts = sum(1 for p in ports if p >= 1025)
+
+    # Quelle source porte les connexions vers les ports hauts — un CLASSEMENT,
+    # et non un décompte. Le pare-feu en produit six fois plus que la sonde, et
+    # cet écart-là ne bouge pas ; le nombre de documents, lui, varie de quelques
+    # unités selon l'endroit où la fenêtre glissante tombe dans la semaine.
+    ports_hauts: dict[str, int] = {}
+    for dataset, evenements in base.items():
+        for d in evenements:
+            dst = d.get("destination")
+            if isinstance(dst, dict) and (dst.get("port") or 0) >= 1025:
+                ports_hauts[dataset] = ports_hauts.get(dataset, 0) + 1
+    source_ports_hauts = (
+        max(ports_hauts, key=lambda s: ports_hauts[s]) if ports_hauts else ""
+    )
 
     # Heure ouvrée la plus chargée, dans le fuseau métier : c'est ce que montre
     # un croisement sources × heures, et Kibana affiche dans le fuseau du
@@ -307,45 +326,29 @@ def reperes(base: dict[str, list[dict]]) -> dict:
                 },
             },
             {
-                "cle": "nb_docs_source_dominante",
-                "libelle": "Documents produits par la source la plus volumineuse",
-                "valeur": par_dataset[plus_volumineuse], "type": "entier",
+                "cle": "nb_codes_windows",
+                "libelle": "Codes d'événement distincts portés par la source Windows",
+                "valeur": len(codes_windows), "type": "entier",
                 "normalisation": "entier",
                 "controle": {
-                    "dataset": "*",
-                    "requete": {"size": 0, "aggs": {"r": {"terms": {
-                        "field": "event.dataset", "size": 1}}}},
-                    "chemin": "aggregations.r.buckets.0.doc_count",
+                    "dataset": "windows.security",
+                    "requete": {"size": 0, "aggs": {"r": {"cardinality": {
+                        "field": "event.code", "precision_threshold": 40000}}}},
+                    "chemin": "aggregations.r.value",
                 },
             },
             {
-                "cle": "nb_docs_auth",
-                "libelle": "Documents des deux sources d'authentification réunies",
-                "valeur": nb_auth, "type": "entier", "normalisation": "entier",
+                "cle": "source_ports_hauts",
+                "libelle": "Source qui produit le plus de connexions vers un port de 1025 ou plus",
+                "valeur": source_ports_hauts, "type": "texte",
+                "normalisation": "minuscules, espaces retirés",
                 "controle": {
                     "dataset": "*",
-                    # PIÈGE : « hits.total.value » est PLAFONNÉ à 10 000 par
-                    # défaut — la requête rendait 10 000 au lieu de 126 642, et
-                    # le contrôle a eu raison de le refuser. « track_total_hits »
-                    # lève le plafond.
-                    "requete": {"size": 0, "track_total_hits": True,
-                                "query": {"terms": {
-                                    "event.dataset": ["windows.security",
-                                                      "linux.auth"]}}},
-                    "chemin": "hits.total.value",
-                },
-            },
-            {
-                "cle": "nb_docs_ports_hauts",
-                "libelle": "Documents dont le port de destination atteint 1025",
-                "valeur": nb_ports_hauts, "type": "entier", "normalisation": "entier",
-                "controle": {
-                    "dataset": "*",
-                    # Même plafond de 10 000 : voir la réponse précédente.
-                    "requete": {"size": 0, "track_total_hits": True,
-                                "query": {"range": {
-                                    "destination.port": {"gte": 1025}}}},
-                    "chemin": "hits.total.value",
+                    "requete": {"size": 0,
+                                "query": {"range": {"destination.port": {"gte": 1025}}},
+                                "aggs": {"r": {"terms": {
+                                    "field": "event.dataset", "size": 1}}}},
+                    "chemin": "aggregations.r.buckets.0.key",
                 },
             },
             {
