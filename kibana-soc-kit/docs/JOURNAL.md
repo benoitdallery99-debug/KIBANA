@@ -207,6 +207,67 @@ qui ne peut pas passer au rouge n'est pas un indicateur.
 
 ---
 
+## P5 et P7 — guide, PDF, captures, archive — TERMINÉS
+
+### Preuves
+`make verif-guide` : 10 passés. `make verif-pdf` : 7 passés. `make verif-package` : 8 passés.
+
+### Décisions
+
+**D13 — Direction visuelle « La main courante », choisie contre « La planche d'expertise ».**
+Voir `docs/DESIGN.md`. La seconde direction cumulait deux des six clichés listés par SPEC §7.3, dont
+la terre cuite nommément citée ; surtout, sa palette n'était pas motivée par le sujet. Le critère qui
+a tranché est fonctionnel et non esthétique : le guide ne doit pas ressembler à Kibana, sans quoi le
+stagiaire ne sait plus lequel des deux écrans il regarde.
+
+**D14 — Les empreintes, jamais les réponses, avec une exception assumée.**
+Le guide n'embarque que des SHA-256 de réponses normalisées. La normalisation JavaScript a été
+confrontée à celle de Python sur de l'UTF-8 multioctet et des accents : elles concordent exactement.
+Un SHA-256 en JavaScript pur double `crypto.subtle`, indisponible en `file://` selon les navigateurs.
+*Exception* : la fiche de contexte publie serveurs critiques, comptes de service et adresse du scanner
+autorisé, que SPEC §5.4 impose de publier. Une réponse s'y perd parmi ses semblables. La règle et son
+exception vivent dans `outils/fuites.py`, partagé par le constructeur et la vérification.
+
+### Défauts trouvés par l'exécution, à ce stade
+1. La jauge de progression affichait un caractère illisible : les glyphes géométriques manquent à la
+   police et tombaient en repli. Remplacée par un compte chiffré, lisible aussi à l'impression.
+2. Les tableaux débordaient de l'écran sur téléphone.
+3. Les sélecteurs du sélecteur de temps étaient périmés : en 9.5 il s'appelle `dateRangePicker…`.
+   Un sélecteur périmé ne lève aucune erreur — l'élément est simplement introuvable. L'avertissement
+   posé dans `captures/produire.py` l'a signalé dès la première exécution.
+4. **Les contrôles de S6 se mesuraient depuis « maintenant »** au lieu de l'instant du chargement.
+   Les données étant en fenêtre glissante, la suite passait juste après `make data` puis échouait
+   toute seule une heure plus tard. Recalés sur `engendre_le` du manifeste. C'est le genre de défaut
+   qui n'apparaît qu'en relançant à froid, et qui aurait accueilli le formateur.
+
+### Relevé utile au parcours
+L'interface fr-FR de 9.5.3 est **partiellement traduite** : l'invite de la barre de requête reste en
+anglais (« Filter your data using KQL syntax ») au milieu d'un écran français. Raison de plus pour ne
+citer que des libellés relevés dans le lab.
+
+### Note sur les polices
+Les fichiers livrés dans `guide/polices/` sont ceux distribués par le projet, non modifiés (polices
+variables, table `fvar` intacte), avec leurs licences OFL. Dans les PDF, WeasyPrint les sous-ensemble
+comme le fait tout producteur de PDF, et marque le sous-ensemble du préfixe conventionnel. La règle de
+CLAUDE.md porte sur les fichiers que le kit distribue, qui sont intacts.
+
+---
+
+## P3 — Parcours — EN COURS
+
+`docs/CHARTE_REDACTION.md` écrite en premier, avec le schéma exact du frontmatter : la qualité des
+modules est ainsi contrôlable par programme et non par bonne volonté. `parcours/M0.md` écrit comme
+module de référence avant toute délégation. M1 écrit et vérifié. M2 à M5 en cours de rédaction, un
+sous-agent par module, séquentiellement, chacun propriétaire d'un seul fichier — conséquence de
+l'incident de P0.
+
+`make verif-parcours` sur M0 et M1 : 13 passés, 3 échecs qui disent tous la même chose, à savoir que
+M2 à M5 n'existent pas encore. Tous les contrôles de fond passent : les 19 requêtes KQL de M1 rejouées
+dans Discover donnent ce qui est annoncé, les libellés cités existent dans l'interface fr-FR du lab,
+aucune réponse n'est écrite en clair, et chaque piège est décrit tel qu'il se comporte.
+
+---
+
 ## Écarts ouverts
 
 | ID | Écart | Gravité | Statut | Parade |

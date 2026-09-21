@@ -55,6 +55,35 @@ def rendre(nom_gabarit: str, cible: Path, **variables) -> None:
     print(f"  {cible.relative_to(conf.RACINE)} — {cible.stat().st_size / 1024:.0f} Ko")
 
 
+DOCUMENT_SIMPLE = """<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
+<title>{titre}</title><style>{polices}</style><style>{css}</style>
+<style>h1{{break-before:auto}} h2{{break-before:auto}}</style></head>
+<body>{corps}</body></html>"""
+
+
+def rendre_markdown(source: Path, cible: Path, titre: str) -> None:
+    """Rend un document Markdown du dépôt en PDF, avec la même typographie.
+
+    Sert aux documents qui n'ont pas d'exercices : note de conception, guide
+    formateur, rapport de recette.
+    """
+    import markdown as md
+
+    corps = md.markdown(
+        source.read_text(encoding="utf-8"),
+        extensions=["tables", "fenced_code", "sane_lists", "attr_list"],
+    )
+    html = DOCUMENT_SIMPLE.format(
+        titre=titre,
+        polices=CSS_POLICES,
+        css=(GUIDE / "styles" / "pdf.css").read_text(encoding="utf-8"),
+        corps=corps,
+    )
+    DIST.mkdir(parents=True, exist_ok=True)
+    HTML(string=html, base_url=str(GUIDE) + "/").write_pdf(str(cible))
+    print(f"  {cible.relative_to(conf.RACINE)} — {cible.stat().st_size / 1024:.0f} Ko")
+
+
 def main() -> int:
     manifeste, modules, glossaire = charger_modules()
     commun = {
@@ -80,6 +109,18 @@ def main() -> int:
         nb_exercices=sum(len(m["exercices"]) for m in modules),
         **commun,
     )
+
+    # Documents Markdown du dépôt qui ont une version imprimable (SPEC §8).
+    for nom_source, nom_cible, titre in (
+        ("NOTE_DE_CONCEPTION.md", "note-de-conception.pdf", "Note de conception"),
+        ("guide-formateur.md", "guide-formateur.pdf", "Guide du formateur"),
+        ("RAPPORT_RECETTE.md", "rapport-recette.pdf", "Rapport de recette"),
+    ):
+        source = conf.RACINE / "docs" / nom_source
+        if not source.exists():
+            source = conf.RACINE / "formateur" / nom_source
+        if source.exists():
+            rendre_markdown(source, DIST / nom_cible, titre)
 
     memo = yaml.safe_load((GUIDE / "fiche-memo.yaml").read_text(encoding="utf-8"))
     rendre(

@@ -13,7 +13,7 @@ import ipaddress
 import json
 import subprocess
 import tempfile
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from itertools import pairwise
 from pathlib import Path
 
@@ -54,14 +54,21 @@ def _extraire(reponse: dict, chemin: str):
     return courant
 
 
-def _transformer(valeur, transformation: str | None):
+def _transformer(valeur, transformation: str | None, t0: datetime | None = None):
     if transformation is None:
         return valeur
     if transformation == "octets_vers_mo":
         return round(float(valeur) / (1024 * 1024))
     if transformation == "minutes_avant_maintenant":
+        # Mesuré depuis l'instant du CHARGEMENT, pas depuis maintenant. Les
+        # données sont en fenêtre glissante : une heure après le chargement, un
+        # silence de deux heures en paraîtrait trois. Le scénario S6 dit
+        # « muette depuis deux heures AU MOMENT DU CHARGEMENT » ; c'est donc à
+        # T0 qu'il faut le mesurer, sinon le contrôle échouerait tout seul avec
+        # le temps qui passe (constaté en lab).
         vu = datetime.fromtimestamp(float(valeur) / 1000, tz=UTC)
-        return round((datetime.now(UTC) - vu).total_seconds() / 60)
+        reference = t0 or datetime.now(UTC)
+        return round((reference - vu).total_seconds() / 60)
     if transformation == "mediane_intervalle_minutes":
         instants = sorted(
             datetime.fromisoformat(h["_source"]["@timestamp"].replace("Z", "+00:00"))
@@ -73,14 +80,25 @@ def _transformer(valeur, transformation: str | None):
     raise AssertionError(f"transformation inconnue : {transformation}")
 
 
-def _recalculer(es, namespace: str, controle: dict):
+def _instant_de_chargement(manifeste: dict) -> datetime:
+    """T0 : l'instant auquel les données ont été chargées.
+
+    Les données sont en fenêtre glissante ; tout ce qui s'exprime en « depuis
+    tant de temps » se mesure depuis cet instant, jamais depuis maintenant.
+    """
+    return datetime.fromisoformat(manifeste["engendre_le"].replace("Z", "+00:00"))
+
+
+def _recalculer(es, namespace: str, controle: dict, t0: datetime | None = None):
     """Rejoue la requête DSL d'une réponse et en extrait la valeur."""
     if not controle.get("chemin"):
         return None  # réponse non calculable par requête (verdict, durée déclarée)
     dataset = controle["dataset"]
     index = f"logs-*-{namespace}" if dataset == "*" else f"logs-{dataset}-{namespace}"
     brut = _chercher(es, index, controle["requete"])
-    return _transformer(_extraire(brut, controle["chemin"]), controle.get("transformation"))
+    return _transformer(
+        _extraire(brut, controle["chemin"]), controle.get("transformation"), t0
+    )
 
 
 # --------------------------------------------------------------------------
@@ -169,12 +187,13 @@ def test_chaque_reponse_est_recalculee_par_sa_requete(es, manifeste, lab_demarre
     que le générateur a relevée.
     """
     namespace = manifeste["namespace"]
+    t0 = _instant_de_chargement(manifeste)
     ecarts = []
     verifiees = 0
     for scenario in [manifeste["reperes"], *manifeste["scenarios"]]:
         for reponse in scenario["reponses"]:
             controle = reponse["controle"]
-            recalcule = _recalculer(es, namespace, controle)
+            recalcule = _recalculer(es, namespace, controle, t0)
 
             if "attendu_litteral" in controle:
                 if recalcule != controle["attendu_litteral"]:
@@ -283,13 +302,18 @@ def test_la_source_muette_l_est_vraiment(es, manifeste, lab_demarre):
     dernier = datetime.fromtimestamp(
         r["aggregations"]["dernier"]["value"] / 1000, tz=UTC
     )
-    silence = (datetime.now(UTC) - dernier).total_seconds() / 60
-    assert 90 <= silence <= 180, f"silence de {silence:.0f} min, attendu voisin de 120"
+    # Mesuré depuis le chargement : voir la note de _transformer.
+    silence = (_instant_de_chargement(manifeste) - dernier).total_seconds() / 60
+    assert 110 <= silence <= 130, f"silence de {silence:.0f} min, attendu voisin de 120"
 
     # Preuve du piège : sur la dernière heure, la source n'apparaît pas du tout.
+    # La dernière heure AVANT le chargement : c'est là que la source muette
+    # manque à l'appel. « now-1h » ne conviendrait pas, la fenêtre ayant glissé.
+    fin = manifeste["engendre_le"]
+    debut = (_instant_de_chargement(manifeste) - timedelta(hours=1)).isoformat()
     recent = _chercher(es, f"logs-*-{namespace}", {
         "size": 0,
-        "query": {"range": {"@timestamp": {"gte": "now-1h"}}},
+        "query": {"range": {"@timestamp": {"gte": debut, "lte": fin}}},
         "aggs": {"par_source": {"terms": {"field": "event.dataset", "size": 20}}},
     })
     presentes = {b["key"] for b in recent["aggregations"]["par_source"]["buckets"]}
