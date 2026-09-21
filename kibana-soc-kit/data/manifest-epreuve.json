@@ -1,5 +1,5 @@
 {
-  "engendre_le": "2026-09-21T17:28:34.000Z",
+  "engendre_le": "2026-09-21T21:45:08.000Z",
   "jeu": "epreuve",
   "graine": 7310,
   "namespace": "epreuve",
@@ -9,14 +9,14 @@
   "index_mode": "standard",
   "avertissement": "Données entièrement synthétiques. Adresses réservées à la documentation (RFC 5737, RFC 1918), domaines réservés (RFC 2606), personnes inventées. Aucune donnée réelle (SPEC §5.1, CLAUDE.md).",
   "volumes": {
-    "logs-windows.security-epreuve": 90410,
-    "logs-linux.auth-epreuve": 35663,
-    "logs-ids.alert-epreuve": 14776,
-    "logs-network.dns-epreuve": 100026,
-    "logs-proxy.web-epreuve": 74743,
-    "logs-firewall.traffic-epreuve": 69247
+    "logs-windows.security-epreuve": 90730,
+    "logs-linux.auth-epreuve": 35795,
+    "logs-ids.alert-epreuve": 14943,
+    "logs-network.dns-epreuve": 100394,
+    "logs-proxy.web-epreuve": 75009,
+    "logs-firewall.traffic-epreuve": 70596
   },
-  "total_documents": 384865,
+  "total_documents": 387467,
   "contexte": {
     "organisation": "Groupe Méridien",
     "domaine_ad": "MERIDIEN",
@@ -126,6 +126,15 @@
         "os": "linux",
         "critique": false,
         "role": "Relais de messagerie"
+      },
+      {
+        "nom": "fw-perimetre-01",
+        "ip": "10.30.0.1",
+        "zone": "dmz",
+        "os": "linux",
+        "critique": true,
+        "equipement": true,
+        "role": "Pare-feu de périmètre"
       },
       {
         "nom": "pc-compta-01",
@@ -289,6 +298,31 @@
         ]
       },
       {
+        "cle": "hote_le_plus_actif",
+        "libelle": "Machine qui produit le plus d'événements",
+        "valeur": "fw-perimetre-01",
+        "type": "texte",
+        "normalisation": "minuscules, espaces retirés",
+        "controle": {
+          "dataset": "*",
+          "requete": {
+            "size": 0,
+            "aggs": {
+              "r": {
+                "terms": {
+                  "field": "host.name",
+                  "size": 1
+                }
+              }
+            }
+          },
+          "chemin": "aggregations.r.buckets.0.key"
+        },
+        "empreintes": [
+          "20e9f066ce56baecee1ed8dcd0098dff5239e8738b70f2a3a3700b4448b4d76c"
+        ]
+      },
+      {
         "cle": "nb_hotes",
         "libelle": "Nombre d'hôtes distincts observés",
         "valeur": 21,
@@ -314,9 +348,199 @@
         ]
       },
       {
+        "cle": "source_la_moins_volumineuse",
+        "libelle": "Source qui produit le moins d'événements",
+        "valeur": "ids.alert",
+        "type": "texte",
+        "normalisation": "minuscules, espaces retirés",
+        "controle": {
+          "dataset": "*",
+          "requete": {
+            "size": 0,
+            "aggs": {
+              "r": {
+                "terms": {
+                  "field": "event.dataset",
+                  "size": 1,
+                  "order": {
+                    "_count": "asc"
+                  }
+                }
+              }
+            }
+          },
+          "chemin": "aggregations.r.buckets.0.key"
+        },
+        "empreintes": [
+          "c56e4a865465606021b706e58b2716dabcfc1c23823e1dfd2f91bffe2ee9524e"
+        ]
+      },
+      {
+        "cle": "nb_docs_source_dominante",
+        "libelle": "Documents produits par la source la plus volumineuse",
+        "valeur": 100394,
+        "type": "entier",
+        "normalisation": "entier",
+        "controle": {
+          "dataset": "*",
+          "requete": {
+            "size": 0,
+            "aggs": {
+              "r": {
+                "terms": {
+                  "field": "event.dataset",
+                  "size": 1
+                }
+              }
+            }
+          },
+          "chemin": "aggregations.r.buckets.0.doc_count"
+        },
+        "empreintes": [
+          "e7f8d387a5bd4a4953481c30f5804c5617fc1b17acc21c043a346f22218d5b3c"
+        ]
+      },
+      {
+        "cle": "nb_docs_auth",
+        "libelle": "Documents des deux sources d'authentification réunies",
+        "valeur": 126525,
+        "type": "entier",
+        "normalisation": "entier",
+        "controle": {
+          "dataset": "*",
+          "requete": {
+            "size": 0,
+            "track_total_hits": true,
+            "query": {
+              "terms": {
+                "event.dataset": [
+                  "windows.security",
+                  "linux.auth"
+                ]
+              }
+            }
+          },
+          "chemin": "hits.total.value"
+        },
+        "empreintes": [
+          "14fc507ec38f4e3ff9c361cb9991145f381e9b240d237685eb13c5c59f3e6952"
+        ]
+      },
+      {
+        "cle": "nb_docs_ports_hauts",
+        "libelle": "Documents dont le port de destination atteint 1025",
+        "valeur": 36284,
+        "type": "entier",
+        "normalisation": "entier",
+        "controle": {
+          "dataset": "*",
+          "requete": {
+            "size": 0,
+            "track_total_hits": true,
+            "query": {
+              "range": {
+                "destination.port": {
+                  "gte": 1025
+                }
+              }
+            }
+          },
+          "chemin": "hits.total.value"
+        },
+        "empreintes": [
+          "0a06f0f05d6c5bb1733c788b66cd7b5e52f917e77edeab746d2e178665583d3b"
+        ]
+      },
+      {
+        "cle": "port_destination_max",
+        "libelle": "Port de destination le plus élevé observé",
+        "valeur": 65534,
+        "type": "entier",
+        "normalisation": "entier",
+        "controle": {
+          "dataset": "*",
+          "requete": {
+            "size": 0,
+            "aggs": {
+              "r": {
+                "max": {
+                  "field": "destination.port"
+                }
+              }
+            }
+          },
+          "chemin": "aggregations.r.value",
+          "transformation": "entier"
+        },
+        "empreintes": [
+          "04f720b424d7e32428e0199b9bacd2f536bfa18e458701d570654410d4ff9509"
+        ]
+      },
+      {
+        "cle": "heure_la_plus_chargee",
+        "libelle": "Heure du jour la plus chargée, dans le fuseau métier",
+        "valeur": 10,
+        "type": "entier",
+        "normalisation": "entier",
+        "controle": {
+          "dataset": "*",
+          "requete": {
+            "size": 0,
+            "runtime_mappings": {
+              "heure": {
+                "type": "long",
+                "script": {
+                  "source": "emit(doc['@timestamp'].value.withZoneSameInstant(ZoneId.of(params.fuseau)).getHour())",
+                  "params": {
+                    "fuseau": "Europe/Paris"
+                  }
+                }
+              }
+            },
+            "aggs": {
+              "r": {
+                "terms": {
+                  "field": "heure",
+                  "size": 1
+                }
+              }
+            }
+          },
+          "chemin": "aggregations.r.buckets.0.key"
+        },
+        "empreintes": [
+          "4a44dc15364204a80fe80e9039455cc1608281820fe2b24f1e5233ade6af1dd5"
+        ]
+      },
+      {
+        "cle": "nb_signatures_distinctes",
+        "libelle": "Signatures distinctes levées par la sonde",
+        "valeur": 8,
+        "type": "entier",
+        "normalisation": "entier",
+        "controle": {
+          "dataset": "ids.alert",
+          "requete": {
+            "size": 0,
+            "aggs": {
+              "r": {
+                "cardinality": {
+                  "field": "rule.name",
+                  "precision_threshold": 40000
+                }
+              }
+            }
+          },
+          "chemin": "aggregations.r.value"
+        },
+        "empreintes": [
+          "2c624232cdd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3"
+        ]
+      },
+      {
         "cle": "signature_ids_la_plus_frequente",
         "libelle": "Signature IDS la plus fréquente",
-        "valeur": "ET WEB Tentative d'injection SQL",
+        "valeur": "ET SCAN Balayage TCP detecte",
         "type": "texte",
         "normalisation": "minuscules, espaces retirés",
         "controle": {
@@ -335,7 +559,7 @@
           "chemin": "aggregations.r.buckets.0.key"
         },
         "empreintes": [
-          "f7b76a2953e1663f192ee59fb187f43c1c7d71b0ca89406fbd36c5eabdec9066"
+          "02537be6643501fe3d2bf44343cd495eba7ce5e5c566cd9b7d2185a4864d4417"
         ]
       }
     ]
@@ -859,8 +1083,8 @@
       "titre": "Trou de collecte de deux heures",
       "recit": "Une source n'a rien envoyé pendant deux heures, au milieu de la période.",
       "_fenetre": {
-        "debut": "2026-09-17T16:28:34.000Z",
-        "fin": "2026-09-17T18:28:34.000Z"
+        "debut": "2026-09-17T20:45:08.000Z",
+        "fin": "2026-09-17T22:45:08.000Z"
       },
       "reponses": [
         {
@@ -877,8 +1101,8 @@
               "query": {
                 "range": {
                   "@timestamp": {
-                    "gte": "2026-09-17T16:28:34.000Z",
-                    "lt": "2026-09-17T18:28:34.000Z"
+                    "gte": "2026-09-17T20:45:08.000Z",
+                    "lt": "2026-09-17T22:45:08.000Z"
                   }
                 }
               }

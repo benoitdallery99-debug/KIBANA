@@ -370,9 +370,16 @@ def test_tous_les_domaines_sont_reserves(es, manifeste, lab_demarre):
 # --------------------------------------------------------------------------
 
 def _reponses(manifeste: dict) -> dict[str, object]:
+    """Toutes les réponses du manifeste : repères ET scénarios.
+
+    Les repères en faisaient partie sans y être : ils servent de réponse à la
+    moitié des exercices, et une comparaison entre les deux jeux qui les
+    ignorait ne comparait donc que la moitié de ce qui est demandé.
+    """
+    blocs = [manifeste["reperes"], *manifeste["scenarios"]]
     return {
-        f"{s['id']}.{r['cle']}": r["valeur"]
-        for s in manifeste["scenarios"] for r in s["reponses"]
+        f"{b['id']}.{r['cle']}": r["valeur"]
+        for b in blocs for r in b["reponses"]
     }
 
 
@@ -427,8 +434,18 @@ def test_jeu_epreuve_distinct(config, manifeste):
         # Sont identiques PAR CONSTRUCTION, et non par recopie : le verdict de
         # S7, l'adresse du scanner (constante de la fiche de contexte), la source
         # et la durée du trou, la source muette.
+        #
+        # Côté repères, la structure du parc et des sources est la même d'un jeu
+        # à l'autre — c'est voulu : le stagiaire doit retrouver le même terrain.
+        # Ce qui DOIT différer, ce sont les volumes et les classements, et ceux-là
+        # ne sont pas exclus : R.nb_docs_auth, R.nb_docs_ports_hauts,
+        # R.nb_docs_source_dominante, R.port_destination_max et
+        # R.signature_ids_la_plus_frequente restent comparés.
         and not c.startswith((
             "S7.verdict", "S7.preuve_ip", "S5.duree", "S5.source", "S6.source",
+            "R.nb_sources", "R.nb_hotes", "R.heure_la_plus_chargee",
+            "R.nb_signatures_distinctes", "R.hote_le_plus_actif",
+            "R.source_la_plus_volumineuse", "R.source_la_moins_volumineuse",
         ))
     }
     assert not communes, f"réponses identiques entre les deux jeux : {sorted(communes)}"
