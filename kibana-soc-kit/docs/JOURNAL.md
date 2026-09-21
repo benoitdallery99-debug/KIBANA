@@ -253,7 +253,60 @@ CLAUDE.md porte sur les fichiers que le kit distribue, qui sont intacts.
 
 ---
 
-## P3 — Parcours — EN COURS
+## P3 — Parcours — TERMINÉ
+
+`make verif-parcours` : **16 sur 16**. Six modules, 345 minutes, 35 exercices, 27 objectifs.
+M4 est entièrement autonome, comme l'exige SPEC §6.1.
+
+Deux faits établis en lab par les rédacteurs, et qui font la valeur de deux exercices :
+- Lens affiche un décompte unique au-delà de 3 000 **sans aucun avertissement** ; le même décompte vaut
+  4 847 avec un seuil de précision relevé contre 4 876 à 4 892 par défaut selon le chemin. C'est ce qui
+  rend M2-E4 démonstratif plutôt que théorique.
+- Les parts affichées par la barre latérale de Discover ne coïncident pas avec le décompte exact et
+  peuvent inverser l'ordre de deux valeurs proches (13,2 % affiché contre 12,6 % réel) : M1-E4 n'est
+  faisable qu'au compteur.
+
+Les deux requêtes fautives des pièges ne sont volontairement pas déclarées dans `requetes_kql` :
+Discover n'affichant alors ni compteur ni message, le contrôle ne saurait les comparer. Elles vivent
+dans les consignes et les solutions, et leur comportement est relevé dans `docs/pieges-lab.json`.
+
+---
+
+## P6 — Évaluation et guide formateur — TERMINÉ
+
+Quiz de 15 questions portant sur des décisions de salle et non sur du vocabulaire. Couverture prouvée
+par `formateur/matrice.py`, qui sort en 1 si un seul objectif manque : **27/27, soit 100 %**.
+Guide formateur avec déroulé minuté, justification des partis pris pédagogiques, erreurs fréquentes et
+ce qu'il faut DIRE plutôt que corriger, adaptation débutant et confirmé, grilles critériées.
+
+Documents engendrés depuis les mêmes sources : `corriges.pdf` (démarches et requêtes, sans les valeurs
+attendues) et `quiz-imprimable.pdf` (sans réponses).
+
+---
+
+## P7 — Archive hors ligne — TERMINÉ
+
+`make verif-package` : **8 sur 8** sur l'archive reconstruite (1,4 Go). Elle contient les six modules,
+le dossier formateur complet, les six PDF, les images de conteneurs et les wheels.
+
+---
+
+## P8 — Revue finale — EN COURS
+
+`docs/NOTE_DE_CONCEPTION.md` (4 pages) et `docs/RAPPORT_RECETTE.md` écrits. Les deux relectures
+indépendantes — `relecteur-expert` sur la grille /20 de SPEC §11, `stagiaire-candide` sur les six
+modules contre le lab — sont en cours.
+
+### Écart de livraison, non résolu à ce stade
+**Le push vers `YamTeam9/picturegallery` est refusé** : `403`, côté API GitHub
+`Resource not accessible by integration`. La lecture fonctionne, l'écriture non : l'app est installée
+et le dépôt est dans son périmètre, mais le droit `Contents: write` manque — ou le compte connecté n'a
+pas le rôle *Write*. Cela relève de l'humain (ORCHESTRATION, cas d'arrêt b). Le travail est sauvegardé
+hors du conteneur sous forme de bundle git complet, remis à l'humain.
+
+---
+
+## P3 — Parcours — ARCHIVE DE L'ENTRÉE PRÉCÉDENTE
 
 `docs/CHARTE_REDACTION.md` écrite en premier, avec le schéma exact du frontmatter : la qualité des
 modules est ainsi contrôlable par programme et non par bonne volonté. `parcours/M0.md` écrit comme
