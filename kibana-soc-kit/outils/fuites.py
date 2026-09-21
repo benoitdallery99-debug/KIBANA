@@ -39,6 +39,31 @@ def valeurs_publiees_par_le_contexte(contexte: dict[str, Any]) -> set[str]:
     return publiees
 
 
+# Un petit entier écrit en toutes lettres est parfaitement discriminant, là où
+# le même en chiffres se rencontrerait partout. « six sources » dévoile une
+# réponse ; « 6 » non. On surveille donc les deux formes, différemment.
+EN_LETTRES = {
+    0: "zéro", 1: "un", 2: "deux", 3: "trois", 4: "quatre", 5: "cinq",
+    6: "six", 7: "sept", 8: "huit", 9: "neuf", 10: "dix", 11: "onze",
+    12: "douze", 13: "treize", 14: "quatorze", 15: "quinze", 16: "seize",
+    17: "dix-sept", 18: "dix-huit", 19: "dix-neuf", 20: "vingt",
+    21: "vingt et un", 30: "trente", 40: "quarante", 50: "cinquante",
+}
+
+
+_MOTS_VIDES = {
+    "nombre", "distincts", "distinctes", "concernee", "concernée", "observes",
+    "observés", "alimentent", "produit", "plus", "frequente", "fréquente",
+    "durée", "duree", "dans", "pour", "avec", "cette", "celui", "视",
+}
+
+
+def _sujets(libelle: str) -> list[str]:
+    """Noms significatifs d'un libellé de réponse, pour ancrer la recherche."""
+    mots = re.findall(r"[A-Za-zÀ-ÿ]{5,}", libelle.lower())
+    return [m for m in mots if m not in _MOTS_VIDES][:3]
+
+
 def reponses_a_surveiller(manifeste: dict[str, Any]) -> list[tuple[str, str, str]]:
     """Renvoie (clé, valeur, type) pour chaque réponse qui ne doit pas être publiée."""
     publiees = valeurs_publiees_par_le_contexte(manifeste.get("contexte", {}))
@@ -57,13 +82,26 @@ def reponses_a_surveiller(manifeste: dict[str, Any]) -> list[tuple[str, str, str
             # elle figure parmi ses semblables et ne désigne rien.
             if valeur in publiees:
                 continue
-            # Un entier de moins de trois chiffres ne se surveille pas par
-            # recherche de texte : « 2 » ou « 70 » se rencontrent partout, et la
-            # durée d'un trou de collecte fait d'ailleurs partie de l'énoncé.
-            # Ces réponses restent protégées par ce qui compte vraiment : elles
-            # ne sont pas calculables sans faire l'exercice.
-            if reponse["type"] in ("entier", "entier_tolerance") and len(valeur) < 3:
-                continue
+            entier = reponse["type"] in ("entier", "entier_tolerance")
+            if entier:
+                # La forme en toutes lettres, elle, est toujours surveillée :
+                # c'est ainsi qu'une réponse fuit dans une phrase.
+                mot = EN_LETTRES.get(int(valeur))
+                if mot:
+                    # On n'attrape le mot que s'il est suivi du SUJET de la
+                    # question. « six sources » dévoile la réponse ; « six
+                    # modules » ou « vingt-deux heures » ne dévoilent rien.
+                    # Le sujet se lit dans le libellé de la réponse.
+                    for sujet in _sujets(reponse.get("libelle", "")):
+                        a_surveiller.append((
+                            f"{bloc['id']}.{reponse['cle']}",
+                            f"{mot} {sujet}",
+                            "entier_en_lettres",
+                        ))
+                # En chiffres, un entier de moins de trois chiffres se
+                # rencontrerait partout : on ne le cherche pas sous cette forme.
+                if len(valeur) < 3:
+                    continue
             a_surveiller.append((f"{bloc['id']}.{reponse['cle']}", valeur, reponse["type"]))
     return a_surveiller
 
@@ -72,7 +110,15 @@ def chercher(texte: str, manifeste: dict[str, Any]) -> list[str]:
     """Liste les réponses trouvées en clair dans « texte »."""
     fuites = []
     for cle, valeur, type_ in reponses_a_surveiller(manifeste):
-        if type_ in ("entier", "entier_tolerance"):
+        if type_ == "entier_en_lettres":
+            mot, sujet = valeur.split(" ", 1)
+            # Le nombre doit être isolé — « vingt-deux » ne compte pas — et
+            # immédiatement suivi du sujet de la question, au singulier ou au
+            # pluriel.
+            trouve = re.search(
+                rf"(?<![\w-]){re.escape(mot)}\s+{re.escape(sujet)}s?\b", texte, re.I
+            )
+        elif type_ in ("entier", "entier_tolerance"):
             # Un nombre se cherche isolé de tout caractère alphanumérique :
             # borné aux seuls chiffres, « 889 » se trouverait au milieu des
             # polices encodées en base64, où il est sans rapport.

@@ -17,6 +17,9 @@ from verif.e2e import kibana as K
 pytestmark = pytest.mark.corriges
 
 ESPACE_ESSAI = "verif-corriges-vierge"
+# Les corrigés sont chargés hors du Space de formation (leurs titres donnent
+# les réponses de M3 et M4) : les tests vont les lire là où ils vivent.
+ESPACE_CORRIGES = "corriges"
 TABLEAUX = ("kit-soc-sante-collecte", "kit-soc-vue-ids")
 
 
@@ -138,7 +141,7 @@ def test_chaque_panneau_se_rend_sans_erreur(lab_demarre):
         page = contexte.new_page()
         K.connexion(page)
         for identifiant in TABLEAUX:
-            K.ouvrir_tableau_de_bord(page, identifiant)
+            K.ouvrir_tableau_de_bord(page, identifiant, espace=ESPACE_CORRIGES)
             nombre = page.locator(K.ts("panneau")).count()
             erreurs = K.panneaux_en_erreur(page)
             if nombre == 0:
@@ -209,7 +212,7 @@ def test_valeurs_affichees_egales_a_elasticsearch(es, config, lab_demarre):
     with K.navigateur() as contexte:
         page = contexte.new_page()
         K.connexion(page)
-        K.ouvrir_tableau_de_bord(page, "kit-soc-sante-collecte")
+        K.ouvrir_tableau_de_bord(page, "kit-soc-sante-collecte", espace=ESPACE_CORRIGES)
         textes = K.textes_des_panneaux(page)
 
     panneau = next((t for t in textes if "Combien d'événements" in t), None)
@@ -237,7 +240,7 @@ def test_le_tableau_de_sante_revele_la_source_muette(lab_demarre):
     with K.navigateur() as contexte:
         page = contexte.new_page()
         K.connexion(page)
-        K.ouvrir_tableau_de_bord(page, "kit-soc-sante-collecte")
+        K.ouvrir_tableau_de_bord(page, "kit-soc-sante-collecte", espace=ESPACE_CORRIGES)
         textes = K.textes_des_panneaux(page)
 
     actives = next((t for t in textes if "dernière heure" in t), None)

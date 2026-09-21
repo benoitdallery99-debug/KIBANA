@@ -156,3 +156,23 @@ def test_le_guide_imprime_ne_porte_pas_les_solutions_dans_le_corps(pdfs):
     assert "Erreurs fréquentes" not in corps, (
         "les solutions apparaissent dans le corps du guide, pas seulement en annexe"
     )
+
+
+def test_aucune_ponctuation_rejetee_en_debut_de_ligne(pdfs):
+    """Symptôme visible de l'absence d'espace insécable.
+
+    Une ligne qui commence par « : », « ; », « ! », « ? » ou « » » trahit une
+    ponctuation haute séparée du mot qui la précède. C'est ce que la
+    typographie française interdit, et cela se constate dans le rendu.
+    """
+    defauts = []
+    for nom, chemin in pdfs.items():
+        for numero, page in enumerate(_pages(chemin), 1):
+            for ligne in page.split("\n"):
+                depouillee = ligne.strip()
+                if depouillee[:1] in (":", ";", "!", "?", "»"):
+                    defauts.append(f"{nom} p.{numero} : « {depouillee[:60]} »")
+    assert not defauts, (
+        f"{len(defauts)} ponctuation(s) rejetée(s) en début de ligne :\n  "
+        + "\n  ".join(defauts[:10])
+    )

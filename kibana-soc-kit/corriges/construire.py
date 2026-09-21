@@ -322,12 +322,29 @@ def kbn(methode: str, chemin: str, **kw) -> requests.Response:
     )
 
 
+# Les corrigés sont chargés dans le Space « corriges », auquel le rôle
+# « stagiaire » n'a pas accès. Les charger dans le Space de formation les
+# afficherait au stagiaire dès sa première connexion, titres et descriptions
+# compris — c'est-à-dire les réponses de M3 et M4, avant même de les chercher.
+ESPACE = "corriges"
+
+
 def main() -> int:
-    espace = str(conf.valeur("formation.space_id"))
+    espace = ESPACE
     dossier = conf.RACINE / "corriges"
+
+    espace_formation = str(conf.valeur("formation.space_id"))
 
     identifiants = []
     for identifiant, fabrique in TABLEAUX.items():
+        # Les premières versions chargeaient les corrigés dans le Space de
+        # formation. Un lab existant les y porte encore, visibles du stagiaire
+        # dès sa connexion — et Kibana refuse alors de recréer le même
+        # identifiant ailleurs (HTTP 409, relevé en lab). On les retire.
+        r = kbn("DELETE",
+                f"/s/{espace_formation}/api/saved_objects/dashboard/{identifiant}")
+        if r.status_code == 200:
+            print(f"  [--] {identifiant} retiré du Space « {espace_formation} »")
         corps = fabrique()
         # Le JSON de l'API est un livrable à part entière : versionnable, relisible
         # en revue, rejouable sur la cible (SPEC §6.2, module M5).

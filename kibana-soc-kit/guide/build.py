@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from outils import conf
 from outils.fuites import chercher as chercher_fuites
+from outils.typographie import corriger_html
 
 GUIDE = conf.RACINE / "guide"
 DIST = conf.RACINE / "dist"
@@ -256,6 +257,9 @@ def main() -> int:
         js=(GUIDE / "js" / "guide.js").read_text(encoding="utf-8"),
         theme_force=None,
     )
+
+    # Typographie française appliquée au rendu, hors code (CLAUDE.md).
+    html = corriger_html(html)
 
     # Garde-fou : aucune réponse attendue ne doit avoir fui dans le rendu,
     # hors ce que la fiche de contexte publie légitimement (voir outils/fuites).

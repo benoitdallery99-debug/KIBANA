@@ -16,6 +16,8 @@ import pytest
 from playwright.sync_api import sync_playwright
 
 from outils.fuites import chercher as chercher_fuites
+from outils.typographie import defauts as defauts_typo
+from outils.typographie import texte_verifiable
 from verif.e2e import kibana as K
 
 pytestmark = pytest.mark.guide
@@ -164,9 +166,21 @@ def test_aucune_reponse_attendue_publiee(html, manifeste):
 
 
 def test_le_manifeste_n_est_pas_embarque(html):
-    """Une erreur classique : inliner le manifeste « pour plus tard »."""
-    for marque in ('"controle"', '"requete_dsl"', '"valeur":', "aggregations"):
-        assert marque not in html, f"le guide contient « {marque} » : le manifeste a fuité"
+    """Une erreur classique : inliner le manifeste « pour plus tard ».
+
+    Le contrôle porte sur des DONNÉES embarquées, pas sur des liens. Les
+    valeurs d'attributs href et src sont donc retirées avant l'examen : sans
+    cela, une URL de documentation parfaitement légitime — celle de
+    l'agrégation cardinality, qui contient le mot « aggregations » — ferait
+    échouer le contrôle. Le marqueur est en outre exigé sous sa forme JSON,
+    entre guillemets, qui ne peut venir que d'un objet sérialisé.
+    """
+    sans_liens = re.sub(r'(?:href|src)\s*=\s*"[^"]*"', "", html)
+    for marque in ('"controle"', '"requete_dsl"', '"valeur":', '"aggregations"',
+                   '"empreintes":', '"scenarios":'):
+        assert marque not in sans_liens, (
+            f"le guide contient « {marque} » : le manifeste a fuité"
+        )
 
 
 def test_validation_d_une_reponse_fonctionne(page_ouverte, manifeste):
@@ -207,4 +221,24 @@ def test_validation_d_une_reponse_fonctionne(page_ouverte, manifeste):
     )
     assert essayer("valeur manifestement fausse") == "faux", (
         f"une réponse fausse est acceptée par le guide pour {cible['id']}"
+    )
+
+
+def test_typographie_francaise(html):
+    """CLAUDE.md : typographie française, espaces insécables comprises.
+
+    Sans elles, le navigateur rejette la ponctuation haute et le guillemet
+    fermant en début de ligne — visible dès qu'on lit sur un écran étroit.
+    Le contrôle porte sur le texte seul : le code n'a pas à suivre cette
+    règle, et une insécable dans une requête KQL la casserait.
+    """
+    texte = texte_verifiable(html)
+    manquantes = defauts_typo(texte)
+    assert not manquantes, (
+        f"{len(manquantes)} espace(s) insécable(s) manquante(s) :\n  "
+        + "\n  ".join(manquantes[:12])
+    )
+    assert html.count("\u00a0") > 50, (
+        "quasiment aucune espace insécable dans le guide : la passe "
+        "typographique n'a pas été appliquée"
     )

@@ -26,6 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from build import GUIDE, charger_modules, charger_quiz, contexte_du_manifeste
 
 from outils import conf
+from outils.typographie import corriger_html
 
 DIST = conf.RACINE / "dist"
 
@@ -52,7 +53,9 @@ def env() -> Environment:
 
 
 def rendre(nom_gabarit: str, cible: Path, **variables) -> None:
-    html = env().get_template(nom_gabarit).render(css_polices=CSS_POLICES, **variables)
+    html = corriger_html(
+        env().get_template(nom_gabarit).render(css_polices=CSS_POLICES, **variables)
+    )
     DIST.mkdir(parents=True, exist_ok=True)
     # base_url pointe sur guide/ pour que les chemins de polices se résolvent.
     HTML(string=html, base_url=str(GUIDE) + "/").write_pdf(str(cible))
@@ -77,12 +80,12 @@ def rendre_markdown(source: Path, cible: Path, titre: str) -> None:
         source.read_text(encoding="utf-8"),
         extensions=["tables", "fenced_code", "sane_lists", "attr_list"],
     )
-    html = DOCUMENT_SIMPLE.format(
+    html = corriger_html(DOCUMENT_SIMPLE.format(
         titre=titre,
         polices=CSS_POLICES,
         css=(GUIDE / "styles" / "pdf.css").read_text(encoding="utf-8"),
         corps=corps,
-    )
+    ))
     DIST.mkdir(parents=True, exist_ok=True)
     HTML(string=html, base_url=str(GUIDE) + "/").write_pdf(str(cible))
     print(f"  {cible.relative_to(conf.RACINE)} — {cible.stat().st_size / 1024:.0f} Ko")

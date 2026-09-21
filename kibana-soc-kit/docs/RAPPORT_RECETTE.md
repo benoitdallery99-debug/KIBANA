@@ -13,14 +13,25 @@ comme **non exécuté**, avec sa raison — jamais comme réussi.
 
 | Suite | Contrôles | Résultat | Ce qui est prouvé |
 |---|---|---|---|
-| `verif-lab` | 13 | ✅ 13 passés | licence, santé, version, locale, vue de solution, isolation réseau |
-| `verif-donnees` | 14 | ✅ 14 passés | volumes, mapping effectif, S1→S7, déterminisme, jeu d'épreuve distinct |
-| `verif-parcours` | 16 | ✅ 16 passés | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes |
-| `verif-corriges` | 8 | ✅ 8 passés | import en Space vierge, rendu sans erreur, valeurs conformes |
-| `verif-guide` | 10 | ✅ 10 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout |
-| `verif-pdf` | 7 | ✅ 7 passés | polices embarquées, sommaire paginé, signets, solutions en annexe |
-| `verif-package` | 8 | ✅ 8 passés | empreintes, complétude, installation sans réseau |
-| **Total** | **76** | | |
+| `verif-lab` | 13 | à rejouer | licence, santé, version, locale, vue de solution, isolation réseau |
+| `verif-donnees` | 14 | à rejouer | volumes, mapping effectif, S1→S7, déterminisme, jeu d'épreuve distinct |
+| `verif-parcours` | 16 | à rejouer | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes |
+| `verif-corriges` | 8 | à rejouer | import en Space vierge, rendu sans erreur, valeurs conformes |
+| `verif-guide` | 11 | à rejouer | zéro requête réseau, axe-core, empreintes, validation de bout en bout |
+| `verif-pdf` | 8 | à rejouer | polices embarquées, sommaire paginé, signets, solutions en annexe |
+| `verif-package` | 8 | à rejouer | empreintes, complétude, installation sans réseau |
+| **Total** | **78** | | |
+
+> **État de ce rapport.** Les relectures `stagiaire-candide` et
+> `relecteur-expert` de la phase P8 ont ouvert des écarts bloquants ; les
+> corrections sont en cours et touchent le lab, le parcours, les corrigés et le
+> guide. Les chiffres ci-dessus sont ceux des suites telles qu'elles existent
+> aujourd'hui dans `verif/`, mais **leur dernier passage vert est antérieur à
+> ces corrections** : ils sont donc marqués « à rejouer », et non « passés ».
+> Les sorties reproduites plus bas dans ce document sont celles de cette
+> exécution antérieure — elles sont conservées comme trace, pas comme preuve de
+> l'état actuel. Ce rapport est régénéré en fin de P8, une fois `make verif`
+> relancé en entier.
 
 Qualité du code : `shellcheck` sur tous les scripts, `ruff` sur tout le Python —
 propres, sans exception ni dérogation.
@@ -167,6 +178,10 @@ $ make verif-pdf
 7 passed
 ```
 
+Exécution antérieure aux corrections de P8 : `verif-guide` comptait alors 10
+contrôles et `verif-pdf` 7 ; ils en comptent aujourd'hui 11 et 8, et doivent
+être rejoués.
+
 Prouve : **zéro requête réseau** à l'ouverture en `file://` ; axe-core injecté
 sans violation `serious` ni `critical` ; 1,99 Mo pour une limite de 20 Mo ;
 liens internes valides ; texte alternatif sur toutes les images ; empreintes
@@ -178,9 +193,10 @@ Côté PDF : polices embarquées (`pdffonts`), aucune page blanche parasite,
 sommaire réellement paginé et pointant dans le document, signets, fiche mémo sur
 exactement deux pages, solutions absentes du corps et rassemblées en annexe.
 
-**Six documents produits** : `guide.pdf` (29 pages), `fiche-memo.pdf` (2),
-`guide-formateur.pdf`, `corriges.pdf`, `quiz-imprimable.pdf`,
-`note-de-conception.pdf` (4).
+**Sept documents produits**, pagination relevée par `pdfinfo` : `guide.pdf`
+(96 pages), `corriges.pdf` (30), `rapport-recette.pdf` (6),
+`guide-formateur.pdf` (5), `note-de-conception.pdf` (4),
+`quiz-imprimable.pdf` (3), `fiche-memo.pdf` (2).
 
 ---
 

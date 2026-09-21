@@ -1,7 +1,21 @@
-"""Initialisation idempotente du lab : Space, rôles, comptes, data views.
+"""Initialisation idempotente du lab : Spaces, rôles, comptes, data views.
 
 Relançable sans effet de bord : chaque objet est créé s'il manque, mis à jour sinon.
 Appelée par « make lab-up » et par « make lab-reset » (SPEC §4.3).
+
+Quatre Spaces, et la séparation entre eux n'est pas décorative :
+
+- « formation »  le Space de travail du stagiaire ;
+- « reseau »     le Space de l'équipe voisine, cible de la copie de M3-E5 et de
+                 l'import de M5-E3. Sans lui, ces deux exercices sont infaisables ;
+- « corriges »   les tableaux de bord corrigés, visibles du FORMATEUR SEUL : leurs
+                 titres et descriptions donnent les réponses de M3 et M4 ;
+- « epreuve »    l'épreuve pratique, fermée par défaut. Le formateur l'ouvre par
+                 « make epreuve-ouvrir » au moment de l'évaluation, et la referme.
+
+De même pour les index : le rôle « stagiaire » ne lit QUE le motif du parcours.
+Le jeu de l'épreuve lui reste inaccessible tant que le formateur n'a pas ouvert
+l'épreuve — sinon le stagiaire pourrait préparer ses réponses toute la journée.
 """
 
 from __future__ import annotations
@@ -55,14 +69,18 @@ def etape(libelle: str, r: requests.Response, attendus: tuple[int, ...] = (200, 
     raise SystemExit(f"  [ÉCHEC] {libelle} — HTTP {r.status_code} : {r.text[:400]}")
 
 
-def space() -> None:
-    """Space de formation, avec la vue de solution de kit.config.yaml."""
-    space_id = str(conf.valeur("formation.space_id"))
+SPACE_RESEAU = "reseau"
+SPACE_CORRIGES = "corriges"
+SPACE_EPREUVE = "epreuve"
+
+
+def _space(space_id: str, nom: str, description: str) -> None:
+    """Crée ou met à jour un Space, avec la vue de solution de kit.config.yaml."""
     vue = str(conf.valeur("kibana.vue_solution"))
     corps = {
         "id": space_id,
-        "name": "Formation SOC",
-        "description": "Espace de formation Kibana pour analystes SOC",
+        "name": nom,
+        "description": description,
         # La vue de solution change toute la navigation depuis la 8.16 : elle doit
         # être identique à celle de la plateforme cible (SPEC §4.3).
         "solution": vue,
@@ -76,23 +94,58 @@ def space() -> None:
               kbn("POST", "/api/spaces/space", json=corps))
 
 
+def spaces() -> None:
+    _space(
+        str(conf.valeur("formation.space_id")),
+        "Formation SOC",
+        "Espace de formation Kibana pour analystes SOC",
+    )
+    # Le Space de l'équipe voisine. M3-E5 y copie un tableau de bord, M5-E3 y
+    # importe un ndjson : il doit exister AVANT que le stagiaire arrive dessus.
+    _space(
+        SPACE_RESEAU,
+        "Équipe réseau",
+        "Espace de l'équipe voisine — cible des copies et des imports du parcours",
+    )
+    # Réservé au formateur : les corrigés y vivent.
+    _space(
+        SPACE_CORRIGES,
+        "Corrigés (formateur)",
+        "Tableaux de bord corrigés — réservé au formateur",
+    )
+    _space(
+        SPACE_EPREUVE,
+        "Épreuve pratique",
+        "Épreuve pratique — ouverte aux stagiaires par le formateur le moment venu",
+    )
+
+
 def roles() -> None:
-    """Deux rôles : le formateur pilote le Space, le stagiaire y travaille."""
-    space_id = str(conf.valeur("formation.space_id"))
-    motifs = [
-        str(conf.valeur("donnees.data_view_motif")),
-        str(conf.valeur("epreuve.data_view_motif")),
-    ]
+    """Trois rôles, et le troisième ne sert que le temps de l'épreuve.
+
+    Le découpage répond à une règle du kit : un stagiaire ne doit voir ni les
+    corrigés, ni le jeu de l'épreuve, avant le moment prévu. Un rôle qui lit
+    « logs-*-epreuve » toute la journée rendrait l'épreuve sans objet.
+    """
+    space_formation = str(conf.valeur("formation.space_id"))
+    motif_parcours = str(conf.valeur("donnees.data_view_motif"))
+    motif_epreuve = str(conf.valeur("epreuve.data_view_motif"))
 
     etape(
         "Rôle « formateur »",
         kbn("PUT", "/api/security/role/formateur", json={
             "elasticsearch": {
                 "cluster": ["monitor"],
-                "indices": [{"names": motifs, "privileges": ["read", "view_index_metadata"]}],
+                "indices": [{
+                    "names": [motif_parcours, motif_epreuve],
+                    "privileges": ["read", "view_index_metadata"],
+                }],
             },
-            # Tous droits, mais sur ce Space seulement.
-            "kibana": [{"spaces": [space_id], "base": ["all"]}],
+            # Tous droits, sur les quatre Spaces du lab — corrigés compris.
+            "kibana": [{
+                "spaces": [space_formation, SPACE_RESEAU, SPACE_CORRIGES, SPACE_EPREUVE],
+                "base": ["all"],
+            }],
         }),
         attendus=(200, 204),
     )
@@ -101,12 +154,32 @@ def roles() -> None:
         "Rôle « stagiaire »",
         kbn("PUT", "/api/security/role/stagiaire", json={
             "elasticsearch": {
-                # Lecture seule sur les données : un stagiaire n'altère jamais le jeu.
-                "indices": [{"names": motifs, "privileges": ["read", "view_index_metadata"]}],
+                # Lecture seule, et sur le SEUL motif du parcours : le jeu de
+                # l'épreuve n'est pas lisible avec ce rôle.
+                "indices": [{
+                    "names": [motif_parcours],
+                    "privileges": ["read", "view_index_metadata"],
+                }],
             },
-            # Écriture des objets enregistrés du Space : il doit pouvoir construire
-            # et sauvegarder ses recherches, visualisations et tableaux de bord.
-            "kibana": [{"spaces": [space_id], "base": ["all"]}],
+            # Écriture des objets enregistrés : il doit pouvoir construire et
+            # sauvegarder ses recherches, visualisations et tableaux de bord.
+            # Le Space « reseau » lui est ouvert, sans quoi la copie de M3-E5 et
+            # l'import de M5-E3 n'ont aucune cible.
+            "kibana": [{"spaces": [space_formation, SPACE_RESEAU], "base": ["all"]}],
+        }),
+        attendus=(200, 204),
+    )
+
+    etape(
+        "Rôle « stagiaire-epreuve » (attribué par « make epreuve-ouvrir »)",
+        kbn("PUT", "/api/security/role/stagiaire-epreuve", json={
+            "elasticsearch": {
+                "indices": [{
+                    "names": [motif_epreuve],
+                    "privileges": ["read", "view_index_metadata"],
+                }],
+            },
+            "kibana": [{"spaces": [SPACE_EPREUVE], "base": ["all"]}],
         }),
         attendus=(200, 204),
     )
@@ -129,14 +202,35 @@ def comptes() -> None:
 
 
 def data_views() -> None:
-    """Data views à ID FIXE.
+    """Data views à ID FIXE, chacune dans le Space qui la concerne.
 
     L'ID fixe est le mécanisme qui rend les tableaux de bord du lab réutilisables sur
     la plateforme cible : il suffit d'y recréer une data view de même ID pointant le
     motif de production, et les objets importés se raccrochent (SPEC §4.3, module M5).
+
+    Celle du parcours vit dans le Space de formation. Celle de l'épreuve vit dans
+    le Space de l'épreuve : la laisser dans le Space de formation afficherait au
+    stagiaire, dès le sélecteur de source de Discover, l'existence du jeu caché.
+
+    Le Space « reseau » n'en reçoit AUCUNE : la créer y est précisément l'exercice
+    M5-E3, et la préparer d'avance le viderait de son objet.
     """
-    space_id = str(conf.valeur("formation.space_id"))
-    for prefixe, libelle in (("donnees", "parcours"), ("epreuve", "épreuve pratique")):
+    space_formation = str(conf.valeur("formation.space_id"))
+    dv_epreuve = str(conf.valeur("epreuve.data_view_id"))
+    # Les premières versions du kit créaient la data view de l'épreuve dans le
+    # Space de formation. Un lab existant la porte donc encore là, et Kibana
+    # refuse alors de la créer ailleurs : « Saved object [...] conflict »
+    # (relevé en lab, HTTP 400). On la retire d'abord du Space de formation —
+    # où elle n'a rien à faire, puisqu'elle y annonçait au stagiaire, dans le
+    # sélecteur de source de Discover, l'existence du jeu de l'épreuve.
+    r = kbn("DELETE", f"/s/{space_formation}/api/saved_objects/index-pattern/{dv_epreuve}")
+    if r.status_code == 200:
+        print(f"  [OK]    Data view « {dv_epreuve} » retirée du Space « {space_formation} »")
+
+    for prefixe, libelle, space_id in (
+        ("donnees", "parcours", str(conf.valeur("formation.space_id"))),
+        ("epreuve", "épreuve pratique", SPACE_EPREUVE),
+    ):
         dv_id = str(conf.valeur(f"{prefixe}.data_view_id"))
         motif = str(conf.valeur(f"{prefixe}.data_view_motif"))
         corps = {
@@ -152,7 +246,7 @@ def data_views() -> None:
             "override": True,
         }
         etape(
-            f"Data view « {dv_id} » → {motif}",
+            f"Data view « {dv_id} » → {motif} (Space « {space_id} »)",
             kbn("POST", f"/s/{space_id}/api/data_views/data_view", json=corps),
         )
 
@@ -160,7 +254,7 @@ def data_views() -> None:
 def main() -> int:
     print(f"Initialisation du lab — Kibana {conf.version()}, "
           f"locale {conf.valeur('kibana.locale')}, vue {conf.valeur('kibana.vue_solution')}")
-    space()
+    spaces()
     roles()
     comptes()
     data_views()

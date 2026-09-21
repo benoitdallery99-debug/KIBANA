@@ -116,15 +116,19 @@ def attendre_chargement(page: Page, delai: int = 90_000) -> None:
     page.wait_for_selector(ts("chargement_termine"), state="attached", timeout=delai)
 
 
-def aller_a(page: Page, chemin: str) -> None:
-    """Navigue dans le Space de formation, puis attend la fin du chargement."""
-    espace = str(conf.valeur("formation.space_id"))
+def aller_a(page: Page, chemin: str, espace: str | None = None) -> None:
+    """Navigue dans un Space, puis attend la fin du chargement.
+
+    Par défaut le Space de formation ; les corrigés vivent dans le Space
+    « corriges », d'où le paramètre.
+    """
+    espace = espace or str(conf.valeur("formation.space_id"))
     page.goto(f"{conf.url_kibana()}/s/{espace}{chemin}", wait_until="domcontentloaded")
     attendre_chargement(page)
 
 
-def ouvrir_tableau_de_bord(page: Page, identifiant: str) -> None:
-    aller_a(page, f"/app/dashboards#/view/{identifiant}")
+def ouvrir_tableau_de_bord(page: Page, identifiant: str, espace: str | None = None) -> None:
+    aller_a(page, f"/app/dashboards#/view/{identifiant}", espace=espace)
     page.wait_for_selector(ts("panneau"), timeout=90_000)
     attendre_chargement(page)
     # Les panneaux se peignent après la fin du chargement global : on laisse le

@@ -13,7 +13,8 @@ RUFF    := .venv/bin/ruff
 VERSION := $(shell sed -n 's/^  version:[[:space:]]*"\{0,1\}\([0-9.]*\)"\{0,1\}.*/\1/p' kit.config.yaml | head -1)
 DEPOT   ?= mirror.gcr.io/library
 
-.PHONY: aide lab-images lab-up lab-down lab-reset data data-epreuve captures guide package \
+.PHONY: aide lab-images lab-up lab-down lab-reset epreuve-ouvrir epreuve-fermer \
+        data data-epreuve captures guide package \
         verif verif-lab verif-donnees verif-parcours verif-corriges verif-guide verif-pdf \
         verif-package lint venv
 
@@ -25,6 +26,8 @@ aide:
 	@echo "    make lab-up         pré-vol, démarrage du pod, initialisation"
 	@echo "    make lab-down       arrête le lab (volume conservé)"
 	@echo "    make lab-reset      repart à neuf et réancre les données sur maintenant"
+	@echo "    make epreuve-ouvrir ouvre l'épreuve pratique au compte stagiaire"
+	@echo "    make epreuve-fermer la referme"
 	@echo
 	@echo "  Contenu"
 	@echo "    make data           engendre et charge le jeu du parcours"
@@ -59,6 +62,14 @@ lab-down:
 
 lab-reset:
 	@bash lab/reset.sh
+
+# L'épreuve pratique est fermée par défaut : le rôle « stagiaire » ne lit pas le
+# jeu « logs-*-epreuve ». Le formateur l'ouvre au moment de l'évaluation.
+epreuve-ouvrir:
+	@bash lab/epreuve.sh ouvrir
+
+epreuve-fermer:
+	@bash lab/epreuve.sh fermer
 
 data:
 	@$(PY) data/generateur/engendrer.py --jeu formation
