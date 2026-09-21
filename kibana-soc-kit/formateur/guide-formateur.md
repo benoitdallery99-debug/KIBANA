@@ -25,8 +25,11 @@ glissante : elles se terminent à l'instant du chargement. Sans réinitialisatio
 la séance précédente vieillit, et deux scénarios perdent leur sens — celui de la
 source muette « depuis deux heures », et celui du trou de collecte.
 
-Comptez moins de cinq minutes. Vérifiez ensuite que Kibana répond sur
-<http://localhost:5601> et que Discover montre des données sur sept jours.
+**Durée mesurée : 1 min 49 s** — arrêt, destruction du volume, redémarrage,
+réengendrement des deux jeux de données, rechargement des corrigés. Sur une
+machine plus lente, comptez le double ; la cible de cinq minutes garde de la
+marge. Vérifiez ensuite que Kibana répond sur <http://localhost:5601> et que
+Discover montre des données sur sept jours.
 
 À imprimer : la **fiche mémo** (`fiche-memo.pdf`, A4 recto verso) pour chaque
 stagiaire, et le **quiz sans réponses** pour la fin de journée.
@@ -213,7 +216,7 @@ trois ne remplit pas la commande.
 | Cluster `red`, shards non alloués | Disque sans place réelle | Libérez de l'espace. Le lab tolère un disque plein en pourcentage, pas un disque sans place |
 | Kibana reste `unavailable` | Elasticsearch pas encore prêt | Attendez. `podman logs kibana-soc-lab-kibana` dit où il en est |
 | Un stagiaire ne voit plus ses données | Il a changé de data view ou de Space | Vérifiez l'URL : elle contient `/s/formation/` |
-| Un stagiaire a cassé son écran | C'est prévu | `make lab-reset` remet tout à neuf ; comptez la durée mesurée ci-dessus |
+| Un stagiaire a cassé son écran | C'est prévu | `make lab-reset` remet tout à neuf en 1 min 49 s (mesuré) |
 | Le lab ne répond pas sur réseau isolé | `bridge-nf-call-iptables` à 1 | `sudo sysctl -w net.bridge.bridge-nf-call-iptables=0` |
 | Les données paraissent « vieilles » | `lab-reset` oublié | Relancez-le. C'est la cause la plus fréquente |
 

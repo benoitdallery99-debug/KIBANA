@@ -1,5 +1,5 @@
 {
-  "engendre_le": "2026-09-21T21:45:08.000Z",
+  "engendre_le": "2026-09-21T22:04:38.000Z",
   "jeu": "epreuve",
   "graine": 7310,
   "namespace": "epreuve",
@@ -9,14 +9,14 @@
   "index_mode": "standard",
   "avertissement": "Données entièrement synthétiques. Adresses réservées à la documentation (RFC 5737, RFC 1918), domaines réservés (RFC 2606), personnes inventées. Aucune donnée réelle (SPEC §5.1, CLAUDE.md).",
   "volumes": {
-    "logs-windows.security-epreuve": 90730,
-    "logs-linux.auth-epreuve": 35795,
-    "logs-ids.alert-epreuve": 14943,
-    "logs-network.dns-epreuve": 100394,
-    "logs-proxy.web-epreuve": 75009,
-    "logs-firewall.traffic-epreuve": 70596
+    "logs-windows.security-epreuve": 90761,
+    "logs-linux.auth-epreuve": 35803,
+    "logs-ids.alert-epreuve": 14962,
+    "logs-network.dns-epreuve": 100438,
+    "logs-proxy.web-epreuve": 75028,
+    "logs-firewall.traffic-epreuve": 70666
   },
-  "total_documents": 387467,
+  "total_documents": 387658,
   "contexte": {
     "organisation": "Groupe Méridien",
     "domaine_ad": "MERIDIEN",
@@ -378,7 +378,7 @@
       {
         "cle": "nb_docs_source_dominante",
         "libelle": "Documents produits par la source la plus volumineuse",
-        "valeur": 100394,
+        "valeur": 100438,
         "type": "entier",
         "normalisation": "entier",
         "controle": {
@@ -397,13 +397,13 @@
           "chemin": "aggregations.r.buckets.0.doc_count"
         },
         "empreintes": [
-          "e7f8d387a5bd4a4953481c30f5804c5617fc1b17acc21c043a346f22218d5b3c"
+          "6588db00fac72950078154a082ef24a189d582b20d076aa99d7e870117a548fb"
         ]
       },
       {
         "cle": "nb_docs_auth",
         "libelle": "Documents des deux sources d'authentification réunies",
-        "valeur": 126525,
+        "valeur": 126564,
         "type": "entier",
         "normalisation": "entier",
         "controle": {
@@ -423,13 +423,13 @@
           "chemin": "hits.total.value"
         },
         "empreintes": [
-          "14fc507ec38f4e3ff9c361cb9991145f381e9b240d237685eb13c5c59f3e6952"
+          "0f1a441e125a811bb29818e8fd3d304a36dc6ee0acbc08bfdcd741ef3cbb2268"
         ]
       },
       {
         "cle": "nb_docs_ports_hauts",
         "libelle": "Documents dont le port de destination atteint 1025",
-        "valeur": 36284,
+        "valeur": 36329,
         "type": "entier",
         "normalisation": "entier",
         "controle": {
@@ -448,7 +448,7 @@
           "chemin": "hits.total.value"
         },
         "empreintes": [
-          "0a06f0f05d6c5bb1733c788b66cd7b5e52f917e77edeab746d2e178665583d3b"
+          "1da0bc310dad1e2d25f2e6273d4800a1f0a2739adabab3d7369fe4a2c9a6b170"
         ]
       },
       {
@@ -1083,8 +1083,8 @@
       "titre": "Trou de collecte de deux heures",
       "recit": "Une source n'a rien envoyé pendant deux heures, au milieu de la période.",
       "_fenetre": {
-        "debut": "2026-09-17T20:45:08.000Z",
-        "fin": "2026-09-17T22:45:08.000Z"
+        "debut": "2026-09-17T21:04:38.000Z",
+        "fin": "2026-09-17T23:04:38.000Z"
       },
       "reponses": [
         {
@@ -1101,8 +1101,8 @@
               "query": {
                 "range": {
                   "@timestamp": {
-                    "gte": "2026-09-17T20:45:08.000Z",
-                    "lt": "2026-09-17T22:45:08.000Z"
+                    "gte": "2026-09-17T21:04:38.000Z",
+                    "lt": "2026-09-17T23:04:38.000Z"
                   }
                 }
               }
