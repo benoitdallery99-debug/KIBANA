@@ -297,3 +297,21 @@ def test_lien_d_evitement_present_et_premier(page_ouverte):
     assert cible and page.query_selector(f"#{cible}"), (
         f"le lien d'évitement pointe sur « {premier['href']} », qui n'existe pas"
     )
+
+
+def test_aucune_entite_html_cassee(html):
+    """La passe typographique ne doit pas disloquer les entités HTML.
+
+    Le « ; » qui ferme une entité n'est pas une ponctuation. Sans garde, la
+    règle « espace fine avant le point-virgule » transformait « l&#39;écran »
+    en « l&#39<fine>; » — 1132 fois, jusque dans le sommaire et les titres
+    d'exercices, où le lecteur voyait « Pourquoi l' ;écran est-il vide ».
+    Aucun test ne regardait le HTML sous cet angle : la typographie était
+    vérifiée sur le TEXTE extrait, où l'entité est déjà résolue et le défaut
+    invisible.
+    """
+    cassees = re.findall(r"&[a-zA-Z0-9#x]{1,8}[   ];", html)
+    assert not cassees, (
+        f"{len(cassees)} entité(s) HTML disloquée(s) par la typographie, "
+        f"par exemple {cassees[:3]}"
+    )

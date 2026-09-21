@@ -30,7 +30,20 @@ def corriger_texte(texte: str) -> str:
     """Applique les espaces insécables à un fragment de TEXTE (pas de balises)."""
     # Une espace ordinaire (ou aucune) devant une ponctuation haute.
     texte = re.sub(r"[ \t]+:", INSECABLE + ":", texte)
-    texte = re.sub(r"[ \t]*([;!?])", FINE_INSECABLE + r"\1", texte)
+    # PIÈGE : le « ; » qui ferme une entité HTML n'est PAS une ponctuation.
+    # Sans la garde ci-dessous, « l&#39;écran » devenait « l&#39<espace fine>; »
+    # — 1132 fois dans le guide, jusque dans le sommaire et les titres
+    # d'exercices, où le lecteur voyait « Pourquoi l' ;écran est-il vide ».
+    # La règle typographique reste juste ; c'est son domaine qui était trop
+    # large. On ne touche donc pas à un « ; » précédé d'un nom d'entité.
+    texte = re.sub(
+        r"(?<!&)(?<!&[a-zA-Z0-9#])(?<!&[a-zA-Z0-9#][a-zA-Z0-9])"
+        r"(?<!&[a-zA-Z0-9#][a-zA-Z0-9]{2})(?<!&[a-zA-Z0-9#][a-zA-Z0-9]{3})"
+        r"(?<!&[a-zA-Z0-9#][a-zA-Z0-9]{4})(?<!&[a-zA-Z0-9#][a-zA-Z0-9]{5})"
+        r"[ \t]*([;!?])",
+        FINE_INSECABLE + r"\1",
+        texte,
+    )
     # Guillemets français : insécable à l'intérieur.
     texte = re.sub(r"«[ \t]*", "«" + INSECABLE, texte)
     texte = re.sub(r"[ \t]*»", INSECABLE + "»", texte)
