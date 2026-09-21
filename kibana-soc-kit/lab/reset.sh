@@ -49,8 +49,24 @@ titre "2/4 Suppression du volume de données"
 # On n'emploie pas « -f », qui détruirait aussi les conteneurs qui l'utilisent —
 # une erreur déjà faite dans ce kit, et qui avait emporté le lab entier.
 if podman volume exists "$VOLUME" 2>/dev/null; then
-  podman volume rm "$VOLUME"
+  # On ne se fie PAS au code de retour : relevé en lab, « podman volume rm »
+  # supprime bien le volume puis sort en erreur s'il ne retrouve pas le fichier
+  # de verrou (« freeing lock for volume ... : no such file or directory »),
+  # ce qui arrive quand /run a été vidé sous lui. Sous « set -e », le script
+  # s'arrêtait là, le lab à l'arrêt et la réinitialisation à moitié faite.
+  # On regarde donc l'ÉTAT, pas le code de retour.
+  sortie="$(podman volume rm "$VOLUME" 2>&1)" || true
+  if podman volume exists "$VOLUME" 2>/dev/null; then
+    echo "  ÉCHEC : le volume « $VOLUME » est toujours là." >&2
+    echo "  podman a répondu : $sortie" >&2
+    echo "  Un conteneur l'utilise-t-il encore ?  podman ps -a" >&2
+    exit 1
+  fi
   echo "  volume « $VOLUME » supprimé."
+  case "$sortie" in
+    *"freeing lock"*)
+      echo "  (podman a signalé un verrou introuvable ; le volume est bien parti.)" ;;
+  esac
 else
   echo "  volume « $VOLUME » absent — rien à supprimer."
 fi
