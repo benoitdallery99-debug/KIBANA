@@ -324,8 +324,14 @@ def reperes(base: dict[str, list[dict]]) -> dict:
                 "valeur": nb_auth, "type": "entier", "normalisation": "entier",
                 "controle": {
                     "dataset": "*",
-                    "requete": {"size": 0, "query": {"terms": {
-                        "event.dataset": ["windows.security", "linux.auth"]}}},
+                    # PIÈGE : « hits.total.value » est PLAFONNÉ à 10 000 par
+                    # défaut — la requête rendait 10 000 au lieu de 126 642, et
+                    # le contrôle a eu raison de le refuser. « track_total_hits »
+                    # lève le plafond.
+                    "requete": {"size": 0, "track_total_hits": True,
+                                "query": {"terms": {
+                                    "event.dataset": ["windows.security",
+                                                      "linux.auth"]}}},
                     "chemin": "hits.total.value",
                 },
             },
@@ -335,8 +341,10 @@ def reperes(base: dict[str, list[dict]]) -> dict:
                 "valeur": nb_ports_hauts, "type": "entier", "normalisation": "entier",
                 "controle": {
                     "dataset": "*",
-                    "requete": {"size": 0, "query": {"range": {
-                        "destination.port": {"gte": 1025}}}},
+                    # Même plafond de 10 000 : voir la réponse précédente.
+                    "requete": {"size": 0, "track_total_hits": True,
+                                "query": {"range": {
+                                    "destination.port": {"gte": 1025}}}},
                     "chemin": "hits.total.value",
                 },
             },

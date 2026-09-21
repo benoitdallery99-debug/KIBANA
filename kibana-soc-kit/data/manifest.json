@@ -417,7 +417,8 @@
                   "linux.auth"
                 ]
               }
-            }
+            },
+            "track_total_hits": true
           },
           "chemin": "hits.total.value"
         },
@@ -441,7 +442,8 @@
                   "gte": 1025
                 }
               }
-            }
+            },
+            "track_total_hits": true
           },
           "chemin": "hits.total.value"
         },
