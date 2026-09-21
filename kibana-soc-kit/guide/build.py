@@ -211,8 +211,22 @@ def charger_modules() -> tuple[dict, list[dict], list[dict]]:
     return manifeste, modules, glossaire
 
 
+def charger_quiz() -> list[dict]:
+    """Le quiz, avec ses réponses et ses explications.
+
+    Contrairement aux exercices, le quiz PEUT embarquer ses réponses : SPEC §9
+    prévoit une version intégrée au guide qui explique chaque réponse. C'est un
+    contrôle de connaissances, pas une enquête à mener.
+    """
+    chemin = conf.RACINE / "formateur" / "quiz.yaml"
+    if not chemin.exists():
+        return []
+    return yaml.safe_load(chemin.read_text(encoding="utf-8")) or []
+
+
 def main() -> int:
     manifeste, modules, glossaire = charger_modules()
+    quiz = charger_quiz()
 
     env = Environment(
         loader=FileSystemLoader(str(GUIDE / "gabarits")),
@@ -236,6 +250,7 @@ def main() -> int:
         modules=modules,
         scenarios=[s["id"] for s in manifeste["scenarios"]],
         glossaire=glossaire,
+        quiz=quiz,
         avertissement_donnees=manifeste["avertissement"],
         css=css_avec_polices(),
         js=(GUIDE / "js" / "guide.js").read_text(encoding="utf-8"),
@@ -259,7 +274,8 @@ def main() -> int:
     externes = re.findall(r'(?:src|href)\s*=\s*["\'](https?://[^"\']+)', html)
     print(f"  {cible.relative_to(conf.RACINE)} — {taille / 1024 / 1024:.2f} Mo, "
           f"{len(modules)} modules, "
-          f"{sum(len(m['exercices']) for m in modules)} exercices")
+          f"{sum(len(m['exercices']) for m in modules)} exercices, "
+          f"{len(quiz)} questions de quiz")
     print(f"  liens externes dans le document : {len(externes)} "
           f"(uniquement des liens de documentation, jamais chargés)")
     if taille > 20 * 1024 * 1024:

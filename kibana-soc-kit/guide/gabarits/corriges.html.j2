@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><title>{{ titre }}</title>
+<style>{{ css_polices }}</style><style>{{ css }}</style></head>
+<body>
+<section class="titre-page">
+  <h1>{{ titre }}</h1>
+  <p class="sous-titre">Solutions détaillées des {{ nb_exercices }} exercices,
+    avec les requêtes et la démarche.</p>
+  <p class="meta">Elastic Stack {{ version }} · licence {{ licence }} ·
+    interface {{ locale }}</p>
+  <p class="avertissement"><strong>Document formateur.</strong> Il contient les
+    démarches et les requêtes, jamais les valeurs attendues : celles-ci
+    dépendent de la graine du jeu de données et se lisent dans
+    <code>data/manifest.json</code>, qui ne quitte pas le poste du formateur.</p>
+</section>
+
+{% for m in modules %}
+<section>
+  <h2>{{ m.id }} — {{ m.titre }}</h2>
+  {% for e in m.exercices %}
+  <div class="exercice">
+    <p class="exercice__entete"><span class="exercice__id">{{ e.id }}</span> —
+      {{ e.titre }} <span class="exercice__id">({{ e.guidage_libelle }},
+      {{ e.duree_minutes }} min)</span></p>
+    <p class="exercice__contexte">{{ e.contexte }}</p>
+    {% for q in e.requetes %}<pre>{{ q.texte }}</pre>{% endfor %}
+    {% if e.solution %}<p><strong>Démarche.</strong> {{ e.solution }}</p>{% endif %}
+    {% if e.erreurs_typiques %}
+    <p><strong>Erreurs fréquentes</strong></p>
+    <ul>{% for x in e.erreurs_typiques %}<li>{{ x }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if e.piege %}
+    <div class="piege"><span class="piege__titre">Piège : {{ e.piege.titre }}</span>
+      {{ e.piege.lecon }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</section>
+{% endfor %}
+</body></html>

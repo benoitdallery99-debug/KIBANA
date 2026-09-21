@@ -364,6 +364,60 @@
     });
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Quiz                                                                */
+  /* Le quiz, lui, connaît ses reponses : c'est un controle de           */
+  /* connaissances, pas une enquete (SPEC §9).                           */
+  /* ------------------------------------------------------------------ */
+  function initQuiz() {
+    Array.prototype.forEach.call(
+      document.querySelectorAll("[data-quiz]"),
+      function (bloc) {
+        var bouton = bloc.querySelector("[data-repondre]");
+        var retour = bloc.querySelector(".reponse__retour");
+        var explication = bloc.querySelector(".quiz__explication");
+        if (!bouton || !retour) return;
+        var identifiant = bloc.getAttribute("data-quiz");
+        var bonne = parseInt(bloc.getAttribute("data-bonne"), 10);
+
+        bouton.addEventListener("click", function () {
+          var choisi = bloc.querySelector("input[type=radio]:checked");
+          if (!choisi) {
+            retour.setAttribute("data-etat", "");
+            retour.textContent = "Choisissez une proposition avant de valider.";
+            return;
+          }
+          var juste = parseInt(choisi.value, 10) === bonne;
+          retour.setAttribute("data-etat", juste ? "juste" : "faux");
+          retour.textContent = juste
+            ? "Réponse juste."
+            : "Ce n'est pas la bonne réponse. L'explication ci-dessous dit pourquoi.";
+          if (explication) explication.hidden = false;
+          var etat = lire();
+          etat.faits["quiz-" + identifiant] = juste;
+          ecrire();
+          majQuiz();
+        });
+      }
+    );
+  }
+
+  function majQuiz() {
+    var jauge = document.querySelector("[data-jauge-quiz]");
+    if (!jauge) return;
+    var etat = lire();
+    var total = document.querySelectorAll("[data-quiz]").length;
+    var justes = 0;
+    Array.prototype.forEach.call(
+      document.querySelectorAll("[data-quiz]"),
+      function (b) {
+        if (etat.faits["quiz-" + b.getAttribute("data-quiz")]) justes++;
+      }
+    );
+    jauge.textContent = total ? justes + "/" + total : "—";
+    jauge.setAttribute("aria-label", justes + " bonne(s) réponse(s) sur " + total);
+  }
+
   function init() {
     initTheme();
     initSommaire();
@@ -371,7 +425,9 @@
     initReponses();
     initPosition();
     initRecherche();
+    initQuiz();
     majProgression();
+    majQuiz();
   }
 
   if (document.readyState === "loading") {

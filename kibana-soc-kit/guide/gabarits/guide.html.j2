@@ -33,6 +33,14 @@
         </div>
       </li>
       {% endfor %}
+      {% if quiz %}
+      <li class="sommaire__module">
+        <a href="#quiz">
+          <span>Quiz</span>
+          <span class="sommaire__jauge" data-jauge-quiz>—</span>
+        </a>
+      </li>
+      {% endif %}
       <li class="sommaire__module"><a href="#glossaire"><span>Glossaire</span></a></li>
     </ol>
 
@@ -242,6 +250,38 @@
     {% endfor %}
   </section>
   {% endfor %}
+
+  {% if quiz %}
+  <section id="quiz" data-ancre data-cherchable class="colonne">
+    <h2>Quiz — {{ quiz | length }} questions</h2>
+    <p>Répondez sans revenir en arrière. Chaque réponse est expliquée une fois
+      que vous avez choisi : c'est l'explication qui compte, pas le score.</p>
+    {% for q in quiz %}
+    <article class="exercice" id="quiz-{{ q.id }}">
+      <div class="exercice__entete">
+        <span class="exercice__id">{{ q.id }}</span>
+        <h3 style="margin:0">{{ q.question }}</h3>
+      </div>
+      <div class="quiz" data-quiz="{{ q.id }}" data-bonne="{{ q.reponse }}">
+        <fieldset style="border:0;padding:0;margin:0.6rem 0">
+          <legend class="visuellement-cache">{{ q.question }}</legend>
+          {% for p in q.propositions %}
+          <label style="display:block;margin:0.3rem 0">
+            <input type="radio" name="quiz-{{ q.id }}" value="{{ loop.index0 }}">
+            {{ p }}
+          </label>
+          {% endfor %}
+        </fieldset>
+        <button class="bouton" type="button" data-repondre>Valider ma réponse</button>
+        <p class="reponse__retour" role="status" aria-live="polite"></p>
+        <div class="quiz__explication" hidden>
+          <p>{{ q.explication }}</p>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+  {% endif %}
 
   <section id="glossaire" data-ancre data-cherchable class="colonne">
     <h2>Glossaire</h2>

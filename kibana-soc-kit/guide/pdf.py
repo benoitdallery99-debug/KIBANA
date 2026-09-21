@@ -1,11 +1,15 @@
 """Construit les documents imprimables (WeasyPrint), à partir de la MÊME source
 que le guide HTML — SPEC §8.
 
-Produit pour l'instant :
-- dist/guide.pdf       page de titre, sommaire paginé, signets, en-têtes et
-                       pieds courants, exercices SANS leurs solutions, solutions
-                       rassemblées en annexe ;
-- dist/fiche-memo.pdf  A4 recto verso, lisible en noir et blanc.
+Produit :
+- dist/guide.pdf             page de titre, sommaire paginé, signets, en-têtes
+                             et pieds courants, exercices SANS leurs solutions,
+                             solutions rassemblées en annexe ;
+- dist/fiche-memo.pdf        A4 recto verso, lisible en noir et blanc ;
+- dist/guide-formateur.pdf   déroulé minuté, matrice, corrigé, grilles ;
+- dist/corriges.pdf          démarches et requêtes, sans les valeurs attendues ;
+- dist/quiz-imprimable.pdf   quiz sans réponses, à distribuer ;
+- dist/note-de-conception.pdf et dist/rapport-recette.pdf.
 """
 
 from __future__ import annotations
@@ -19,7 +23,7 @@ from weasyprint import HTML
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from build import GUIDE, charger_modules, contexte_du_manifeste
+from build import GUIDE, charger_modules, charger_quiz, contexte_du_manifeste
 
 from outils import conf
 
@@ -121,6 +125,24 @@ def main() -> int:
             source = conf.RACINE / "formateur" / nom_source
         if source.exists():
             rendre_markdown(source, DIST / nom_cible, titre)
+
+    # Corrigés : mêmes modules, mais on ne garde que la démarche et les
+    # requêtes. Les valeurs attendues n'y figurent pas — elles vivent dans le
+    # manifeste, qui reste sur le poste du formateur.
+    rendre(
+        "corriges.html.j2",
+        DIST / "corriges.pdf",
+        css=(GUIDE / "styles" / "pdf.css").read_text(encoding="utf-8"),
+        titre="Corrigés du parcours",
+        modules=modules,
+        nb_exercices=sum(len(m["exercices"]) for m in modules),
+        **commun,
+    )
+
+    quiz = charger_quiz()
+    if quiz:
+        rendre("quiz-imprimable.html.j2", DIST / "quiz-imprimable.pdf",
+               quiz=quiz, **commun)
 
     memo = yaml.safe_load((GUIDE / "fiche-memo.yaml").read_text(encoding="utf-8"))
     rendre(

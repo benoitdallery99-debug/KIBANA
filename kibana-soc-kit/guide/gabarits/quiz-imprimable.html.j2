@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><title>Quiz — sans réponses</title>
+<style>{{ css_polices }}</style>
+<style>
+@page { size: A4; margin: 18mm 16mm;
+  @bottom-center { content: counter(page) " / " counter(pages);
+    font-family: "Atkinson Hyperlegible Mono"; font-size: 8pt; color: #44515f; } }
+html { font-family: "Atkinson Hyperlegible Next"; font-size: 10pt; line-height: 1.45; color: #000; }
+body { margin: 0; }
+h1 { font-size: 18pt; margin: 0 0 2mm; }
+.chapeau { font-size: 9pt; color: #44515f; border-bottom: 0.6pt solid #999;
+           padding-bottom: 2mm; margin-bottom: 5mm; }
+.identite { margin-bottom: 6mm; font-size: 9.5pt; }
+.q { break-inside: avoid; margin-bottom: 5mm; }
+.q__num { font-family: "Atkinson Hyperlegible Mono"; font-weight: 700; font-size: 9pt; }
+.q__texte { font-weight: 700; margin: 0 0 1.5mm; }
+.q__prop { margin: 1mm 0 1mm 6mm; }
+.case { display: inline-block; width: 3.2mm; height: 3.2mm; border: 0.7pt solid #000;
+        margin-right: 2mm; vertical-align: -0.3mm; }
+.pied { margin-top: 6mm; font-size: 8pt; color: #44515f; border-top: 0.6pt solid #999;
+        padding-top: 2mm; }
+</style></head>
+<body>
+<h1>Quiz — {{ quiz | length }} questions</h1>
+<p class="chapeau">Kibana pour analystes SOC · Elastic Stack {{ version }} ·
+  licence {{ licence }} · une seule réponse par question</p>
+<p class="identite">Nom : ____________________________    Date : ______________
+  &nbsp;&nbsp; Score : ______ / {{ quiz | length }}</p>
+
+{% for q in quiz %}
+<div class="q">
+  <p class="q__texte"><span class="q__num">{{ q.id }}.</span> {{ q.question }}</p>
+  {% for p in q.propositions %}
+  <p class="q__prop"><span class="case"></span>{{ p }}</p>
+  {% endfor %}
+</div>
+{% endfor %}
+
+<p class="pied">Document sans réponses. Le corrigé commenté figure dans le guide
+  du formateur et dans le guide du stagiaire, après validation.</p>
+</body></html>

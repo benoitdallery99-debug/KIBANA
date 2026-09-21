@@ -1,0 +1,341 @@
+# Quiz — 15 questions couvrant les 27 objectifs du parcours (SPEC §9).
+#
+# Chaque question déclare les objectifs qu'elle évalue ; formateur/matrice.py
+# prouve que l'ensemble les couvre tous et sort en 1 sinon.
+#
+# Les questions portent sur des DÉCISIONS de salle, pas sur du vocabulaire :
+# on demande ce qu'on ferait, pas comment s'appelle un bouton.
+
+- id: Q01
+  objectifs: [M0-O1, M0-O3]
+  question: >-
+    Vous devez compter les machines distinctes qui remontent des journaux.
+    Deux champs se présentent : host.name (keyword) et host.ip (ip).
+    Lequel prenez-vous, et pourquoi ?
+  propositions:
+    - >-
+      host.ip, parce qu'une adresse est unique sur le réseau.
+    - >-
+      host.name, parce qu'une machine peut changer d'adresse au cours de la semaine.
+    - >-
+      Les deux donnent le même résultat, le choix est indifférent.
+    - >-
+      Ni l'un ni l'autre : il faut un champ text pour compter des valeurs.
+  reponse: 1
+  explication: >-
+    Une machine peut changer d'adresse — bail DHCP, second réseau — et serait
+    comptée deux fois. host.name est un keyword : la valeur est conservée telle
+    quelle, ce qui permet un décompte exact. Un champ text, lui, est découpé en
+    mots : il ne sert pas à compter des identifiants.
+
+- id: Q02
+  objectifs: [M0-O2]
+  question: >-
+    Un collègue vous appelle : « Kibana est vide, la collecte est tombée. »
+    Dans quel ordre vérifiez-vous, avant de réveiller l'astreinte ?
+  propositions:
+    - >-
+      Les journaux du serveur, puis le réseau, puis Kibana.
+    - >-
+      La data view active, puis la plage de temps, puis le langage de requête.
+    - >-
+      On redémarre Kibana, c'est le plus rapide.
+    - >-
+      On regarde d'abord si les autres utilisateurs voient la même chose.
+  reponse: 1
+  explication: >-
+    Un écran vide n'est pas une absence de données. Trois causes couvrent la
+    quasi-totalité des cas, et se vérifient en quinze secondes : regarde-t-on la
+    bonne source, sur la bonne période, dans le bon langage ? La plage par défaut
+    de Kibana se compte en minutes, alors qu'un jeu de données couvre des jours.
+
+- id: Q03
+  objectifs: [M1-O1]
+  question: >-
+    Vous cherchez les échecs d'authentification mais vous ignorez quelles
+    valeurs prend le champ event.outcome. Que faites-vous ?
+  propositions:
+    - >-
+      On écrit event.outcome : "echec" et on ajuste si ça ne renvoie rien.
+    - >-
+      On clique sur le champ dans la barre latérale pour lire ses valeurs principales.
+    - >-
+      On ouvre la documentation ECS pour connaître les valeurs normalisées.
+    - >-
+      On demande à l'équipe qui a configuré la collecte.
+  reponse: 1
+  explication: >-
+    Ne jamais deviner une valeur. La barre latérale affiche les valeurs
+    principales d'un champ en un clic : c'est plus rapide qu'une requête à
+    l'aveugle, et surtout cela montre ce que contiennent VOS données, qui ne
+    suivent pas forcément la norme. Attention toutefois, les parts affichées
+    sont calculées sur un échantillon : pour un classement, il faut le compteur.
+
+- id: Q04
+  objectifs: [M1-O2]
+  question: >-
+    Vous voulez les connexions refusées vers un port supérieur ou égal à 1025,
+    hors du réseau interne. Quelle requête KQL est correcte ?
+  propositions:
+    - >-
+      'event.action : "deny" and destination.port : [1025 TO *] and not destination.ip : "10.0.0.0/8"'
+    - >-
+      'event.action : "deny" and destination.port >= 1025 and not destination.ip : "10.0.0.0/8"'
+    - >-
+      'event.action = "deny" AND destination.port > 1024 AND destination.ip != "10.0.0.0/8"'
+    - >-
+      'event.action : "deny" and destination.port : >1024 and destination.ip : not "10.0.0.0/8"'
+  reponse: 1
+  explication: >-
+    En KQL, une comparaison s'écrit avec >= ou >, jamais avec la syntaxe de
+    plage entre crochets, qui appartient à Lucene. La négation est « not » placé
+    devant le terme, et le CIDR s'écrit directement sur un champ de type ip.
+    Les opérateurs and, or, not s'écrivent en minuscules.
+
+- id: Q05
+  objectifs: [M1-O3]
+  question: >-
+    Deux requêtes sur les mêmes données. user.name est un keyword, message est
+    un text. Laquelle de ces affirmations est exacte ?
+  propositions:
+    - >-
+      Les deux sont sensibles à la casse : Elasticsearch compare toujours à l'identique.
+    - >-
+      Aucune n'est sensible à la casse : Kibana normalise les requêtes.
+    - >-
+      user.name est sensible à la casse, message ne l'est pas.
+    - >-
+      message est sensible à la casse, user.name ne l'est pas.
+  reponse: 2
+  explication: >-
+    Un keyword est stocké tel quel et comparé à l'identique : la casse compte.
+    Un text est découpé en mots et mis en minuscules à l'indexation ; la requête
+    subit le même traitement, donc la casse ne compte pas. C'est le même jeu de
+    données, et deux comportements opposés — décidés par le type du champ.
+
+- id: Q06
+  objectifs: [M1-O4, M1-O5]
+  question: >-
+    Vous tapez « _exists_ : rule.name » dans la barre de requête de Discover,
+    en KQL. Que se passe-t-il ?
+  propositions:
+    - >-
+      Kibana affiche un message d'erreur de syntaxe.
+    - >-
+      Kibana renvoie les documents où rule.name est renseigné.
+    - >-
+      Kibana renvoie zéro résultat, sans aucun message.
+    - >-
+      Kibana bascule automatiquement en Lucene et interprète la requête.
+  reponse: 2
+  explication: >-
+    C'est le piège le plus coûteux du parcours, parce qu'il est MUET.
+    « _exists_ » appartient à Lucene ; en KQL, l'existence s'écrit
+    « rule.name : * ». Kibana n'avertit pas : il cherche un champ nommé
+    « _exists_ » et ne trouve rien. Zéro résultat n'est jamais une réponse,
+    c'est une question. À l'inverse, une syntaxe de plage Lucene, elle, produit
+    bien un message d'erreur visible.
+
+- id: Q07
+  objectifs: [M2-O1, M2-O3]
+  question: >-
+    Le chef de salle demande : « Le volume d'alertes a-t-il augmenté cette
+    semaine ? » Quelle forme de visualisation, et quel réglage vérifiez-vous
+    en premier ?
+  propositions:
+    - >-
+      Un tableau, en vérifiant le nombre de lignes affichées.
+    - >-
+      Un graphique en secteurs, en vérifiant le nombre de parts.
+    - >-
+      Une ligne ou des barres sur un histogramme des dates, en vérifiant l'intervalle.
+    - >-
+      Un indicateur, en vérifiant son format d'affichage.
+  reponse: 2
+  explication: >-
+    Une question d'évolution appelle un axe du temps. L'intervalle mérite un
+    regard : Kibana le choisit automatiquement selon la plage, si bien que deux
+    captures prises à des plages différentes ne sont pas comparables. Attention
+    aussi aux intervalles partiels en début et en fin de graphique, qui font
+    croire à une chute.
+
+- id: Q08
+  objectifs: [M2-O2]
+  question: >-
+    Vous construisez un classement des dix signatures les plus fréquentes.
+    Quelle précaution prenez-vous avant de le publier ?
+  propositions:
+    - >-
+      Aucune : un classement est toujours exact.
+    - >-
+      Vérifier qu'il n'y a pas de catégorie « Autre » qui masquerait des valeurs, et se méfier de deux valeurs proches.
+    - >-
+      Trier par ordre alphabétique pour faciliter la lecture.
+    - >-
+      Augmenter le nombre de valeurs à cinquante pour être sûr.
+  reponse: 1
+  explication: >-
+    Un classement par valeurs les plus élevées est calculé par fragment d'index
+    puis agrégé : deux valeurs proches peuvent être interverties. La catégorie
+    « Autre », si elle est activée, regroupe le reste — utile pour voir ce qu'on
+    ne montre pas. Un classement sert à désigner une piste, pas à fournir un
+    chiffre exact.
+
+- id: Q09
+  objectifs: [M2-O4]
+  question: >-
+    Un panneau affiche « 4 876 adresses sources distinctes ». Que vaut ce
+    chiffre ?
+  propositions:
+    - >-
+      Il est exact : Elasticsearch compte les valeurs une à une.
+    - >-
+      Il est approximatif, et Kibana affiche un avertissement pour le signaler.
+    - >-
+      Il est approximatif au-delà d'environ trois mille valeurs, et rien ne l'indique à l'écran.
+    - >-
+      Il est exact si la plage de temps est inférieure à sept jours.
+  reponse: 2
+  explication: >-
+    Le décompte de valeurs distinctes repose sur une estimation
+    (HyperLogLog++), exacte en deçà de son seuil de précision — trois mille par
+    défaut — et approximative au-delà. Constaté en lab : le même décompte vaut
+    4 876 à 4 892 selon le chemin emprunté, contre 4 847 avec un seuil relevé.
+    Kibana n'affiche AUCUN avertissement. Un chiffre qu'on publie doit donc
+    rester sous le seuil, ou être recalculé autrement.
+
+- id: Q10
+  objectifs: [M2-O5]
+  question: >-
+    Vous voulez montrer la part de chaque source dans le volume total, et
+    marquer visuellement un seuil d'alerte. Quels outils ?
+  propositions:
+    - >-
+      Deux panneaux séparés, il n'y a pas d'autre moyen.
+    - >-
+      Une formule pour la part, et une ligne de référence pour le seuil.
+    - >-
+      Une coloration par valeur suffit à exprimer les deux.
+    - >-
+      Un graphique en secteurs avec une légende détaillée.
+  reponse: 1
+  explication: >-
+    Une formule permet de rapporter une mesure à un total, plutôt que d'afficher
+    des volumes bruts qu'il faut comparer de tête. Une ligne de référence trace
+    le seuil sur le graphique : le lecteur voit immédiatement qui le dépasse,
+    sans lire les chiffres. La couleur, elle, renforce — elle ne remplace pas.
+
+- id: Q11
+  objectifs: [M3-O1, M3-O4]
+  question: >-
+    Sur votre tableau de bord, un panneau affiche « aucune donnée » alors que
+    tous les autres sont pleins. Quelle est la cause la plus probable ?
+  propositions:
+    - >-
+      Le panneau interroge une data view différente.
+    - >-
+      Le panneau a sa propre plage temporelle, plus courte que celle du tableau de bord.
+    - >-
+      Le tableau de bord a trop de panneaux et Kibana en abandonne.
+    - >-
+      Le panneau doit être rafraîchi manuellement.
+  reponse: 1
+  explication: >-
+    Un panneau peut porter sa propre plage temporelle, qui l'emporte sur celle
+    du tableau de bord. C'est utile — comparer « la dernière heure » à « les sept
+    jours » sur le même écran — et déroutant quand on l'a oublié : l'écran reste
+    plein, un seul panneau se vide. Kibana signale cette plage par une mention
+    sur le panneau.
+
+- id: Q12
+  objectifs: [M3-O2, M3-O3]
+  question: >-
+    Votre tableau de bord doit permettre au chef de salle de se concentrer sur
+    une source, sans écrire de requête. Que posez-vous, et de quel type ?
+  propositions:
+    - >-
+      Une zone de texte expliquant comment écrire la requête.
+    - >-
+      Un contrôle de type liste d'options sur event.dataset, qui est un keyword.
+    - >-
+      Un contrôle de type curseur de plage sur event.dataset.
+    - >-
+      Rien : il suffit de cliquer sur une barre du graphique.
+  reponse: 1
+  explication: >-
+    Le type du contrôle suit le type du champ : liste d'options pour un keyword,
+    curseur de plage pour un champ numérique, curseur temporel pour le temps.
+    Le clic sur une barre pose bien un filtre, mais il est éphémère et suppose
+    que la valeur soit visible ; un contrôle, lui, s'enregistre avec le tableau
+    de bord et propose toutes les valeurs.
+
+- id: Q13
+  objectifs: [M3-O5, M5-O1, M5-O2, M5-O3]
+  question: >-
+    Vous devez rejouer votre tableau de bord sur l'instance de production.
+    Quelle affirmation est exacte ?
+  propositions:
+    - >-
+      Un export ndjson s'importe dans n'importe quelle version de Kibana.
+    - >-
+      Un export ndjson référence sa data view par identifiant : recréer sur la cible une data view de même identifiant permet à l'objet importé de se raccrocher.
+    - >-
+      Un tableau de bord créé par l'API Dashboards référence lui aussi sa data view par identifiant.
+    - >-
+      Importer un identifiant déjà présent dans un autre Space écrase l'objet existant.
+  reponse: 1
+  explication: >-
+    C'est tout l'intérêt de l'identifiant fixe. Attention aux trois autres :
+    un export ne se réimporte que dans la même version, une mineure plus récente
+    ou la majeure suivante ; un tableau de bord défini par l'API porte son motif
+    d'index EN LIGNE et n'a donc aucune référence ; et un import dont
+    l'identifiant existe déjà dans un autre Space crée une COPIE sous un nouvel
+    identifiant, sans rien écraser et sans prévenir.
+
+- id: Q14
+  objectifs: [M4-O1, M4-O2, M5-O4]
+  question: >-
+    Une source a cessé d'émettre il y a deux heures. Pourquoi un panneau
+    « nombre d'événements par source » ne suffit-il pas à le voir, et que
+    faut-il faire ?
+  propositions:
+    - >-
+      Il suffit, la source apparaîtra à zéro.
+    - >-
+      Une source muette ne produit aucun groupe : elle disparaît du panneau. Il faut raisonner sur le dernier événement vu par source.
+    - >-
+      Il faut augmenter la plage de temps jusqu'à ce que la source réapparaisse.
+    - >-
+      Il faut poser une règle d'alerte sur un seuil « nombre inférieur à 1 » par source.
+  reponse: 1
+  explication: >-
+    C'est la subtilité la plus utile de la journée. Une agrégation ne crée un
+    groupe que s'il existe au moins un document : une source silencieuse ne
+    figure pas à zéro, elle est absente. Un seuil « inférieur à 1 » groupé ne se
+    déclenche donc jamais non plus. La parade est la même dans les deux cas :
+    mesurer le dernier événement vu par source, sur une fenêtre longue.
+
+- id: Q15
+  objectifs: [M4-O3, M4-O4, M4-O5]
+  question: >-
+    Une adresse interne produit huit cents échecs d'authentification en une
+    nuit, sur une dizaine de serveurs, avec des comptes du type « admin »,
+    « root », « test ». Que concluez-vous ?
+  propositions:
+    - >-
+      Incident avéré : ce volume ne laisse aucun doute, on déclenche l'astreinte.
+    - >-
+      Rien tant qu'on n'a pas confronté cette adresse à la fiche de contexte de l'organisation.
+    - >-
+      Faux positif : des comptes par défaut signifient toujours un outil automatique.
+    - >-
+      On attend la nuit suivante pour voir si cela se reproduit.
+  reponse: 1
+  explication: >-
+    Le volume ne dit rien du caractère malveillant. Ici, la fiche de contexte
+    désigne cette adresse comme celle du scanner de vulnérabilités autorisé,
+    dont le balayage hebdomadaire est planifié la nuit : c'est un faux positif.
+    Mais on ne le sait qu'en allant vérifier. Inversement, conclure au faux
+    positif parce que « ce sont des comptes par défaut » serait tout aussi
+    imprudent. La synthèse au chef de salle doit porter ce qui prouve le
+    verdict, pas seulement le verdict.
