@@ -279,17 +279,28 @@ def test_lab_fonctionne_sur_reseau_interne(config, reseau_interne, tmp_path_fact
             return _sonde(reseau_interne, image, commande, timeout=timeout).stdout
 
         # 1. Elasticsearch répond, depuis le réseau interne, sans aucun accès extérieur.
-        sante = _attendre(
-            lambda: (
-                lambda s: s if '"status"' in s else None
-            )(sonde(
+        #
+        # PIÈGE : l'attente cherchait « "status" » dans la réponse. Or le corps
+        # d'ERREUR en contient un lui aussi — « "status":503 » — et le nœud en
+        # renvoie un tant que l'index .security-7 n'est pas alloué :
+        # « failed to retrieve password hash for reserved user [elastic] ».
+        # L'attente sortait donc au premier essai, sur l'erreur, et l'assertion
+        # suivante échouait. On attend la santé du cluster, pas la présence d'un
+        # mot-clé.
+        def _sante_du_cluster() -> str | None:
+            reponse = sonde(
                 f"curl -sS -m 10 -u elastic:{secrets['ELASTIC_PASSWORD']} "
                 f"http://{nom}:9200/_cluster/health"
-            )),
-            limite=300,
+            )
+            if '"status":"green"' in reponse or '"status":"yellow"' in reponse:
+                return reponse
+            return None
+
+        sante = _attendre(_sante_du_cluster, limite=300)
+        assert sante, (
+            "Elasticsearch n'a pas atteint green ou yellow sur le réseau interne "
+            "après 300 s"
         )
-        assert sante, "Elasticsearch injoignable depuis le réseau interne après 300 s"
-        assert '"status":"green"' in sante or '"status":"yellow"' in sante, sante[:300]
 
         # 2. Kibana démarre et devient disponible, toujours sans accès extérieur.
         pose = _attendre(
