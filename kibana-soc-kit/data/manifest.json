@@ -1,5 +1,5 @@
 {
-  "engendre_le": "2026-09-21T22:14:06.000Z",
+  "engendre_le": "2026-09-21T23:50:23.000Z",
   "jeu": "formation",
   "graine": 20260921,
   "namespace": "formation",
@@ -9,14 +9,14 @@
   "index_mode": "standard",
   "avertissement": "Données entièrement synthétiques. Adresses réservées à la documentation (RFC 5737, RFC 1918), domaines réservés (RFC 2606), personnes inventées. Aucune donnée réelle (SPEC §5.1, CLAUDE.md).",
   "volumes": {
-    "logs-windows.security-formation": 90862,
-    "logs-linux.auth-formation": 35838,
-    "logs-ids.alert-formation": 14916,
-    "logs-network.dns-formation": 102395,
-    "logs-proxy.web-formation": 75048,
-    "logs-firewall.traffic-formation": 70526
+    "logs-windows.security-formation": 90908,
+    "logs-linux.auth-formation": 35845,
+    "logs-ids.alert-formation": 14963,
+    "logs-network.dns-formation": 102438,
+    "logs-proxy.web-formation": 75058,
+    "logs-firewall.traffic-formation": 70649
   },
-  "total_documents": 389585,
+  "total_documents": 389861,
   "contexte": {
     "organisation": "Groupe Méridien",
     "domaine_ad": "MERIDIEN",
@@ -373,6 +373,36 @@
         },
         "empreintes": [
           "c56e4a865465606021b706e58b2716dabcfc1c23823e1dfd2f91bffe2ee9524e"
+        ]
+      },
+      {
+        "cle": "nb_sources_avec_compte",
+        "libelle": "Sources qui renseignent un nom de compte",
+        "valeur": 3,
+        "type": "entier",
+        "normalisation": "entier",
+        "controle": {
+          "dataset": "*",
+          "requete": {
+            "size": 0,
+            "query": {
+              "exists": {
+                "field": "user.name"
+              }
+            },
+            "aggs": {
+              "r": {
+                "cardinality": {
+                  "field": "event.dataset",
+                  "precision_threshold": 40000
+                }
+              }
+            }
+          },
+          "chemin": "aggregations.r.value"
+        },
+        "empreintes": [
+          "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce"
         ]
       },
       {
@@ -1072,8 +1102,8 @@
       "titre": "Trou de collecte de deux heures",
       "recit": "Une source n'a rien envoyé pendant deux heures, au milieu de la période.",
       "_fenetre": {
-        "debut": "2026-09-18T18:14:06.000Z",
-        "fin": "2026-09-18T20:14:06.000Z"
+        "debut": "2026-09-18T19:50:23.000Z",
+        "fin": "2026-09-18T21:50:23.000Z"
       },
       "reponses": [
         {
@@ -1090,8 +1120,8 @@
               "query": {
                 "range": {
                   "@timestamp": {
-                    "gte": "2026-09-18T18:14:06.000Z",
-                    "lt": "2026-09-18T20:14:06.000Z"
+                    "gte": "2026-09-18T19:50:23.000Z",
+                    "lt": "2026-09-18T21:50:23.000Z"
                   }
                 }
               }

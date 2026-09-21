@@ -214,6 +214,15 @@ def reperes(base: dict[str, list[dict]]) -> dict:
     # nulle part — la fiche de contexte ne nomme que les comptes de service et
     # les comptes d'administration —, et il se relève en filtrant sur les deux
     # sources d'authentification, ce qui est exactement le geste de l'exercice.
+    # Combien de sources portent un nom de compte. Fait de structure, stable,
+    # et surtout OBTENABLE avec ce que le module M1 enseigne : une requête par
+    # valeur, et on lit le compteur. Le nombre de comptes distincts, lui,
+    # exigeait un décompte de valeurs distinctes que M1 n'a pas encore donné.
+    sources_avec_compte = {
+        dataset for dataset, evenements in base.items()
+        if any(d.get("user", {}).get("name") for d in evenements)
+    }
+
     comptes_auth = {
         d.get("user", {}).get("name")
         for dataset in ("windows.security", "linux.auth")
@@ -328,6 +337,21 @@ def reperes(base: dict[str, list[dict]]) -> dict:
                         "field": "event.dataset", "size": 1,
                         "order": {"_count": "asc"}}}}},
                     "chemin": "aggregations.r.buckets.0.key",
+                },
+            },
+            {
+                "cle": "nb_sources_avec_compte",
+                "libelle": "Sources qui renseignent un nom de compte",
+                "valeur": len(sources_avec_compte), "type": "entier",
+                "normalisation": "entier",
+                "controle": {
+                    "dataset": "*",
+                    "requete": {"size": 0,
+                                "query": {"exists": {"field": "user.name"}},
+                                "aggs": {"r": {"cardinality": {
+                                    "field": "event.dataset",
+                                    "precision_threshold": 40000}}}},
+                    "chemin": "aggregations.r.value",
                 },
             },
             {
