@@ -138,6 +138,17 @@ adresse hors des plages réservées.
 premier démarrage dans `.env`, en droits 600, gitignoré et absent de l'archive.
 Un contrôle vérifie qu'il n'y voyage pas.
 
+**Le lab est cloisonné, et il l'est pour une raison pédagogique.** Quatre
+Spaces : celui de la formation, celui de l'équipe voisine — sans lequel la copie
+d'un tableau de bord et l'import d'un export n'ont aucune cible —, celui des
+corrigés, et celui de l'épreuve. Les deux derniers sont invisibles au compte du
+stagiaire. Ce n'est pas de la sécurité pour la forme : un corrigé intitulé
+« Tableau de bord corrigé du module M4 », visible dès la première connexion,
+annule la journée. De même, le jeu de l'épreuve n'est lisible qu'entre
+`make epreuve-ouvrir` et `make epreuve-fermer`. Des contrôles menés avec le
+compte du stagiaire — et non avec un compte d'administration, qui ne prouverait
+rien — le vérifient.
+
 **Aucune réponse en clair.** Le guide n'embarque que des empreintes SHA-256 des
 réponses normalisées : il peut dire « juste » ou « faux », jamais donner la
 réponse. La règle a une exception, assumée et documentée : la fiche de contexte
@@ -160,10 +171,12 @@ autres est qu'**un exercice dont la réponse est trouvable sans faire l'exercice
 est un défaut** ; elle est appliquée par un programme, pas par la bonne volonté
 du rédacteur.
 
-**Les pièges sont provoqués, pas décrits.** Le stagiaire tape la requête fausse,
-voit ce qui se passe, comprend. Chacun des six pièges du parcours a été tapé
-dans Discover et son comportement relevé ; le guide décrit ce qui arrive, pas ce
-qu'on attendait.
+**Les pièges sont provoqués, pas décrits.** Le stagiaire tape la requête fausse
+ou fait le geste fautif, voit ce qui se passe, comprend. Chacun des huit pièges
+du parcours a été relevé dans le lab — six par une requête dans Discover, deux
+par un geste dans l'interface — et le guide décrit ce qui arrive, pas ce qu'on
+attendait. Un chiffre cité dans la leçon d'un piège est celui que la sonde vient
+de mesurer, écrit par elle : « de 49 champs à 1 » n'est pas une estimation.
 
 **Le leurre.** Un scénario sur sept est un faux positif : un scanner de
 vulnérabilités autorisé produit, en une nuit, vingt fois plus d'échecs
@@ -188,10 +201,28 @@ laissé passer :
 - deux réponses identiques entre le jeu du parcours et celui de l'épreuve ;
 - une suite de vérification qui détruisait le lab qu'elle vérifiait ;
 - des sélecteurs d'interface périmés, qui n'échouaient pas mais ne trouvaient
-  rien.
+  rien ;
+- l'échappement HTML des gabarits, désactivé sans le dire : `select_autoescape`
+  compare la dernière extension du fichier, et les gabarits s'appellent
+  `.html.j2`. L'activer a d'ailleurs aussitôt cassé la validation des réponses,
+  le script inliné partant lui aussi à l'échappement — et c'est la suite qui l'a
+  dit, dans la minute ;
+- une question de quiz qui énonçait, dans son texte, la réponse attendue d'un
+  scénario.
 
 Aucun de ces défauts n'était visible à la lecture. Tous ont été corrigés à la
 cause, jamais en assouplissant le critère.
+
+**Et ce que la vérification n'a PAS attrapé**, parce que la dire est plus utile
+que de la vanter. Les deux relectures de P8 ont trouvé ce qu'aucune suite ne
+regardait : des libellés d'interface cités de mémoire et non relevés à l'écran —
+le contrôle existait, mais sa liste d'exceptions était si large qu'il ne
+contrôlait plus rien ; des corrigés chargés dans le Space du stagiaire ; une
+commande déclarée obligatoire dans le guide du formateur dont le script n'avait
+jamais été écrit ; et trente exercices se partageant treize réponses. La leçon
+tient en une ligne, et elle vaut au-delà de ce kit : **une suite verte ne prouve
+que ce qu'elle regarde.** Chacun de ces défauts a donc reçu, en plus de sa
+correction, le contrôle qui l'aurait vu.
 
 ## 7. Limites
 

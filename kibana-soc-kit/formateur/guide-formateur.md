@@ -11,9 +11,14 @@ Trois commandes, dans cet ordre :
 
 ```bash
 make lab-up      # démarre le lab et rejoue l'initialisation
-make lab-reset   # réancre les données sur maintenant
-make verif-lab   # 13 contrôles : licence, santé, locale, vue de solution, isolation
+make lab-reset   # repart à neuf et réancre les données sur maintenant
+make verif-lab   # 17 contrôles : licence, santé, locale, vue de solution,
+                 # isolation réseau, et cloisonnement des Spaces
 ```
+
+`make lab-reset` demande confirmation : il détruit le volume de données, donc
+tout ce qu'un stagiaire a enregistré dans Kibana. Tapez « oui ». Pour l'appeler
+depuis un script, `bash lab/reset.sh --oui`.
 
 **`make lab-reset` n'est pas facultatif.** Les données sont en fenêtre
 glissante : elles se terminent à l'instant du chargement. Sans réinitialisation,
@@ -174,6 +179,19 @@ Sur 10. Seuil d'acquisition : 6, **dont au moins 1 sur le critère « faux posit
 
 ### L'épreuve pratique
 
+**Ouvrez-la au dernier moment.** Le jeu de données de l'épreuve et son Space ne
+sont pas accessibles au compte « stagiaire » pendant la journée : sans cela, il
+suffirait d'aller y chercher les réponses entre deux exercices.
+
+```bash
+make epreuve-ouvrir   # donne au compte « stagiaire » le Space et le jeu de l'épreuve
+make epreuve-fermer   # les lui retire, une fois l'épreuve rendue
+```
+
+Les deux commandes relisent les rôles du compte et affichent ce qu'elles ont
+obtenu : vous voyez l'état réel, pas une promesse. Le Space s'appelle
+« Épreuve pratique » et sa vue de données porte le motif `logs-*-epreuve`.
+
 | Critère | 0 | 1 | 2 |
 |---|---|---|---|
 | Collecte incomplète | Non traitée | Visible en cherchant | Saute aux yeux, la source est nommée |
@@ -195,7 +213,7 @@ trois ne remplit pas la commande.
 | Cluster `red`, shards non alloués | Disque sans place réelle | Libérez de l'espace. Le lab tolère un disque plein en pourcentage, pas un disque sans place |
 | Kibana reste `unavailable` | Elasticsearch pas encore prêt | Attendez. `podman logs kibana-soc-lab-kibana` dit où il en est |
 | Un stagiaire ne voit plus ses données | Il a changé de data view ou de Space | Vérifiez l'URL : elle contient `/s/formation/` |
-| Un stagiaire a cassé son écran | C'est prévu | `make lab-reset` remet tout à neuf en moins de cinq minutes |
+| Un stagiaire a cassé son écran | C'est prévu | `make lab-reset` remet tout à neuf ; comptez la durée mesurée ci-dessus |
 | Le lab ne répond pas sur réseau isolé | `bridge-nf-call-iptables` à 1 | `sudo sysctl -w net.bridge.bridge-nf-call-iptables=0` |
 | Les données paraissent « vieilles » | `lab-reset` oublié | Relancez-le. C'est la cause la plus fréquente |
 
