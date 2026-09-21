@@ -13,25 +13,19 @@ comme **non exécuté**, avec sa raison — jamais comme réussi.
 
 | Suite | Contrôles | Résultat | Ce qui est prouvé |
 |---|---|---|---|
-| `verif-lab` | 13 | à rejouer | licence, santé, version, locale, vue de solution, isolation réseau |
-| `verif-donnees` | 14 | à rejouer | volumes, mapping effectif, S1→S7, déterminisme, jeu d'épreuve distinct |
-| `verif-parcours` | 16 | à rejouer | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes |
-| `verif-corriges` | 8 | à rejouer | import en Space vierge, rendu sans erreur, valeurs conformes |
-| `verif-guide` | 11 | à rejouer | zéro requête réseau, axe-core, empreintes, validation de bout en bout |
-| `verif-pdf` | 8 | à rejouer | polices embarquées, sommaire paginé, signets, solutions en annexe |
-| `verif-package` | 8 | à rejouer | empreintes, complétude, installation sans réseau |
-| **Total** | **78** | | |
+| `verif-lab` | 17 | ✅ 17 passés | licence, santé, version, locale, vue de solution, isolation réseau, cloisonnement des quatre Spaces |
+| `verif-donnees` | 14 | ✅ 14 passés | volumes, mapping effectif, S1→S7, déterminisme, jeu d'épreuve distinct |
+| `verif-parcours` | 20 | ✅ 20 passés | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes, réemplois annoncés, corrigé du quiz complet |
+| `verif-corriges` | 8 | ✅ 8 passés | import en Space vierge, rendu sans erreur, valeurs conformes |
+| `verif-guide` | 13 | ✅ 13 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement |
+| `verif-pdf` | 10 | ✅ 10 passés | polices embarquées, sommaire paginé, signets, solutions en annexe, aucune réponse dans un document du stagiaire |
+| `verif-package` | 8 | ✅ 8 passés | empreintes, complétude, installation sans réseau |
+| **Total** | **90** | **✅ zéro échec** | |
 
-> **État de ce rapport.** Les relectures `stagiaire-candide` et
-> `relecteur-expert` de la phase P8 ont ouvert des écarts bloquants ; les
-> corrections sont en cours et touchent le lab, le parcours, les corrigés et le
-> guide. Les chiffres ci-dessus sont ceux des suites telles qu'elles existent
-> aujourd'hui dans `verif/`, mais **leur dernier passage vert est antérieur à
-> ces corrections** : ils sont donc marqués « à rejouer », et non « passés ».
-> Les sorties reproduites plus bas dans ce document sont celles de cette
-> exécution antérieure — elles sont conservées comme trace, pas comme preuve de
-> l'état actuel. Ce rapport est régénéré en fin de P8, une fois `make verif`
-> relancé en entier.
+Exécution complète après `make lab-reset`, donc sur un lab reconstruit depuis un
+volume vide : c'est la seule façon de ne pas confondre « le kit fonctionne » et
+« le lab a accumulé de l'état pendant la session ». Deux défauts ne se sont
+d'ailleurs montrés que dans ces conditions (voir §P8).
 
 Qualité du code : `shellcheck` sur tous les scripts, `ruff` sur tout le Python —
 propres, sans exception ni dérogation.
@@ -75,7 +69,7 @@ Les deux connecteurs disponibles confirment exactement l'attendu de SPEC §4.5.
 
 ```
 $ make verif-lab
-13 passed in 57.28s
+17 passed in 43.45s
 ```
 
 Prouve : licence `basic`, santé `green`, Elasticsearch et Kibana en 9.5.3,
@@ -126,7 +120,7 @@ Prouve notamment :
 
 ```
 $ make verif-parcours
-16 passed
+20 passed
 ```
 
 Six modules, **347 minutes**, **35 exercices**, **27 objectifs**.
@@ -142,7 +136,7 @@ Six modules, **347 minutes**, **35 exercices**, **27 objectifs**.
 
 Prouve : chaque requête KQL **tapée dans Discover** renvoie ce qui est annoncé ;
 chaque libellé d'interface cité **existe** dans l'interface fr-FR du lab ; aucune
-réponse attendue n'est écrite en clair ; chacun des six pièges est provoqué par
+réponse attendue n'est écrite en clair ; chacun des huit pièges est provoqué par
 un exercice et **décrit tel qu'il se comporte** ; le guidage est dégressif ;
 chaque objectif est évalué par au moins un exercice.
 
@@ -171,19 +165,15 @@ arrive en tête du tableau du dernier événement vu.
 
 ```
 $ make guide
-dist/guide.html — 1.99 Mo, 6 modules, 35 exercices, 15 questions de quiz
+dist/guide.html — 3.08 Mo, 6 modules, 35 exercices, 17 questions de quiz
 $ make verif-guide
-10 passed
+13 passed
 $ make verif-pdf
-7 passed
+10 passed
 ```
 
-Exécution antérieure aux corrections de P8 : `verif-guide` comptait alors 10
-contrôles et `verif-pdf` 7 ; ils en comptent aujourd'hui 11 et 8, et doivent
-être rejoués.
-
 Prouve : **zéro requête réseau** à l'ouverture en `file://` ; axe-core injecté
-sans violation `serious` ni `critical` ; 1,99 Mo pour une limite de 20 Mo ;
+sans violation `serious` ni `critical` ; 3,08 Mo pour une limite de 20 Mo ;
 liens internes valides ; texte alternatif sur toutes les images ; empreintes
 conformes au manifeste ; **aucune réponse attendue publiée** ; le manifeste
 n'est pas embarqué ; et, de bout en bout, **une bonne réponse est acceptée et
@@ -194,9 +184,9 @@ sommaire réellement paginé et pointant dans le document, signets, fiche mémo 
 exactement deux pages, solutions absentes du corps et rassemblées en annexe.
 
 **Sept documents produits**, pagination relevée par `pdfinfo` : `guide.pdf`
-(96 pages), `corriges.pdf` (30), `rapport-recette.pdf` (6),
-`guide-formateur.pdf` (5), `note-de-conception.pdf` (4),
-`quiz-imprimable.pdf` (3), `fiche-memo.pdf` (2).
+(102 pages), `corriges.pdf` (32), `guide-formateur.pdf` (6),
+`rapport-recette.pdf` (6), `note-de-conception.pdf` (5),
+`quiz-imprimable.pdf` (4), `fiche-memo.pdf` (2).
 
 ---
 
@@ -204,7 +194,7 @@ exactement deux pages, solutions absentes du corps et rassemblées en annexe.
 
 ```
 $ ./.venv/bin/python formateur/matrice.py
-Objectifs : 27 · exercices : 35 · questions : 15
+Objectifs : 27 · exercices : 35 · questions : 17
 Couverture complète (exercice ET question) : 27/27 soit 100 %
 code de sortie: 0
 ```
@@ -230,6 +220,67 @@ depuis l'archive ; le guide livré s'ouvre hors ligne sans aucune requête.
 L'installation hors ligne est éprouvée en pointant **toutes les variables de
 proxy vers un port mort** : si pip tentait d'atteindre PyPI, il échouerait au
 lieu de réussir en silence.
+
+---
+
+## P8 — Revue finale
+
+```
+$ make lab-reset --oui
+Lab remis à neuf.  Données réancrées sur 2026-09-21 22:05.
+DUREE_SECONDES=109
+$ make verif
+17 passed · 14 passed · 20 passed · 8 passed · 13 passed · 10 passed · 8 passed
+```
+
+**`make lab-reset` mesuré : 1 min 49 s.** Le critère de sortie P1 exigeait que
+cette commande fonctionne et que sa durée soit consignée ; elle n'avait jamais
+été lancée, et pour cause — le script qu'elle appelle n'existait pas. Le guide
+du formateur le déclarait pourtant non facultatif entre deux sessions.
+
+La suite complète a été rejouée APRÈS cette réinitialisation, donc sur un lab
+reconstruit depuis un volume vide. Ce n'est pas un détail de procédure : deux
+défauts ne se montrent que dans ces conditions.
+
+- `test_lab_fonctionne_sur_reseau_interne` attendait Elasticsearch en cherchant
+  « "status" » dans la réponse. Le corps d'ERREUR en contient un aussi —
+  « "status":503 » — que le nœud renvoie tant que `.security-7` n'est pas
+  alloué. L'attente sortait donc au premier essai, sur l'erreur. Le contrôle
+  passait depuis toujours sans jamais attendre : sur un cluster déjà chaud,
+  l'index est alloué et la course ne se produit pas. Signe qui ne trompe pas,
+  la suite rendait la main en 36 s au lieu de 44.
+- trois des huit réponses ajoutées en P8 comptaient des documents, et dérivaient
+  de quelques unités d'une génération à l'autre : les événements sont placés
+  relativement à l'instant de génération, avec une pondération sur les heures
+  ouvrées. Un stagiaire comptant juste se serait vu répondre « faux ». Remplacées
+  par des faits de structure.
+
+### Les deux relectures
+
+`stagiaire-candide` et `relecteur-expert` ont été lancés sur le kit complet. Le
+second a rendu **16/20** au premier passage, sous le seuil de 18, avec un écart
+bloquant. Les sept écarts ont été corrigés, chacun assorti du contrôle qui
+l'aurait vu — c'est ce dernier point qui compte, et qui explique que la suite
+soit passée de 78 à 90 contrôles pendant cette revue.
+
+Le bloquant mérite d'être cité, parce qu'il illustre ce que vaut un garde dont
+personne ne vérifie la portée. `outils/fuites.py` exemptait les vingt et un
+hôtes de la fiche de contexte, au motif qu'une valeur publiée « se perd parmi
+ses semblables ». Or le guide n'affiche que les neuf serveurs critiques : les
+douze postes de travail étaient exemptés d'un contrôle que CLAUDE.md érige en
+définition de « fini », sans figurer nulle part sous les yeux du stagiaire.
+Trois réponses de scénario sur sept s'en trouvaient dégardées — et l'une était
+déjà partie : `docs/NOTE_DE_CONCEPTION.md` écrivait « le kit n'a jamais besoin
+qu'un humain écrive "la réponse est 10.10.13.23" », où cette adresse EST la
+réponse attendue de S2.
+
+Second enseignement, trouvé en corrigeant : le garde cherchait ses nombres dans
+la totalité du HTML, base64 compris. Une capture régénérée contenait
+« …NnSTR+889/gIcJ3… », et « + » comme « / » ne sont pas alphanumériques : la
+construction a été refusée sur une réponse qui n'avait fui nulle part. Un garde
+qui se joue aux octets d'une image peut aussi bien taire une vraie fuite dans
+son bruit. Les charges utiles base64 sont désormais retirées avant la recherche,
+et le contrôle a été vérifié dans les deux sens.
 
 ---
 
@@ -277,6 +328,8 @@ constaté qui est enseigné, comme SPEC §6.3 l'exige elle-même.
 | E4 | La version 9.5.4, dernière stable annoncée, n'est pas disponible sur le miroir | Mineur | Accepté : kit construit et vérifié en 9.5.3, la montée de version tient dans une ligne de `kit.config.yaml` |
 | E6 | Deux prémisses de la SPEC corrigées (voir ci-dessus) | Mineur | Résolu, SPEC non modifiée, comportement réel enseigné |
 | E7 | 64 capacités sur 90 non sondées dans le lab | Mineur | Assumé et signalé : aucune n'étaye une affirmation du parcours |
+| E8 | SPEC §9 demande un quiz de 15 questions ; le kit en livre 17 | Mineur | Assumé : Q16 et Q17 couvrent les deux pièges d'interface de SPEC §6.3, que rien n'évaluait. Écart dans le sens du mieux, mais écart tout de même — d'où cette ligne |
+| E9 | Le dépôt distant refuse le `push` : 403, l'application GitHub n'a pas le droit `Contents: write` sur `YamTeam9/picturegallery` | Bloquant pour la livraison, nul pour le kit | Non résolu, hors de portée : relève d'un administrateur de l'organisation. Le travail est remis sous forme de bundle git complet |
 
 ---
 
