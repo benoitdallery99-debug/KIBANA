@@ -1,0 +1,918 @@
+{
+  "engendre_le": "2026-09-21T16:55:05.000Z",
+  "jeu": "epreuve",
+  "graine": 7310,
+  "namespace": "epreuve",
+  "fenetre_jours": 7,
+  "fuseau_metier": "Europe/Paris",
+  "version_stack": "9.5.3",
+  "index_mode": "standard",
+  "avertissement": "Données entièrement synthétiques. Adresses réservées à la documentation (RFC 5737, RFC 1918), domaines réservés (RFC 2606), personnes inventées. Aucune donnée réelle (SPEC §5.1, CLAUDE.md).",
+  "volumes": {
+    "logs-windows.security-epreuve": 90042,
+    "logs-linux.auth-epreuve": 35531,
+    "logs-ids.alert-epreuve": 14651,
+    "logs-network.dns-epreuve": 99629,
+    "logs-proxy.web-epreuve": 74452,
+    "logs-firewall.traffic-epreuve": 68662
+  },
+  "total_documents": 382967,
+  "contexte": {
+    "organisation": "Groupe Méridien",
+    "domaine_ad": "MERIDIEN",
+    "sous_reseaux": {
+      "postes": {
+        "cidr": "10.10.0.0/16",
+        "role": "Postes de travail des collaborateurs"
+      },
+      "serveurs": {
+        "cidr": "10.20.0.0/16",
+        "role": "Serveurs internes : annuaire, fichiers, applications métier"
+      },
+      "dmz": {
+        "cidr": "10.30.0.0/24",
+        "role": "DMZ : portail web et relais de messagerie, exposés depuis Internet"
+      },
+      "administration": {
+        "cidr": "172.16.5.0/24",
+        "role": "Réseau d'administration : supervision, sauvegarde, scanner de vulnérabilités"
+      }
+    },
+    "hotes": [
+      {
+        "nom": "srv-ad-01",
+        "ip": "10.20.1.10",
+        "zone": "serveurs",
+        "os": "windows",
+        "critique": true,
+        "role": "Contrôleur de domaine Active Directory"
+      },
+      {
+        "nom": "srv-ad-02",
+        "ip": "10.20.1.11",
+        "zone": "serveurs",
+        "os": "windows",
+        "critique": true,
+        "role": "Contrôleur de domaine secondaire"
+      },
+      {
+        "nom": "srv-fic-01",
+        "ip": "10.20.2.20",
+        "zone": "serveurs",
+        "os": "windows",
+        "critique": true,
+        "role": "Serveur de fichiers"
+      },
+      {
+        "nom": "srv-app-01",
+        "ip": "10.20.3.30",
+        "zone": "serveurs",
+        "os": "linux",
+        "critique": true,
+        "role": "Application métier (facturation)"
+      },
+      {
+        "nom": "srv-app-02",
+        "ip": "10.20.3.31",
+        "zone": "serveurs",
+        "os": "linux",
+        "critique": false,
+        "role": "Application métier (recette)"
+      },
+      {
+        "nom": "srv-bdd-01",
+        "ip": "10.20.4.40",
+        "zone": "serveurs",
+        "os": "linux",
+        "critique": true,
+        "role": "Base de données de production"
+      },
+      {
+        "nom": "srv-sauv-01",
+        "ip": "172.16.5.20",
+        "zone": "administration",
+        "os": "linux",
+        "critique": true,
+        "role": "Serveur de sauvegarde"
+      },
+      {
+        "nom": "srv-sup-01",
+        "ip": "172.16.5.30",
+        "zone": "administration",
+        "os": "linux",
+        "critique": false,
+        "role": "Supervision"
+      },
+      {
+        "nom": "srv-scan-01",
+        "ip": "172.16.5.99",
+        "zone": "administration",
+        "os": "linux",
+        "critique": false,
+        "role": "Scanner de vulnérabilités autorisé"
+      },
+      {
+        "nom": "web-dmz-01",
+        "ip": "10.30.0.10",
+        "zone": "dmz",
+        "os": "linux",
+        "critique": true,
+        "role": "Portail web public"
+      },
+      {
+        "nom": "smtp-dmz-01",
+        "ip": "10.30.0.20",
+        "zone": "dmz",
+        "os": "linux",
+        "critique": false,
+        "role": "Relais de messagerie"
+      },
+      {
+        "nom": "pc-compta-01",
+        "ip": "10.10.11.21",
+        "zone": "postes",
+        "os": "windows",
+        "critique": false,
+        "role": "Poste de travail — comptabilité"
+      },
+      {
+        "nom": "pc-compta-02",
+        "ip": "10.10.11.22",
+        "zone": "postes",
+        "os": "windows",
+        "critique": false,
+        "role": "Poste de travail — comptabilité"
+      },
+      {
+        "nom": "pc-compta-03",
+        "ip": "10.10.11.23",
+        "zone": "postes",
+        "os": "windows",
+        "critique": false,
+        "role": "Poste de travail — comptabilité"
+      },
+      {
+        "nom": "pc-rh-01",
+        "ip": "10.10.12.21",
+        "zone": "postes",
+        "os": "windows",
+        "critique": false,
+        "role": "Poste de travail — ressources humaines"
+      },
+      {
+        "nom": "pc-rh-02",
+        "ip": "10.10.12.22",
+        "zone": "postes",
+        "os": "windows",
+        "critique": false,
+        "role": "Poste de travail — ressources humaines"
+      },
+      {
+        "nom": "pc-tech-01",
+        "ip": "10.10.13.21",
+        "zone": "postes",
+        "os": "windows",
+        "critique": false,
+        "role": "Poste de travail — bureau d'études"
+      },
+      {
+        "nom": "pc-tech-02",
+        "ip": "10.10.13.22",
+        "zone": "postes",
+        "os": "windows",
+        "critique": false,
+        "role": "Poste de travail — bureau d'études"
+      },
+      {
+        "nom": "pc-tech-03",
+        "ip": "10.10.13.23",
+        "zone": "postes",
+        "os": "windows",
+        "critique": false,
+        "role": "Poste de travail — bureau d'études"
+      },
+      {
+        "nom": "pc-dir-01",
+        "ip": "10.10.14.21",
+        "zone": "postes",
+        "os": "windows",
+        "critique": false,
+        "role": "Poste de travail — direction"
+      }
+    ],
+    "comptes_de_service": [
+      {
+        "nom": "svc-sauvegarde",
+        "role": "Compte de service — sauvegardes nocturnes"
+      },
+      {
+        "nom": "svc-supervision",
+        "role": "Compte de service — collecte de supervision"
+      },
+      {
+        "nom": "svc-facturation",
+        "role": "Compte de service — application de facturation"
+      },
+      {
+        "nom": "svc-annuaire",
+        "role": "Compte de service — synchronisation d'annuaire"
+      }
+    ],
+    "comptes_admin": [
+      "adm.bertin",
+      "adm.lemoine",
+      "adm.weber"
+    ],
+    "nombre_de_comptes": 50,
+    "scanner_autorise": {
+      "nom": "srv-scan-01",
+      "ip": "172.16.5.99",
+      "role": "Scanner de vulnérabilités autorisé",
+      "fenetre": "Balayage hebdomadaire planifié, la nuit du mardi au mercredi",
+      "contact": "Équipe Sécurité Opérationnelle"
+    },
+    "avertissement": "Données entièrement fictives. Adresses réservées à la documentation (RFC 5737, RFC 1918) et domaines réservés (RFC 2606)."
+  },
+  "scenarios": [
+    {
+      "id": "S1",
+      "titre": "Force brute externe suivie d'un succès sur un compte de service",
+      "recit": "Une adresse extérieure a tenté des dizaines d'ouvertures de session sur un compte de service, jusqu'à en réussir une.",
+      "reponses": [
+        {
+          "cle": "source_ip",
+          "libelle": "Adresse IP à l'origine des tentatives",
+          "valeur": "198.51.100.205",
+          "type": "ip",
+          "normalisation": "espaces retirés",
+          "controle": {
+            "dataset": "windows.security",
+            "requete": {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "term": {
+                        "event.code": "4625"
+                      }
+                    },
+                    {
+                      "term": {
+                        "user.name": "svc-supervision"
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "r": {
+                  "terms": {
+                    "field": "source.ip",
+                    "size": 1
+                  }
+                }
+              }
+            },
+            "chemin": "aggregations.r.buckets.0.key"
+          },
+          "empreintes": [
+            "80a0bfdf891c02967c5cedb62c8fc3f006ae8110046e5ab6fdcea9974ad44bca"
+          ]
+        },
+        {
+          "cle": "compte",
+          "libelle": "Compte visé",
+          "valeur": "svc-supervision",
+          "type": "texte",
+          "normalisation": "minuscules, espaces retirés",
+          "controle": {
+            "dataset": "windows.security",
+            "requete": {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "term": {
+                        "event.code": "4625"
+                      }
+                    },
+                    {
+                      "term": {
+                        "source.ip": "198.51.100.205"
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "r": {
+                  "terms": {
+                    "field": "user.name",
+                    "size": 1
+                  }
+                }
+              }
+            },
+            "chemin": "aggregations.r.buckets.0.key"
+          },
+          "empreintes": [
+            "507e3151b9a8c876c8b8f06a0a52096a1f17d4930a849abf29f7cc56e3619e4e"
+          ]
+        },
+        {
+          "cle": "nb_echecs",
+          "libelle": "Nombre d'échecs avant le succès",
+          "valeur": 39,
+          "type": "entier",
+          "normalisation": "entier",
+          "controle": {
+            "dataset": "windows.security",
+            "requete": {
+              "size": 0,
+              "track_total_hits": true,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "term": {
+                        "event.code": "4625"
+                      }
+                    },
+                    {
+                      "term": {
+                        "user.name": "svc-supervision"
+                      }
+                    },
+                    {
+                      "term": {
+                        "source.ip": "198.51.100.205"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "chemin": "hits.total.value"
+          },
+          "empreintes": [
+            "0b918943df0962bc7a1824c0555a389347b4febdc7cf9d1254406d80ce44e3f9"
+          ]
+        },
+        {
+          "cle": "hote_cible",
+          "libelle": "Hôte visé",
+          "valeur": "srv-fic-01",
+          "type": "texte",
+          "normalisation": "minuscules, espaces retirés",
+          "controle": {
+            "dataset": "windows.security",
+            "requete": {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "term": {
+                        "source.ip": "198.51.100.205"
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "r": {
+                  "terms": {
+                    "field": "host.name",
+                    "size": 1
+                  }
+                }
+              }
+            },
+            "chemin": "aggregations.r.buckets.0.key"
+          },
+          "empreintes": [
+            "9ad15fa7701b51d54792f5591a352b2f610da31cf5918cadbd0f69e1b3677fd1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "titre": "Balayage de ports interne",
+      "recit": "Un poste interne a testé un grand nombre de ports sur un serveur, en dix minutes.",
+      "reponses": [
+        {
+          "cle": "source_ip",
+          "libelle": "Poste à l'origine du balayage",
+          "valeur": "10.10.13.22",
+          "type": "ip",
+          "normalisation": "espaces retirés",
+          "controle": {
+            "dataset": "firewall.traffic",
+            "requete": {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "term": {
+                        "event.action": "deny"
+                      }
+                    },
+                    {
+                      "term": {
+                        "destination.ip": "10.20.4.40"
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "r": {
+                  "terms": {
+                    "field": "source.ip",
+                    "size": 1
+                  }
+                }
+              }
+            },
+            "chemin": "aggregations.r.buckets.0.key"
+          },
+          "empreintes": [
+            "f10a9e43730a102826917f0b3a102347646810ed36d1516d901e98b27702be81"
+          ]
+        },
+        {
+          "cle": "nb_ports",
+          "libelle": "Nombre de ports distincts visés",
+          "valeur": 1519,
+          "type": "entier",
+          "normalisation": "entier",
+          "controle": {
+            "dataset": "firewall.traffic",
+            "requete": {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "term": {
+                        "source.ip": "10.10.13.22"
+                      }
+                    },
+                    {
+                      "term": {
+                        "destination.ip": "10.20.4.40"
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "r": {
+                  "cardinality": {
+                    "field": "destination.port",
+                    "precision_threshold": 40000
+                  }
+                }
+              }
+            },
+            "chemin": "aggregations.r.value"
+          },
+          "empreintes": [
+            "ee9c43424bb4c242e06f1b84ca7992822f47b6f5f005af866ec6a684382c9547"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "titre": "Balise périodique vers un domaine externe",
+      "recit": "Un poste interroge le même domaine à intervalle régulier, jour et nuit, week-end compris.",
+      "reponses": [
+        {
+          "cle": "hote",
+          "libelle": "Poste émetteur",
+          "valeur": "pc-compta-03",
+          "type": "texte",
+          "normalisation": "minuscules, espaces retirés",
+          "controle": {
+            "dataset": "network.dns",
+            "requete": {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "term": {
+                        "dns.question.name": "maj-sys-151.test"
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "r": {
+                  "terms": {
+                    "field": "host.name",
+                    "size": 1
+                  }
+                }
+              }
+            },
+            "chemin": "aggregations.r.buckets.0.key"
+          },
+          "empreintes": [
+            "93c847ef5249663525116a2dbbaf6c98ab8872db5ae574055ac1916bf0b42938"
+          ]
+        },
+        {
+          "cle": "domaine",
+          "libelle": "Domaine interrogé",
+          "valeur": "maj-sys-151.test",
+          "type": "texte",
+          "normalisation": "minuscules, espaces retirés",
+          "controle": {
+            "dataset": "network.dns",
+            "requete": {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "term": {
+                        "host.name": "pc-compta-03"
+                      }
+                    },
+                    {
+                      "wildcard": {
+                        "dns.question.name": "*.test"
+                      }
+                    }
+                  ],
+                  "must_not": [
+                    {
+                      "term": {
+                        "dns.question.registered_domain": "meridien.test"
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "r": {
+                  "terms": {
+                    "field": "dns.question.name",
+                    "size": 1
+                  }
+                }
+              }
+            },
+            "chemin": "aggregations.r.buckets.0.key"
+          },
+          "empreintes": [
+            "07cbd041ff8f089c2af3350c28d842f2e6ed3bb95e982ae64f71ccccf0ca0323"
+          ]
+        },
+        {
+          "cle": "periode_minutes",
+          "libelle": "Période, en minutes",
+          "valeur": 19,
+          "type": "entier_tolerance",
+          "tolerance": 1,
+          "normalisation": "entier",
+          "controle": {
+            "dataset": "network.dns",
+            "requete": {
+              "size": 500,
+              "sort": [
+                {
+                  "@timestamp": "asc"
+                }
+              ],
+              "_source": [
+                "@timestamp"
+              ],
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "term": {
+                        "dns.question.name": "maj-sys-151.test"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "chemin": "hits.hits",
+            "transformation": "mediane_intervalle_minutes"
+          },
+          "empreintes": [
+            "4ec9599fc203d176a301536c2e091a19bc852759b255bd6818810a42c5fed14a",
+            "9400f1b21cb527d7fa3d3eabba93557a18ebe7a2ca4e471cfe5e4c5b4ca7f767",
+            "f5ca38f748a1d6eaf726b8a42fb575c3c71f1864a8143301782de13da2d9202b"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "titre": "Exfiltration nocturne via le proxy",
+      "recit": "Un poste a téléversé un volume inhabituel vers un hébergeur externe, de nuit.",
+      "reponses": [
+        {
+          "cle": "hote",
+          "libelle": "Poste émetteur",
+          "valeur": "pc-dir-01",
+          "type": "texte",
+          "normalisation": "minuscules, espaces retirés",
+          "controle": {
+            "dataset": "proxy.web",
+            "requete": {
+              "size": 0,
+              "aggs": {
+                "r": {
+                  "terms": {
+                    "field": "host.name",
+                    "size": 1,
+                    "order": {
+                      "o": "desc"
+                    }
+                  },
+                  "aggs": {
+                    "o": {
+                      "sum": {
+                        "field": "source.bytes"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "chemin": "aggregations.r.buckets.0.key"
+          },
+          "empreintes": [
+            "ecfc73e017e486dea2ffbdcb03c4e8e1dbbabb8b4573b319d92b1123bc39dee7"
+          ]
+        },
+        {
+          "cle": "destination",
+          "libelle": "Domaine de destination",
+          "valeur": "depot-partage-39.example",
+          "type": "texte",
+          "normalisation": "minuscules, espaces retirés",
+          "controle": {
+            "dataset": "proxy.web",
+            "requete": {
+              "size": 0,
+              "aggs": {
+                "r": {
+                  "terms": {
+                    "field": "url.domain",
+                    "size": 1,
+                    "order": {
+                      "o": "desc"
+                    }
+                  },
+                  "aggs": {
+                    "o": {
+                      "sum": {
+                        "field": "source.bytes"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "chemin": "aggregations.r.buckets.0.key"
+          },
+          "empreintes": [
+            "42f4243c6d702a3da1853513b24fce2403222b86946050ef53d3273055329179"
+          ]
+        },
+        {
+          "cle": "volume_mo",
+          "libelle": "Volume sortant, en Mo",
+          "valeur": 794,
+          "type": "entier_tolerance",
+          "tolerance": 5,
+          "normalisation": "entier, Mo",
+          "controle": {
+            "dataset": "proxy.web",
+            "requete": {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "term": {
+                        "url.domain": "depot-partage-39.example"
+                      }
+                    },
+                    {
+                      "term": {
+                        "host.name": "pc-dir-01"
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "r": {
+                  "sum": {
+                    "field": "source.bytes"
+                  }
+                }
+              }
+            },
+            "chemin": "aggregations.r.value",
+            "transformation": "octets_vers_mo"
+          },
+          "empreintes": [
+            "35a9e381b1a27567549b5f8a6f783c167ebf809f1c4d6a9e367240484d8ce281",
+            "1a6d9c97798d8997f85ed9228296d533be6b47f97217709d7e2b628e21800220",
+            "0b0fc3be2ee8d1d33518036b0f38402ee7bc022380a0b9653886019d38acd128",
+            "74332c78b10e3ee51ac4a3c18ccc15c1b6c9807b3ca609969de5e3c361573dfa",
+            "23c5910b8b10cfa86e40099cf01e5c2b36f4dd0a903f0c60e5517ea177f4d390",
+            "5283f1b4e66467616feca1e0162c7d37e4e304623d6343a525553ffb436cbdfe",
+            "c032851ed192d8ac0a3ad04b0ef3060b44d1f6d62f8c17414006702787c5d88b",
+            "724213d95916de041564e5d39c2373585dc15855743a42a5841d849b9f3716de",
+            "f7abf2a084c3668c7b90654bf01205085e5d0219ffad0564904e5c923af11523",
+            "4d5e5deb0353d3a6c0b5cf97de0a23087a56796a3474ee500edbe4676c3b9716",
+            "ce02d4b6d1aceeea96a562c10923d590607df6182b4a3405ad10be85b6354787"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "titre": "Trou de collecte de deux heures",
+      "recit": "Une source n'a rien envoyé pendant deux heures, au milieu de la période.",
+      "_fenetre": {
+        "debut": "2026-09-17T15:55:05.000Z",
+        "fin": "2026-09-17T17:55:05.000Z"
+      },
+      "reponses": [
+        {
+          "cle": "source",
+          "libelle": "Source concernée",
+          "valeur": "ids.alert",
+          "type": "texte",
+          "normalisation": "minuscules, espaces retirés",
+          "controle": {
+            "dataset": "ids.alert",
+            "requete": {
+              "size": 0,
+              "track_total_hits": true,
+              "query": {
+                "range": {
+                  "@timestamp": {
+                    "gte": "2026-09-17T15:55:05.000Z",
+                    "lt": "2026-09-17T17:55:05.000Z"
+                  }
+                }
+              }
+            },
+            "chemin": "hits.total.value",
+            "attendu_litteral": 0
+          },
+          "empreintes": [
+            "c56e4a865465606021b706e58b2716dabcfc1c23823e1dfd2f91bffe2ee9524e"
+          ]
+        },
+        {
+          "cle": "duree_heures",
+          "libelle": "Durée du trou, en heures",
+          "valeur": 2,
+          "type": "entier",
+          "normalisation": "entier",
+          "controle": {
+            "dataset": "ids.alert",
+            "requete": {
+              "size": 0
+            },
+            "chemin": null
+          },
+          "empreintes": [
+            "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "titre": "Source muette depuis deux heures",
+      "recit": "Une source n'envoie plus rien depuis deux heures. Elle ne produit donc aucun bucket : elle DISPARAÎT d'un décompte par source au lieu d'y apparaître à zéro.",
+      "reponses": [
+        {
+          "cle": "source",
+          "libelle": "Source muette",
+          "valeur": "firewall.traffic",
+          "type": "texte",
+          "normalisation": "minuscules, espaces retirés",
+          "controle": {
+            "dataset": "firewall.traffic",
+            "requete": {
+              "size": 0,
+              "aggs": {
+                "r": {
+                  "max": {
+                    "field": "@timestamp"
+                  }
+                }
+              }
+            },
+            "chemin": "aggregations.r.value",
+            "transformation": "minutes_avant_maintenant",
+            "attendu_environ": 120,
+            "tolerance": 25
+          },
+          "empreintes": [
+            "4ed578996f0bb6301418909fd3e5d51c96ef6213f18222ad0ae982c34957cd35"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "titre": "Leurre : échecs massifs d'authentification",
+      "recit": "Une adresse interne a produit des centaines d'échecs d'authentification en une nuit, sur de nombreux hôtes. Le volume dépasse de loin celui de la vraie attaque.",
+      "reponses": [
+        {
+          "cle": "verdict",
+          "libelle": "Verdict",
+          "valeur": "faux positif",
+          "type": "choix",
+          "choix": [
+            "incident avéré",
+            "faux positif",
+            "information insuffisante"
+          ],
+          "normalisation": "minuscules, accents retirés, espaces retirés",
+          "controle": {
+            "dataset": "windows.security",
+            "requete": {
+              "size": 0
+            },
+            "chemin": null
+          },
+          "empreintes": [
+            "778b2e5a26a0fb325d0058a14c6d04f08893587269c912d7be6098f15a07b595"
+          ]
+        },
+        {
+          "cle": "preuve_ip",
+          "libelle": "Adresse à l'origine des échecs",
+          "valeur": "172.16.5.99",
+          "type": "ip",
+          "normalisation": "espaces retirés",
+          "controle": {
+            "dataset": "windows.security",
+            "requete": {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "term": {
+                        "event.code": "4625"
+                      }
+                    },
+                    {
+                      "terms": {
+                        "user.name": [
+                          "administrateur",
+                          "admin",
+                          "root",
+                          "test",
+                          "oracle",
+                          "postgres"
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "r": {
+                  "terms": {
+                    "field": "source.ip",
+                    "size": 1
+                  }
+                }
+              }
+            },
+            "chemin": "aggregations.r.buckets.0.key"
+          },
+          "empreintes": [
+            "2159eec2b7e99ef2ffd8c1561dfbd2cad0a80bf6a5bd67a545546d20d9cb83fd"
+          ]
+        }
+      ],
+      "element_de_contexte": "La fiche de contexte désigne cette adresse comme celle du scanner de vulnérabilités autorisé, dont le balayage hebdomadaire est planifié la nuit."
+    }
+  ]
+}

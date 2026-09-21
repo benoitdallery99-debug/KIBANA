@@ -1,0 +1,1188 @@
+{
+  "version_stack": "9.5.3",
+  "licence": {
+    "type": "basic",
+    "statut": "active"
+  },
+  "espace": "formation",
+  "avertissement": "Relevé sur le lab, instance réelle en licence Basic. Fait foi sur la documentation en cas de divergence (CLAUDE.md).",
+  "api_dashboards": {
+    "creation_http": 201,
+    "servie": true,
+    "relecture_http": 200,
+    "format_json_diffable": true,
+    "liste_http": 200,
+    "suppression_http": 204,
+    "nettoye": true,
+    "licence_suffisante": "basic — créé, relu et supprimé sans erreur"
+  },
+  "esql": {
+    "elasticsearch_http": 200,
+    "disponible": true,
+    "par_kibana_http": 400,
+    "exemple_resultat": [
+      [
+        384592
+      ]
+    ]
+  },
+  "export_objets_enregistres": {
+    "export_ndjson_http": 200,
+    "disponible": true,
+    "taille_octets": 1137
+  },
+  "rapports": {
+    "diagnostic_capture_http": 404,
+    "liste_travaux_http": 404,
+    "detail": "{\"statusCode\":404,\"error\":\"Not Found\",\"message\":\"Not Found\"}"
+  },
+  "connecteurs": [
+    {
+      "id": ".index",
+      "nom": "Index",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true
+    },
+    {
+      "id": ".server-log",
+      "nom": "Server log",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true
+    },
+    {
+      "id": ".1password",
+      "nom": "1Password",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".abuseipdb",
+      "nom": "AbuseIPDB",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".alienvault-otx",
+      "nom": "AlienVault OTX",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".amazon_s3",
+      "nom": "Amazon S3",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".aws_lambda",
+      "nom": "AWS Lambda",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".azure-blob",
+      "nom": "Azure Blob Storage",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".bedrock",
+      "nom": "Amazon Bedrock",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".bigquery",
+      "nom": "BigQuery",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".box",
+      "nom": "Box",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".brave-search",
+      "nom": "Brave Search",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".cases-webhook",
+      "nom": "Webhook - Case Management",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".confluence-cloud",
+      "nom": "Confluence Cloud",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".crowdstrike",
+      "nom": "CrowdStrike",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".d3security",
+      "nom": "D3 Security",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".dropbox",
+      "nom": "Dropbox",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".email",
+      "nom": "Email",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".figma",
+      "nom": "Figma",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".firecrawl",
+      "nom": "Firecrawl",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".gcp_cloud_functions",
+      "nom": "GCP Cloud Functions",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".gemini",
+      "nom": "Google Gemini",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".gen-ai",
+      "nom": "OpenAI",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".github",
+      "nom": "GitHub",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".gmail",
+      "nom": "Gmail",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".google_calendar",
+      "nom": "Google Calendar",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".google_cloud_storage",
+      "nom": "Google Cloud Storage",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".google_drive",
+      "nom": "Google Drive",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".greynoise",
+      "nom": "GreyNoise",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".http",
+      "nom": "HTTP",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".hubspot",
+      "nom": "HubSpot",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".inference",
+      "nom": "AI Connector",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".jina",
+      "nom": "Jina Reader",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".jira",
+      "nom": "Jira",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".jira-cloud",
+      "nom": "Jira Cloud",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".jira-service-management",
+      "nom": "Jira Service Management",
+      "licence_minimale": "platinum",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".mcp",
+      "nom": "MCP",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".microsoft-teams",
+      "nom": "Microsoft Teams (v2)",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".microsoft_defender_endpoint",
+      "nom": "Microsoft Defender for Endpoint",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".notion",
+      "nom": "Notion",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".one_drive",
+      "nom": "OneDrive",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".opsgenie",
+      "nom": "Opsgenie",
+      "licence_minimale": "platinum",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".outlook",
+      "nom": "Outlook",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".pagerduty",
+      "nom": "PagerDuty",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".pagerduty_mcp",
+      "nom": "PagerDuty (MCP)",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".resilient",
+      "nom": "IBM Resilient",
+      "licence_minimale": "platinum",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".salesforce",
+      "nom": "Salesforce",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".sentinelone",
+      "nom": "Sentinel One",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".servicenow",
+      "nom": "ServiceNow ITSM",
+      "licence_minimale": "platinum",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".servicenow-itom",
+      "nom": "ServiceNow ITOM",
+      "licence_minimale": "platinum",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".servicenow-sir",
+      "nom": "ServiceNow SecOps",
+      "licence_minimale": "platinum",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".servicenow_search",
+      "nom": "ServiceNow",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".sharepoint-online",
+      "nom": "SharePoint Online",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".sharepoint-server",
+      "nom": "SharePoint Server",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".shodan",
+      "nom": "Shodan",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".slack",
+      "nom": "Slack",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".slack2",
+      "nom": "Slack (v2)",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".slack_api",
+      "nom": "Slack API",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".snowflake",
+      "nom": "Snowflake",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".sublime_security",
+      "nom": "Sublime Security",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".swimlane",
+      "nom": "Swimlane",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".tavily_mcp",
+      "nom": "Tavily",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".teams",
+      "nom": "Microsoft Teams",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".thehive",
+      "nom": "TheHive",
+      "licence_minimale": "platinum",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".tines",
+      "nom": "Tines",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".torq",
+      "nom": "Torq",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".urlvoid",
+      "nom": "URLVoid",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".virustotal",
+      "nom": "VirusTotal",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".webhook",
+      "nom": "Webhook",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".xmatters",
+      "nom": "xMatters",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".xsoar",
+      "nom": "XSOAR",
+      "licence_minimale": "platinum",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".zendesk",
+      "nom": "Zendesk",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    },
+    {
+      "id": ".zoom",
+      "nom": "Zoom",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false
+    }
+  ],
+  "types_de_regles": [
+    {
+      "id": ".es-query",
+      "nom": "Recherche Elasticsearch",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "stackAlerts"
+    },
+    {
+      "id": ".index-threshold",
+      "nom": "Seuil de l'index",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "stackAlerts"
+    },
+    {
+      "id": "apm.anomaly",
+      "nom": "APM Anomaly",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "observability",
+      "produit": "apm"
+    },
+    {
+      "id": "apm.error_rate",
+      "nom": "Error count threshold",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "observability",
+      "produit": "apm"
+    },
+    {
+      "id": "apm.transaction_duration",
+      "nom": "Latency threshold",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "observability",
+      "produit": "apm"
+    },
+    {
+      "id": "apm.transaction_error_rate",
+      "nom": "Failed transaction rate threshold",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "observability",
+      "produit": "apm"
+    },
+    {
+      "id": "attack-discovery",
+      "nom": "Attack Discovery Schedule",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "securitySolution",
+      "produit": "siem"
+    },
+    {
+      "id": "datasetQuality.degradedDocs",
+      "nom": "Documents dégradés",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "stackAlerts"
+    },
+    {
+      "id": "logs.alert.document.count",
+      "nom": "Seuil de log",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "observability",
+      "produit": "logs"
+    },
+    {
+      "id": "metrics.alert.inventory.threshold",
+      "nom": "Inventory",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "observability",
+      "produit": "infrastructure"
+    },
+    {
+      "id": "metrics.alert.threshold",
+      "nom": "Seuil de l'indicateur",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "observability",
+      "produit": "infrastructure"
+    },
+    {
+      "id": "monitoring_alert_cluster_health",
+      "nom": "Cluster health",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "monitoring"
+    },
+    {
+      "id": "monitoring_alert_cpu_usage",
+      "nom": "CPU Usage",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "monitoring"
+    },
+    {
+      "id": "monitoring_alert_disk_usage",
+      "nom": "Disk Usage",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "monitoring"
+    },
+    {
+      "id": "monitoring_alert_elasticsearch_version_mismatch",
+      "nom": "Elasticsearch version mismatch",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "monitoring"
+    },
+    {
+      "id": "monitoring_alert_jvm_memory_usage",
+      "nom": "Memory Usage (JVM)",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "monitoring"
+    },
+    {
+      "id": "monitoring_alert_kibana_version_mismatch",
+      "nom": "Kibana version mismatch",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "monitoring"
+    },
+    {
+      "id": "monitoring_alert_license_expiration",
+      "nom": "License expiration",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "monitoring"
+    },
+    {
+      "id": "monitoring_alert_logstash_version_mismatch",
+      "nom": "Logstash version mismatch",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "monitoring"
+    },
+    {
+      "id": "monitoring_alert_missing_monitoring_data",
+      "nom": "Missing monitoring data",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "monitoring"
+    },
+    {
+      "id": "monitoring_alert_nodes_changed",
+      "nom": "Nodes changed",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "monitoring"
+    },
+    {
+      "id": "monitoring_alert_thread_pool_search_rejections",
+      "nom": "Thread pool search rejections",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "monitoring"
+    },
+    {
+      "id": "monitoring_alert_thread_pool_write_rejections",
+      "nom": "Thread pool write rejections",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "monitoring"
+    },
+    {
+      "id": "monitoring_ccr_read_exceptions",
+      "nom": "CCR read exceptions",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "monitoring"
+    },
+    {
+      "id": "monitoring_shard_size",
+      "nom": "Shard size",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "monitoring"
+    },
+    {
+      "id": "observability.rules.custom_threshold",
+      "nom": "Seuil personnalisé",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "observability",
+      "produit": "observability"
+    },
+    {
+      "id": "siem.eqlRule",
+      "nom": "Event Correlation Rule",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "securitySolution",
+      "produit": "siem"
+    },
+    {
+      "id": "siem.esqlRule",
+      "nom": "ES|QL Rule",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "securitySolution",
+      "produit": "siem"
+    },
+    {
+      "id": "siem.indicatorRule",
+      "nom": "Indicator Match Rule",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "securitySolution",
+      "produit": "siem"
+    },
+    {
+      "id": "siem.mlRule",
+      "nom": "Machine Learning Rule",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "securitySolution",
+      "produit": "siem"
+    },
+    {
+      "id": "siem.newTermsRule",
+      "nom": "New Terms Rule",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "securitySolution",
+      "produit": "siem"
+    },
+    {
+      "id": "siem.notifications",
+      "nom": "Security Solution notification (Legacy)",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "securitySolution",
+      "produit": "siem"
+    },
+    {
+      "id": "siem.queryRule",
+      "nom": "Custom Query Rule",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "securitySolution",
+      "produit": "siem"
+    },
+    {
+      "id": "siem.savedQueryRule",
+      "nom": "Saved Query Rule",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "securitySolution",
+      "produit": "siem"
+    },
+    {
+      "id": "siem.thresholdRule",
+      "nom": "Threshold Rule",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "securitySolution",
+      "produit": "siem"
+    },
+    {
+      "id": "transform_health",
+      "nom": "Intégrité de la transformation",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "management",
+      "produit": "stackAlerts"
+    },
+    {
+      "id": "xpack.synthetics.alerts.monitorStatus",
+      "nom": "Statut du moniteur Synthetics",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "observability",
+      "produit": "uptime"
+    },
+    {
+      "id": "xpack.synthetics.alerts.tls",
+      "nom": "Certificat TLS Synthetics",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "observability",
+      "produit": "uptime"
+    },
+    {
+      "id": "xpack.uptime.alerts.monitorStatus",
+      "nom": "Statut du moniteur Uptime",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "observability",
+      "produit": "uptime"
+    },
+    {
+      "id": "xpack.uptime.alerts.tls",
+      "nom": "Uptime TLS (existant)",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "observability",
+      "produit": "uptime"
+    },
+    {
+      "id": "xpack.uptime.alerts.tlsCertificate",
+      "nom": "Uptime TLS",
+      "licence_minimale": "basic",
+      "utilisable_avec_cette_licence": true,
+      "categorie": "observability",
+      "produit": "uptime"
+    },
+    {
+      "id": ".geo-containment",
+      "nom": "Suivi de l'endiguement",
+      "licence_minimale": "gold",
+      "utilisable_avec_cette_licence": false,
+      "categorie": "management",
+      "produit": "stackAlerts"
+    },
+    {
+      "id": "slo.rules.burnRate",
+      "nom": "Taux d'avancement SLO",
+      "licence_minimale": "platinum",
+      "utilisable_avec_cette_licence": false,
+      "categorie": "observability",
+      "produit": "slo"
+    },
+    {
+      "id": "streams.rules.esql",
+      "nom": "ES|QL Rule",
+      "licence_minimale": "enterprise",
+      "utilisable_avec_cette_licence": false,
+      "categorie": "observability",
+      "produit": "streams"
+    },
+    {
+      "id": "xpack.ml.anomaly_detection_alert",
+      "nom": "Détection des anomalies",
+      "licence_minimale": "platinum",
+      "utilisable_avec_cette_licence": false,
+      "categorie": "management",
+      "produit": "ml"
+    },
+    {
+      "id": "xpack.ml.anomaly_detection_jobs_health",
+      "nom": "Intégrité des tâches de détection des anomalies",
+      "licence_minimale": "platinum",
+      "utilisable_avec_cette_licence": false,
+      "categorie": "management",
+      "produit": "ml"
+    },
+    {
+      "id": "xpack.uptime.alerts.durationAnomaly",
+      "nom": "Anomalie de durée Uptime",
+      "licence_minimale": "platinum",
+      "utilisable_avec_cette_licence": false,
+      "categorie": "observability",
+      "produit": "uptime"
+    }
+  ],
+  "fonctionnalites_par_space": [
+    {
+      "id": "actions",
+      "nom": "Actions et connecteurs",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "advancedSettings",
+      "nom": "Paramètres avancés",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "alerting_v2_action_policies",
+      "nom": "Action Policies",
+      "licence_minimale": "basic",
+      "categorie": "Alerting"
+    },
+    {
+      "id": "alerting_v2_alerts",
+      "nom": "Alerts",
+      "licence_minimale": "basic",
+      "categorie": "Alerting"
+    },
+    {
+      "id": "alerting_v2_execution_history",
+      "nom": "Execution history",
+      "licence_minimale": "basic",
+      "categorie": "Alerting"
+    },
+    {
+      "id": "alerting_v2_rules",
+      "nom": "Rules",
+      "licence_minimale": "basic",
+      "categorie": "Alerting"
+    },
+    {
+      "id": "apm",
+      "nom": "APM et expérience utilisateur",
+      "licence_minimale": "basic",
+      "categorie": "Observability"
+    },
+    {
+      "id": "automatic_import",
+      "nom": "Importation automatique",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "canvas",
+      "nom": "Canvas",
+      "licence_minimale": "basic",
+      "categorie": "Analytics"
+    },
+    {
+      "id": "cloudConnect",
+      "nom": "Cloud Connect",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "dashboard_v2",
+      "nom": "Tableau de bord",
+      "licence_minimale": "basic",
+      "categorie": "Analytics"
+    },
+    {
+      "id": "dataQuality",
+      "nom": "Qualité de l’ensemble de données",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "dev_tools",
+      "nom": "Outils de développement",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "discover_v2",
+      "nom": "Discover",
+      "licence_minimale": "basic",
+      "categorie": "Analytics"
+    },
+    {
+      "id": "enterpriseSearch",
+      "nom": "Elasticsearch",
+      "licence_minimale": "basic",
+      "categorie": "Elasticsearch"
+    },
+    {
+      "id": "enterpriseSearchAnalytics",
+      "nom": "Behavioral Analytics",
+      "licence_minimale": "basic",
+      "categorie": "Elasticsearch"
+    },
+    {
+      "id": "enterpriseSearchApplications",
+      "nom": "Applications de recherche",
+      "licence_minimale": "basic",
+      "categorie": "Elasticsearch"
+    },
+    {
+      "id": "filesManagement",
+      "nom": "Gestion des fichiers",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "filesSharedImage",
+      "nom": "Images partagées",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "fleet",
+      "nom": "Integrations",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "fleetv2",
+      "nom": "Fleet",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "generalCasesV3",
+      "nom": "Cas",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "indexPatterns",
+      "nom": "Gestion de la vue de données",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "infrastructure",
+      "nom": "Infrastructure",
+      "licence_minimale": "basic",
+      "categorie": "Observability"
+    },
+    {
+      "id": "logs",
+      "nom": "Logs",
+      "licence_minimale": "basic",
+      "categorie": "Observability"
+    },
+    {
+      "id": "maintenanceWindow",
+      "nom": "Maintenance Windows",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "manageReporting",
+      "nom": "Gérer les rapports planifiés",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "maps_v2",
+      "nom": "Maps",
+      "licence_minimale": "basic",
+      "categorie": "Analytics"
+    },
+    {
+      "id": "ml",
+      "nom": "Machine Learning",
+      "licence_minimale": "basic",
+      "categorie": "Analytics"
+    },
+    {
+      "id": "monitoring",
+      "nom": "Monitoring du stack",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "observabilityAlerts",
+      "nom": "Alertes Observability",
+      "licence_minimale": "basic",
+      "categorie": "Observability"
+    },
+    {
+      "id": "observabilityCasesV3",
+      "nom": "Cas",
+      "licence_minimale": "basic",
+      "categorie": "Observability"
+    },
+    {
+      "id": "osquery",
+      "nom": "Osquery",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "queryActivity",
+      "nom": "Query activity",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "reportingLegacy",
+      "nom": "L'héritage du reporting",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "rulesSettings",
+      "nom": "Paramètres des règles",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "savedObjectsManagement",
+      "nom": "Gestion des objets enregistrés",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "savedObjectsTagging",
+      "nom": "Gestion des balises",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "savedQueryManagement",
+      "nom": "Gestion des requêtes enregistrées",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "searchQueryRules",
+      "nom": "Query rules",
+      "licence_minimale": "basic",
+      "categorie": "Elasticsearch"
+    },
+    {
+      "id": "searchSynonyms",
+      "nom": "Synonyms",
+      "licence_minimale": "basic",
+      "categorie": "Elasticsearch"
+    },
+    {
+      "id": "securitySolutionAlertsV1",
+      "nom": "Alertes",
+      "licence_minimale": "basic",
+      "categorie": "Security"
+    },
+    {
+      "id": "securitySolutionCasesV3",
+      "nom": "Cas",
+      "licence_minimale": "basic",
+      "categorie": "Security"
+    },
+    {
+      "id": "securitySolutionNotes",
+      "nom": "Notes",
+      "licence_minimale": "basic",
+      "categorie": "Security"
+    },
+    {
+      "id": "securitySolutionRulesV4",
+      "nom": "Règles et exceptions",
+      "licence_minimale": "basic",
+      "categorie": "Security"
+    },
+    {
+      "id": "securitySolutionTimeline",
+      "nom": "Chronologie",
+      "licence_minimale": "basic",
+      "categorie": "Security"
+    },
+    {
+      "id": "siemV5",
+      "nom": "Security",
+      "licence_minimale": "basic",
+      "categorie": "Security"
+    },
+    {
+      "id": "slo",
+      "nom": "SLO",
+      "licence_minimale": "basic",
+      "categorie": "Observability"
+    },
+    {
+      "id": "stackAlerts",
+      "nom": "Règles de la Suite Elastic",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "stackAlertsOnly",
+      "nom": "Alertes de la Suite",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "streams",
+      "nom": "Streams",
+      "licence_minimale": "basic",
+      "categorie": "Management"
+    },
+    {
+      "id": "uptime",
+      "nom": "Synthetics et Uptime",
+      "licence_minimale": "basic",
+      "categorie": "Observability"
+    },
+    {
+      "id": "visualize_v2",
+      "nom": "Bibliothèque Visualize",
+      "licence_minimale": "basic",
+      "categorie": "Analytics"
+    }
+  ],
+  "terminologie": {
+    "locale": "fr-FR",
+    "nombre_de_cles": 60705,
+    "libelles": {
+      "session_discover": "Session Discover",
+      "data_view_singulier": null,
+      "tableaux_de_bord": "Tableaux de bord",
+      "section_pliable": "Section pliable",
+      "telecharger_csv": "Télécharger CSV"
+    }
+  }
+}
