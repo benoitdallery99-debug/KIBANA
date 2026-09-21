@@ -308,213 +308,12 @@ Les libellés marqués `✔ oui` ont été **relevés dans les traductions que l
 
 ---
 
-## Conséquences pour le parcours
-
-Rappel de SPEC §4.5 : *une capacité absente n'apparaît pas dans le parcours, sauf dans un encadré
-« Hors licence Basic » quand son absence surprendrait.*
-
-### Ce qui est retiré, et ce qui le remplace
-
-| Capacité écartée | Motif | Ce que le kit fait à la place | Module |
-|---|---|---|---|
-| **Rapport PDF / PNG d'un tableau de bord** | Hors Basic | **Encadré « Hors licence Basic »** : l'absence surprendrait, c'est l'exemple nommé par SPEC §4.5. Le parcours enseigne les trois voies CSV (rapport d'une session Discover, rapport d'un panneau « session Discover », téléchargement CSV d'un panneau) | M3, M4 |
-| **Planification d'exports récurrents**, même en CSV | Hors Basic, **non documenté comme tel** | Second encadré « Hors licence Basic », juste après le précédent : c'est le piège que la doc laisse passer. Substitut enseigné : le POST URL, disponible en Basic | M5 |
-| **Drilldown URL** (« Accéder à l'URL ») | Gold | M3 n'enseigne que le drilldown tableau de bord → tableau de bord et le drilldown Discover. Un exercice met en scène le piège de migration : un tableau de bord importé depuis un environnement Gold garde ses drilldowns URL, qui restent **muets** en Basic | M3, M5 |
-| **Connecteurs Email, Slack, Webhook, PagerDuty, Cases** et les 66 autres | Gold ou Platinum | M5 construit son alerte avec `.index` (indexation d'un document, relisible dans Discover) et `.server-log`. La démonstration passe par `GET /api/actions/connector_types` : le stagiaire constate lui‑même les 2 sur 73 | M5 |
-| **Règles ML, SLO, suivi de l'endiguement, ES\|QL Streams** | Platinum, Gold, Enterprise | M5 n'enseigne que « Seuil personnalisé », « Recherche Elasticsearch » et « Seuil de l'index ». La détection de silence se fait avec le « no data » du seuil personnalisé | M5 |
-| **Sous‑privilèges de fonctionnalité** | Gold | M5 donne des rôles à privilèges `all` sur `dashboard_v2` et `discover_v2` — le réglage fin `download_csv_report` n'existe pas en Basic et ne doit pas être montré | M5 |
-| **DLS / FLS, privilèges d'index distants, journalisation d'audit, mapping de rôles** | Platinum ou Gold | Hors périmètre, non mentionnés | — |
-| **Mode rapide / approximation ES\|QL, assistance IA de l'éditeur, ES\|QL multi‑clusters** | Enterprise | M1 enseigne ES\|QL sans ces trois options ; aucune capture ne les montre | M1 |
-| **`_source` synthétique de `logsdb`** | Hors Basic — **repli automatique** | Rien à faire : en Basic, `logsdb` conserve le `_source` d'origine. Le piège annoncé ne se produit pas, et M0 n'a pas à l'enseigner | M0 |
-| **Agent Builder, alerting v2 expérimental, Fleet compatible Spaces** | Enterprise | Absents du parcours | — |
-
-### Ce qui est absent de 9.5.3 (arrivée en 9.6) — donc jamais mentionné
-
-| Capacité | Version d'arrivée | Ce que le kit fait à la place | Module |
-|---|---|---|---|
-| Export JSON d'un **panneau isolé** | 9.6 (aperçu) | M5 exporte le tableau de bord entier (« Export JSON », GA en 9.5) | M5 |
-| API Links et API Markdowns | 9.6 (expérimental) | Les panneaux Liens et Markdown se créent dans l'UI ; ils voyagent dans le JSON du tableau de bord et dans l'export ndjson | M3, M5 |
-| `discover:defaultEsqlQuery` | 9.6 | M1 ne promet aucune requête ES\|QL de départ | M1 |
-| Barre de progression dans une table Lens | 9.6 | M2 colore par valeur (« Cell decoration », GA) | M2 |
-| `esql:enabled` | n'existe dans aucune version | Le nom exact est **`enableESQL`**, actif par défaut. À corriger partout où l'autre nom traîne | M0, M1 |
-
-### Ce qui est présent mais en aperçu technique — signalé, jamais enseigné comme acquis
-
-- **Contrôle de variable ES|QL** (`?x` / `??x`) : aperçu depuis 9.0, toujours en aperçu en 9.5.3.
-  M3 enseigne la liste d'options, la plage, le curseur temporel, et le contrôle **alimenté par une
-  requête ES|QL** (celui‑là est GA depuis 9.5 — c'est l'ambiguïté centrale de cette famille).
-- **Annotations Lens** et **échantillonnage** : mentionnés en M2 comme aperçus, sans exercice.
-- **Refonte du sélecteur de temps** (Presets, Calendar, Custom range) : aperçu en 9.5. M0 décrit
-  l'écran **tel que le lab l'affiche**, capture à l'appui, sans supposer laquelle des deux variantes
-  documentées est servie.
-- **Affichage en cascade des `STATS BY` et sparklines dans Discover**, **édition d'index de
-  correspondance** : aperçus, hors parcours.
-- **Badge « VERSION D'ÉVALUATION TECHNIQUE » dans le volet d'export JSON** : la documentation déclare
-  l'export JSON GA en 9.5, le code de la v9.5.3 affiche un badge d'aperçu. M5 montre l'écran réel et
-  explique la divergence plutôt que de la taire.
-
----
-
-## Points de vigilance
-
-Chacun de ces pièges est à provoquer volontairement dans un exercice (SPEC §6.3), puis à reprendre
-dans la fiche mémo et le quiz.
-
-1. **« Unique count » est approximatif.** C'est l'agrégation `cardinality`, dont le seuil de précision
-   vaut **3 000** par défaut (40 000 au maximum). Toute réponse attendue qui dépend d'un décompte
-   distinct doit rester **sous 3 000**, sinon le corrigé et l'écran divergeront.
-   Sources : [explore-analyze/dashboards/create-dashboard-of-panels-with-web-server-data.md](https://www.elastic.co/docs/explore-analyze/dashboards/create-dashboard-of-panels-with-web-server-data)
-   et [reference/aggregations/search-aggregations-metrics-cardinality-aggregation.md](https://www.elastic.co/docs/reference/aggregations/search-aggregations-metrics-cardinality-aggregation).
-
-2. **Ne pas valider une requête KQL avec la fonction ES|QL `KQL()`.** Son paramètre nommé
-   `case_insensitive` vaut `false` par défaut et ne concerne que les champs `keyword` ; il n'existe
-   que depuis 9.3. La fonction est GA depuis 9.1. Valider dans Discover (Playwright) **et** par une
-   requête DSL, jamais par `KQL()`.
-   Source : [reference/query-languages/esql/functions-operators/search-functions/kql.md](https://www.elastic.co/docs/reference/query-languages/esql/functions-operators/search-functions/kql).
-
-3. **`[1025 TO *]` relève de Lucene, pas de KQL.** L'échec est silencieux : la requête ne renvoie pas
-   d'erreur, elle renvoie zéro résultat. La forme KQL est `destination.port >= 1025`.
-   Sources : [explore-analyze/query-filter/languages/kql.md](https://www.elastic.co/docs/explore-analyze/query-filter/languages/kql)
-   pour les comparateurs KQL ; `docs/SPEC.md` §6.3 et `CLAUDE.md` pour le constat de lab.
-   **Ce comportement n'est pas couvert par `docs/capacites-lab.json`** : il doit être reprouvé et
-   capturé avant d'entrer dans le guide.
-
-4. **Un export ndjson ne s'importe que dans la même version, une mineure plus récente de la même
-   majeure, ou la majeure suivante.** Depuis 9.5.3, le domaine est donc 9.5.3, 9.6+ et 10.x — et
-   « la majeure suivante » s'arrête à **une** majeure. Ne jamais retirer `coreMigrationVersion` ni
-   `typeMigrationVersion` d'un ndjson édité à la main.
-   Source : [explore-analyze/find-and-organize/saved-objects.md](https://www.elastic.co/docs/explore-analyze/find-and-organize/saved-objects).
-
-5. **`index.mode` et `logsdb`.** Les nouveaux data streams `logs-*-*` sont en `index.mode: logsdb`
-   par défaut depuis 9.0. Le réglage est **statique** : un changement ne prend effet qu'au rollover.
-   En Basic, le `_source` synthétique n'est pas appliqué (repli sur le `_source` stocké), mais
-   `logsdb` impose gratuitement `ignore_malformed: true`, `ignore_above: 8191`, un tri forcé sur
-   `host.name` puis `@timestamp`, et le codec `best_compression`. Avec la `failure store` activée par
-   défaut depuis 9.2, **presque rien n'échoue visiblement à l'ingestion** : un module de diagnostic
-   doit apprendre à regarder `_ignored` et la failure store, pas les codes de retour.
-   Sources : [manage-data/data-store/data-streams/logs-data-stream.md](https://www.elastic.co/docs/manage-data/data-store/data-streams/logs-data-stream),
-   [manage-data/data-store/data-streams/logs-data-stream-configure.md](https://www.elastic.co/docs/manage-data/data-store/data-streams/logs-data-stream-configure),
-   [reference/elasticsearch/index-settings/index-modules.md](https://www.elastic.co/docs/reference/elasticsearch/index-settings/index-modules).
-
-6. **Route de l'API Dashboards : `/api/dashboards/{id}`, et non `/api/dashboards/dashboard/{id}`.**
-   La seconde forme a été employée puis corrigée pendant les travaux ; elle circule encore dans les
-   notes documentaires. Le lab fait foi : `PUT /s/formation/api/dashboards/{id}` → 201,
-   `DELETE` → 204. Préférer `PUT` avec un identifiant choisi (idempotent, rejouable) plutôt que
-   `POST`, qui engendre un nouvel identifiant à chaque appel.
-   Source : [explore-analyze/dashboards/manage-dashboards-as-code.md](https://www.elastic.co/docs/explore-analyze/dashboards/manage-dashboards-as-code).
-
-7. **Un drilldown URL importé en Basic est muet.** Le garde Gold s'applique deux fois : la tuile est
-   désactivée à la création, et l'action refuse de s'exécuter. Un tableau de bord venu d'un
-   environnement Gold s'importe **sans erreur**, puis ne réagit pas au clic.
-   Source : [explore-analyze/dashboards/drilldowns.md](https://www.elastic.co/docs/explore-analyze/dashboards/drilldowns).
-
-8. **Deux actions homonymes mènent vers Discover ; une seule est active par défaut.**
-   « Explorer dans Discover » (fournie par Lens) fonctionne sans réglage ; « Explorer les données
-   sous‑jacentes » (`exploreDataInContextMenu`) est à `false` par défaut depuis 7.14, de même que le
-   clic sur un point de série (`exploreDataInChart`). La page qui documente le sujet en détail est
-   celle du chemin inactif.
-   Source : [explore-analyze/visualize/manage-panels.md](https://www.elastic.co/docs/explore-analyze/visualize/manage-panels).
-
-9. **Les valeurs par défaut de l'UI et de l'API ne sont pas les mêmes.** Export UI : objets liés
-   inclus ; `POST /_export` : `includeReferencesDeep: false`. Import UI : écrasement ; `POST /_import` :
-   `overwrite: false`. `POST /api/spaces/_copy_saved_objects` : `createNewCopies: true` — donc de
-   nouveaux identifiants, l'inverse de l'import. `overwrite` et `createNewCopies` sont mutuellement
-   exclusifs.
-   Source : [explore-analyze/find-and-organize/saved-objects.md](https://www.elastic.co/docs/explore-analyze/find-and-organize/saved-objects).
-
-10. **Lire le badge de la section, pas seulement celui de la page.** Dans un même fragment de
-    documentation, « Badge » porte `ga 9.4` (présent) et « Progress bar » porte `ga 9.6` (absent).
-    Le dépôt `docs-content` est cumulatif : une page GA peut décrire une interface 9.6.
-    Source : [explore-analyze/visualize/charts/tables.md](https://www.elastic.co/docs/explore-analyze/visualize/charts/tables).
-
-11. **Terminologie fr‑FR : relever, jamais traduire.** « drilldown » devient « exploration » ;
-    l'entrée de menu est « Créer une exploration ». Trois bascules de l'éditeur de drilldown
-    (`useFiltersLabel`, `useTimeRange`, `openInNewTab`) sont **absentes** du fichier fr‑FR de la 9.5 et
-    s'afficheront en anglais. Aucune capture ne doit être reprise d'`elastic.co` : toutes sont
-    produites sur le lab, en fr‑FR, en vue de solution `classic`.
-    Source : [explore-analyze/dashboards/drilldowns.md](https://www.elastic.co/docs/explore-analyze/dashboards/drilldowns).
-
-12. **Le chemin de clics diffère en vue `classic`.** La documentation 9.5 décrit d'abord les vues
-    Search / Observability / Security ; elle prévient que les Spaces en vue Classic ont une autre
-    disposition (la bibliothèque Visualize reste sous **Visualize**). La documentation du « Seuil
-    personnalisé » décrit le chemin Observability, alors que le chemin réel en Classic passe par
-    Stack Management > Rules. Tous les chemins de clics du guide sont à relever en Classic.
-    Source : [explore-analyze/find-and-organize/kibana-interface.md](https://www.elastic.co/docs/explore-analyze/find-and-organize/kibana-interface).
-
-13. **Le schéma de nommage des data streams est `<type>-<dataset>-<namespace>`.** Le point n'est pas
-    un séparateur de niveau : il vit **à l'intérieur** du dataset (`logs-nginx.access-prod`). Le
-    commentaire de `kit.config.yaml` (« data streams `logs-<source>.<type>-formation` ») décrit donc
-    un dataset `<source>.<type>`, ce qui est correct, mais la formulation invite à l'erreur inverse :
-    à reformuler avant d'écrire le générateur. Ni tiret dans le dataset ni dans le namespace,
-    100 caractères au plus.
-    Source : [reference/fleet/data-streams.md](https://www.elastic.co/docs/reference/fleet/data-streams).
-
-14. **Les chemins de la documentation ont changé de nom.** `explore-analyze/alerts-cases/` est devenu
-    `explore-analyze/alerting/` ; les anciennes URL redirigent. Un lien copié d'un support 9.5 aura
-    l'ancienne forme sans être faux.
-
----
-
-## Indéterminé à ce stade
-
-Cette section est ce qui rend le document utilisable : elle dit ce qui **n'est pas** établi.
-**193 des 270 constats documentaires ne précisent pas le niveau d'abonnement** — la documentation
-renvoie à `elastic.co/subscriptions`, page bloquée — et la sonde du lab n'en a couvert qu'une part.
-Tant qu'une ligne figure ici, le rédacteur du parcours ne l'écrit pas comme acquise.
-
-### Par famille : ce qui reste ouvert et le test qui tranche
-
-| Famille | Constats sans niveau d'abonnement | Ce qui reste ouvert | Test à exécuter |
-|---|---|---|---|
-| **Contrôles** | 24 / 25 | Aucun des six contrôles n'a été créé sur le lab | Créer un tableau de bord portant une liste d'options, une plage et un curseur temporel, plus un contrôle « Write a query » ES\|QL. Les quatre créés → toute la famille est tranchée d'un coup |
-| **ES\|QL dans l'interface** | 29 / 32 | Le moteur répond (200), mais ni Discover ni Lens n'ont été ouverts en mode ES\|QL | Ouvrir Discover en mode ES\|QL (Playwright), exécuter `FROM logs-*-formation \| STATS ... `, puis créer un panneau « Visualization (query) ». Refaire le sondage Kibana avec `POST /api/console/proxy?path=%2F_query&method=POST` (le `400` de la sonde vient du paramétrage du proxy) |
-| **Panneaux (section pliable, Liens, Markdown)** | 17 / 17 | Aucun libellé, aucun type de panneau relevé sur l'instance | Ouvrir le menu **Ajouter** d'un tableau de bord et capturer la liste complète des types offerts sous cette licence : une capture tranche les trois capacités |
-| **Drilldowns** | 7 / 18 (les 11 autres tranchés par le code) | Le gate Gold du drilldown URL et l'absence de gate sur les deux autres viennent du **code**, pas du lab | Sur un panneau Lens : ouvrir « Créer une exploration » et relever quelles tuiles sont proposées et lesquelles portent « Niveau de licence insuffisant ». Puis importer un tableau de bord porteur d'un `url_drilldown` et vérifier qu'il reste muet |
-| **Panneau → Discover** | 11 / 11 | Ni l'action Lens ni ses conditions (calque unique, décalage temporel) n'ont été vérifiées | Poser un panneau Lens mono‑calque sur un tableau de bord, vérifier la présence de « Explorer dans Discover » ; refaire avec deux calques et avec un `shift=` pour constater la disparition de l'action |
-| **Lens** | 22 / 23 | Formules, lignes de référence, couleur par valeur : aucune n'a été construite | Construire une visualisation portant une formule avec `kql=`, une ligne de référence et une couleur par valeur. **Point le plus urgent** : comparer les deux chemins d'export CSV d'un panneau Lens — menu **Partager** (garde « at least gold » dans le code) contre **Inspecter > Données > Télécharger CSV** (documenté sans réserve). Deux documentalistes divergent sur ce point ; seul ce test tranche |
-| **Export et rapports** | 3 / 12 | Le `404` des routes de reporting ne distingue pas une route renommée d'un refus de licence | Ouvrir le menu **Export** d'un tableau de bord et relever si PDF/PNG sont absents ou grisés ; puis appeler la route de génération et lire le corps de la réponse (le code annonce un `403` « Your basic license does not support PDF Reporting »). Même test pour « Schedule export », y compris en CSV. Vérifier si Kibana traduit ces messages en fr‑FR |
-| **Alerting** | 4 / 25 | Les types et connecteurs sont tranchés ; **les options fines ne le sont pas** | Créer une règle « Seuil personnalisé » avec « Group alerts by » **et** l'alerte « no data », la laisser se déclencher, vérifier l'action `.index`. Vérifier aussi le chemin de clics réel en vue `classic` (Stack Management > Rules) |
-| **Spaces et privilèges** | 8 / 26 | Les 53 fonctionnalités sont relevées, mais aucun rôle n'a été créé ni éprouvé | Créer les rôles `formateur` et `stagiaire`, se connecter avec chacun, vérifier qu'un `Dashboard: Read` ne voit pas « Créer une exploration » et que l'écran de rôle ne propose aucun sous‑privilège |
-| **Objets enregistrés et data views** | 13 / 19 | L'export fonctionne ; **l'import, la copie vers un Space et l'identifiant fixe de data view n'ont pas été exercés** | Réimporter le ndjson exporté dans un second Space, avec et sans `overwrite` ; créer une data view à identifiant imposé par API et vérifier qu'un tableau de bord exporté s'y rattache |
-| **Terminologie** | 18 / 18 | Quatre libellés relevés ; **le libellé fr‑FR de « data view » manque** (clé `dataViews.savedObjectName` absente de la traduction servie) | Relever les libellés sur l'écran réel : titre de la page de gestion, libellé du champ du formulaire de création, nom du type dans la page des objets enregistrés. Élargir la sonde aux clés du sélecteur de temps, du panneau Liens et de l'éditeur de drilldown |
-| **Données et index** | 15 / 20 | Aucun `index.mode` n'a été lu sur le lab | `GET logs-*-formation/_settings?filter_path=**.index.mode` et `GET .../_mapping` : vérifier que le mode est bien `logsdb`, que le `_source` est **stocké** (et non synthétique) en Basic, et que `host.name` a bien été injecté par le tri forcé |
-| **API Dashboards** | 22 / 24 | `POST /api/dashboards`, l'export JSON de l'UI et l'API Visualizations n'ont pas été appelés | Appeler `POST /api/dashboards` et vérifier l'identifiant engendré ; ouvrir le volet « Export JSON » de l'UI et relever s'il porte le badge « VERSION D'ÉVALUATION TECHNIQUE » malgré le GA documenté |
-
-### Points où deux sources se contredisent — à trancher par le test, pas par l'arbitrage
-
-1. **Export CSV d'un panneau Lens.** La documentation décrit « Download CSV » sans réserve
-   ([explore-analyze/visualize/lens.md](https://www.elastic.co/docs/explore-analyze/visualize/lens)),
-   tandis que le code de la v9.5.3 place l'intégration du menu **Partager** derrière un garde
-   « at least gold ». Les deux peuvent être vrais s'il s'agit de deux chemins distincts — c'est
-   l'hypothèse la plus probable. **Test** : en Basic, comparer menu **Partager** du panneau et
-   **Inspecter > Données > Télécharger CSV**, et documenter lequel répond.
-2. **Sortie du drilldown dashboard.** La documentation décrit deux bascules (filtres, plage de
-   dates), le code de la 9.5 en déclare trois (plus « ouvrir dans un nouvel onglet »), et les libellés
-   des trois manquent au fichier fr‑FR. **Test** : ouvrir l'éditeur et capturer l'écran réel.
-3. **Déclencheurs du drilldown URL.** La prose en annonce deux, le tableau de variables trois, le code
-   cinq. Sans objet pour le parcours (capacité hors Basic), mais à ne pas recopier.
-4. **Badges de la planification d'exports.** Deux pages annoncent `ga 9.1+`, la section cible porte
-   `ga 9.3+, preview 9.1-9.2`. **Le badge de la section fait foi** : GA en 9.3, donc présent en 9.5.3.
-5. **Identifiant du type de rapport dans les exemples de POST URL.** La documentation utilise tantôt
-   `csv`, tantôt `printablePdfV2`, alors que l'identifiant réel du CSV est `csv_searchsource` ou
-   `csv_v2`. **Test** : copier le POST URL depuis le volet d'export plutôt que de recopier la doc.
-
-### Prérequis du lab restés ouverts
-
-- **TLS entre Kibana et Elasticsearch pour l'alerting** : deux pages officielles divergent sur le
-  caractère obligatoire du chiffrement. Le lab tourne en HTTP. Si une règle refuse de se créer ou de
-  notifier, c'est la première piste. L'écart est à consigner dans le guide formateur (SPEC §4.1).
-- **`server.publicBaseUrl`** : listé comme prérequis d'alerting par une page, absent d'une autre.
-  À vérifier au premier déclenchement de règle.
-- **`search.allow_expensive_queries`** doit valoir `true` : non relevé sur le lab.
-
----
-
 ## 14. Conséquences pour le parcours
 
 Rappel de la règle de SPEC §4.5 : *« Une capacité absente n'apparaît pas dans le parcours, sauf dans un
 encadré “Hors licence Basic” quand son absence surprendrait. »* Ce qui suit est la liste des décisions
-à appliquer, module par module.
+à appliquer, module par module. Les décisions marquées **(lab)** sont adossées à
+`docs/capacites-lab.json`, et pas seulement à la documentation.
 
 ### 14.1 Encadrés « Hors licence Basic » à prévoir
 
@@ -524,7 +323,7 @@ justifiées** plutôt que passées sous silence.
 | Ce qui manque | Où le dire | Pourquoi ça surprendrait | Ce que le kit propose à la place |
 |---|---|---|---|
 | **Rapports PDF et PNG** d'un dashboard | **M4**, au moment du partage du dashboard « Vue IDS » | « exporter mon tableau de bord en PDF pour le comité » est la première demande d'un chef de salle. L'exemple est d'ailleurs celui que cite SPEC §4.5 | *Download CSV* d'un panneau, capture d'écran, et partage du dashboard par lien |
-| **Connecteurs Email, Slack, Webhook** | **M5**, section alerting | « et ça m'envoie un mail ? » est la question n° 1 sur l'alerting | Connecteurs **Index** (réinjection dans un index dédié, puis dashboard ou Discover sur cet index) et **Server log** |
+| **Connecteurs Email, Slack, Webhook** **(lab)** | **M5**, section alerting | « et ça m'envoie un mail ? » est la question n° 1 sur l'alerting | Connecteurs **Index** (réinjection dans un index dédié, puis dashboard ou Discover sur cet index) et **Server log** |
 | **Drilldown URL** (pivot d'une valeur vers un outil externe) | **M3**, section drilldowns | pivoter d'une IP vers un outil d'enrichissement ou un ticket est un geste SOC quotidien | Drilldown **dashboard → dashboard** et **Discover** (tous deux en Basic), plus le panneau **Liens** pour un lien statique |
 | **Sécurité au niveau document et au niveau champ** (DLS / FLS) | **M5**, section rôles et Spaces | « chaque analyste ne voit que son périmètre » est une exigence courante en SOC mutualisé | Un motif d'index distinct par périmètre + un Space distinct : le seul cloisonnement possible en Basic |
 
@@ -532,7 +331,8 @@ justifiées** plutôt que passées sous silence.
 
 **Retirées parce que hors Basic.** Planification d'exports récurrents et envoi par courriel, y compris
 au format CSV (**M5**) ; connecteur **Cases** et donc le scénario « une alerte crée automatiquement un
-cas » (**M5**) ; règles **Tracking containment** et **Anomaly detection** (**M5**) ; privilèges d'index
+cas » (**M5**) ; règles **Tracking containment** (Gold) et **Anomaly detection** (Platinum) — **(lab)** : le lab ne
+sert que 41 types de règles sur 47 et 2 connecteurs sur 73 (**M5**) ; privilèges d'index
 sur clusters distants et ES|QL en recherche multi-clusters — à annoncer en une phrase dès **M1** pour
 que personne n'essaie `FROM cluster:index` ; **Fleet space-aware**, donc pas de politiques d'agents par
 Space (**M5**) ; **Agent Builder**, partout ; le mode **Fast mode / approximation** d'ES|QL et
@@ -560,6 +360,11 @@ est pourtant le meilleur pont pédagogique KQL → ES|QL de **M1** et mérite un
 l'**affichage groupé** `STATS BY` et les **sparklines** (**M1**) ; l'**éditeur d'index de
 correspondance** ; l'**API Tags** ; le **provider Terraform**, réduit à une mention d'une ligne en
 **M5** ; le **système d'alerting v2**, à mentionner pour que personne ne le découvre par accident.
+Deux aperçus doivent néanmoins être **montrés**, parce que le stagiaire les aura sous les yeux : la
+**refonte du sélecteur de temps** (*Presets*, *Calendar*, *Custom range*, badgée `preview 9.5`), que
+**M0** décrira d'après la capture du lab et non d'après la documentation ; et le badge
+**« VERSION D'ÉVALUATION TECHNIQUE »** du volet d'export JSON, que **M5** doit expliquer plutôt que
+taire, puisque la documentation annonce cet export en GA.
 
 ### 14.3 Capacités confirmées qui structurent le parcours
 
@@ -580,10 +385,21 @@ correspondance** ; l'**API Tags** ; le **provider Terraform**, réduit à une 
   géré en as-code en 9.5.3**. Les deux dashboards corrigés doivent donc être conçus sans ces types.
   Seconde contrainte : la table des dernières alertes doit rester à **un seul calque, sans décalage
   temporel, sur une seule data view**, faute de quoi le passage vers Discover disparaît du menu.
-- **M5** — Export et import ndjson et sa règle de compatibilité ; data views à ID fixe ; **API
-  Dashboards**, GA en 9.5 et donc pleinement enseignable ; règles Elasticsearch query, Index threshold
-  et **Custom threshold** avec alerte « no data » par groupe — c'est exactement ce qu'exige le scénario
-  S6 du générateur ; connecteurs Index et Server log ; rôles et Spaces.
+  **Troisième contrainte, établie sur le lab** : l'API Dashboards **refuse** une source de données qui
+  référence une data view par son identifiant (`"type": "data_view"` → **HTTP 400**) ; seul
+  `"type": "data_view_spec"`, c'est-à-dire le motif d'index **en ligne**, est accepté. Les deux dashboards
+  corrigés construits par l'API portent donc leur motif en dur.
+- **M5** — Export et import ndjson et sa règle de compatibilité (**export confirmé sur le lab**, HTTP 200) ;
+  data views à ID fixe ; **API Dashboards**, GA en 9.5, **servie en Basic et confirmée sur le lab**
+  (création 201, relecture 200, liste 200, suppression 204 dans le Space `formation`), donc pleinement
+  enseignable ; règles **Elasticsearch query**, **Index threshold** et **Custom threshold** avec alerte
+  « no data » par groupe — c'est exactement ce qu'exige le scénario S6 du générateur, et **les trois
+  types sont confirmés utilisables sur le lab** ; connecteurs **Index** et **Server log**, les deux seuls
+  sur 73 (**lab**) ; rôles et Spaces.
+  **Nuance de portabilité à enseigner, établie sur le lab** : un dashboard construit par l'API porte son
+  motif d'index en ligne (`data_view_spec`), et **son export ndjson ne contient donc aucune référence**.
+  L'identifiant fixe de data view garde tout son sens pour les dashboards construits dans l'interface puis
+  transportés en ndjson — c'est bien ce que M5 enseigne — mais il ne s'applique pas à la voie as-code.
 
 ### 14.4 Deux décisions à prendre avant d'écrire P3
 
@@ -753,14 +569,84 @@ flotte d'un écran à l'autre. Conséquence opérationnelle, déjà inscrite dan
 captures doivent être produites sur le lab réel en fr-FR**, jamais reprises de la documentation, qui est
 en anglais et décrit parfois un écran différent.
 
+
+**21. `[1025 TO *]` relève de Lucene, pas de KQL — et l'échec est silencieux.** La syntaxe d'intervalle
+entre crochets est celle de Lucene. Saisie dans une barre de requête en **KQL**, elle ne lève pas
+d'erreur : elle renvoie zéro résultat. La forme KQL correcte est `destination.port >= 1025`, KQL
+disposant de `>=`, `<=`, `>` et `<`
+([explore-analyze/query-filter/languages/kql.md](https://www.elastic.co/docs/explore-analyze/query-filter/languages/kql)).
+Le constat d'échec silencieux vient du lab et est inscrit dans `docs/SPEC.md` §6.3 et `CLAUDE.md` ;
+il **n'est pas couvert par `docs/capacites-lab.json`** et doit donc être reproduit et **capturé** avant
+d'entrer dans le guide. Corollaires à enseigner dans le même exercice : l'existence s'écrit `champ:*` en
+KQL et `_exists_:champ` en Lucene.
+
+**22. La route de l'API Dashboards est `/api/dashboards/{id}`, pas `/api/dashboards/dashboard/{id}`.**
+La seconde forme circule dans les notes de qualification ; elle est fausse. Le lab tranche :
+`PUT /s/formation/api/dashboards/{id}` répond **201**, `GET` **200**, `DELETE` **204**. Préférer `PUT`
+avec un identifiant choisi, idempotent et rejouable, plutôt que `POST`, qui engendre un nouvel
+identifiant à chaque appel
+([explore-analyze/dashboards/manage-dashboards-as-code.md](https://www.elastic.co/docs/explore-analyze/dashboards/manage-dashboards-as-code)).
+
+**23. L'API Dashboards n'accepte pas une data view référencée par identifiant.** Établi sur le lab :
+une source de données déclarée `"type": "data_view"` est refusée par **HTTP 400** ; seul
+`"type": "data_view_spec"` — le motif d'index **en ligne** — passe. Conséquence directe, à enseigner en
+**M5** : l'export ndjson d'un dashboard construit par l'API **ne porte aucune référence**, là où celui
+d'un dashboard construit dans l'interface en porte une vers la data view. Les deux voies ne produisent
+donc pas le même objet, et la promesse documentaire « garder les références portables » ne vaut que pour
+la seconde.
+
+**24. Un dashboard importé dans un autre Space reçoit un nouvel identifiant.** Établi sur le lab : le
+dashboard est un objet **partageable entre Spaces** ; importer un identifiant qui existe déjà dans un
+autre Space **crée une copie** sous un nouvel identifiant, rendu dans `destinationId`, **même avec
+`createNewCopies=false`**. Un exercice de M5 qui vérifierait « l'objet a bien gardé son identifiant »
+échouerait donc pour une bonne raison. À enseigner avec le point 12 : les identifiants ne se
+conservent qu'à l'intérieur d'un même Space.
+
 ---
 
 ## 16. Indéterminé à ce stade
 
 Cette section existe pour que le document reste honnête. Rien de ce qui suit n'a pu être tranché par la
 documentation, et rien ne sera écrit dans le parcours avant que le test correspondant ait été exécuté
-en P1. Les points **A** à **D** sont des **contradictions entre deux sources ou deux documentalistes**,
+en P1 — à l'exception de ce que le relevé sur le lab a depuis tranché, récapitulé juste en dessous.
+Les points **A** à **D** sont des **contradictions entre deux sources ou deux documentalistes**,
 signalées comme telles.
+
+### Ce que le relevé sur le lab a déjà tranché
+
+Le sondage de `lab/sonder_capacites.py` a fermé d'un coup plusieurs questions que la documentation
+laissait ouvertes, et elles ne figurent donc plus ci-dessous : la licence effective (`basic`, `active`) ;
+la disponibilité **réelle** de l'API Dashboards en Basic ; la liste **exhaustive** des types de règles
+(41 sur 47) et des connecteurs (**2 sur 73**, `.index` et `.server-log`) ; les 53 fonctionnalités
+attribuables par Space, toutes `basic` ; l'export ndjson des objets enregistrés ; et quatre libellés
+fr-FR relevés dans les traductions servies. Deux réserves demeurent sur ce relevé :
+
+- le sondage d'ES|QL **par Kibana** a répondu `400` — défaut de paramétrage du proxy de console dans la
+  sonde, **pas** un constat d'indisponibilité ; seul le moteur Elasticsearch a été exercé (HTTP 200) ;
+- les deux routes de reporting ont répondu `404`. Un `404` n'est pas le `403` de licence décrit par le
+  code : il n'exclut pas une route renommée. Le verdict « PDF/PNG hors Basic » reste **documentaire**.
+
+### Les 193 constats sans niveau d'abonnement, par famille
+
+Sur les 270 constats documentaires, **193 ne précisent pas le niveau d'abonnement** — la documentation
+renvoie à `elastic.co/subscriptions`, page bloquée — et la sonde n'en a couvert qu'une part. Tant qu'une
+ligne figure ici, le rédacteur du parcours ne l'écrit pas comme acquise.
+
+| Famille | Constats sans niveau d'abonnement | Ce qui reste ouvert | Test qui tranche |
+|---|---|---|---|
+| **Contrôles** | 24 / 25 | aucun des six contrôles n'a été créé sur le lab | créer un dashboard portant une liste d'options, une plage, un curseur temporel et un contrôle *Write a query* : les quatre créés tranchent toute la famille |
+| **ES\|QL dans l'interface** | 29 / 32 | ni Discover ni Lens n'ont été ouverts en mode ES\|QL | ouvrir Discover en mode ES\|QL, exécuter un `STATS`, créer un panneau *Visualization (query)* ; refaire le sondage Kibana avec `POST /api/console/proxy?path=%2F_query&method=POST` |
+| **Panneaux (section pliable, Liens, Markdown)** | 17 / 17 | aucun type de panneau relevé sur l'instance | ouvrir le menu **Ajouter** d'un dashboard et capturer la liste complète des types offerts sous cette licence |
+| **Drilldowns** | 7 / 18 | le gate Gold du drilldown URL vient du **code**, pas du lab | relever quelles tuiles sont proposées dans « Créer une exploration » et lesquelles portent « Niveau de licence insuffisant » |
+| **Passage panneau → Discover** | 11 / 11 | ni l'action Lens ni ses conditions n'ont été vérifiées | poser un panneau Lens mono-calque, vérifier la présence de l'action, puis refaire avec deux calques et avec un `shift=` |
+| **Lens** | 22 / 23 | aucune formule ni ligne de référence construite | construire une formule avec `kql=`, une ligne de référence, une couleur par valeur ; **et trancher le point B ci-dessous** |
+| **Export et rapports** | 3 / 12 | le `404` ne distingue pas route renommée et refus de licence | ouvrir le menu **Export** d'un dashboard, puis lire le corps de la réponse de la route de génération |
+| **Alerting** | 4 / 25 | types et connecteurs tranchés ; **les options fines ne le sont pas** | créer une règle *Custom threshold* avec « Group alerts by » **et** l'alerte « no data », la laisser se déclencher, vérifier l'action `.index` |
+| **Spaces et privilèges** | 8 / 26 | les 53 fonctionnalités sont relevées, mais aucun rôle n'a été éprouvé | créer `formateur` et `stagiaire`, se connecter avec chacun, vérifier qu'aucun sous-privilège n'est proposé |
+| **Objets enregistrés et data views** | 13 / 19 | l'export fonctionne ; **l'import et la data view à ID imposé n'ont pas été exercés** | réimporter le ndjson dans un second Space, avec et sans `overwrite` ; créer une data view à identifiant imposé par API |
+| **Terminologie** | 18 / 18 | quatre libellés relevés ; **le fr-FR de « data view » manque** (clé `dataViews.savedObjectName` absente) | relever les libellés sur l'écran réel et élargir la sonde aux clés du sélecteur de temps, du panneau Liens et de l'éditeur de drilldown |
+| **Données et index** | 15 / 20 | aucun `index.mode` lu sur le lab | `GET logs-*-formation/_settings?filter_path=**.index.mode` et vérifier que le `_source` est **stocké**, non synthétique |
+| **API Dashboards** | 22 / 24 | `POST`, l'export JSON de l'UI et l'API Visualizations n'ont pas été appelés | appeler `POST /api/dashboards` ; ouvrir le volet « Export JSON » et vérifier le badge d'aperçu (point E) |
 
 ### Contradictions à arbitrer
 
@@ -830,18 +716,24 @@ ce que le stagiaire aura sous les yeux, donc ce que les captures et les encadré
 doivent montrer. *Test* : capture d'écran de chaque écran concerné en Basic.
 
 **K. Le message exact renvoyé quand la licence ne suffit pas.** Absent de `docs-content` (grep sans
-résultat). *Test* : relever mot pour mot le corps du 403 sur `printablePdfV2`, `pngV2` et
-`/internal/reporting/schedule/csv_searchsource`, **et noter si Kibana les traduit en fr-FR**.
+résultat). Le relevé sur le lab n'y répond pas non plus : les deux routes de reporting sondées renvoient
+un **404**, pas le 403 de licence décrit par le code. *Test* : relever mot pour mot le corps de la
+réponse sur `printablePdfV2`, `pngV2` et `/internal/reporting/schedule/csv_searchsource`, **noter si
+c'est un 403 de licence ou un 404 de route**, et si Kibana traduit le message en fr-FR.
 
 **L. La planification d'exports est-elle vraiment hors Basic ?** Les prérequis documentés n'évoquent
 que RAM, privilèges et connecteur de courriel — **jamais la licence**. Le code 9.5 et un test
 d'intégration disent Gold. *Test* : le 403 ci-dessus. Si confirmé, c'est un **erratum de la
 documentation Elastic**, à signaler au stagiaire comme tel.
 
-**M. Niveau de licence des règles de détection Elastic Security**, et **N. des fenêtres de
-maintenance** (« the appropriate subscription », sans palier). *Tests* : `GET kbn:/api/alerting/rule_types`
-pour les premières ; présence de l'entrée dans Stack Management puis
-`GET kbn:/api/maintenance_window/_find` pour les secondes.
+**M. ~~Niveau de licence des règles de détection Elastic Security~~ — TRANCHÉ PAR LE LAB.**
+`GET /api/alerting/rule_types` donne `minimum_license_required: basic` et `enabled_in_license: true`
+pour les neuf types `siem.*` (requête personnalisée, requête enregistrée, EQL, ES\|QL, seuil,
+nouveaux termes, correspondance d'indicateur, ML, notification héritée). Ils sont enseignables.
+
+**N. Niveau de licence des fenêtres de maintenance** (« the appropriate subscription », sans palier
+nommé, et la sonde ne les couvre pas). *Test* : présence de l'entrée dans Stack Management, puis
+`GET kbn:/api/maintenance_window/_find`.
 
 **O. TLS entre Kibana et Elasticsearch est-il un prérequis dur de l'alerting ?** Deux pages officielles
 divergent : `alerting-setup.md` ne le cite pas parmi ses prérequis, la référence de configuration
@@ -887,5 +779,7 @@ littérale hors i18n dans le code 9.5.3).
 **Tous les libellés d'interface en français.** La documentation Elastic n'existe qu'en anglais et n'est
 pas prévue pour être localisée. Chaque tableau de ce document donne le **terme officiel anglais** pour
 servir de clé de recherche ; **aucun libellé français du kit ne peut être écrit sans passage en lab**.
+Le relevé a déjà fermé quatre cas — « Session Discover », « Tableaux de bord », « Section pliable »,
+« Télécharger CSV » — sur 60 705 clés traduites ; tout le reste est à relever.
 C'est une conséquence directe de `CLAUDE.md` : « Libellés d'UI cités : ceux de `kibana.locale`, relevés
 dans le lab, jamais traduits de tête. »

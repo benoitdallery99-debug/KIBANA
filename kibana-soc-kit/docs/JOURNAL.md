@@ -62,11 +62,39 @@ réellement consulté. La preuve forte reste le lab, conformément à CLAUDE.md.
 
 ---
 
-## P0 — Capacités et plan — EN COURS
+## P0 — Capacités et plan — TERMINÉ
 
-Démarré le 21/09/2026. Recherche documentaire déléguée à 13 sous-agents, un par famille de capacités
-de SPEC §4.5, dans le clone local de `github.com/elastic/docs-content`. `docs/capacites.md` et
-`docs/PLAN.md` restent à produire.
+Recherche documentaire déléguée à 13 sous-agents, un par famille de capacités de SPEC §4.5, dans le
+clone local de `github.com/elastic/docs-content` : 270 constats, chacun avec son badge `applies_to`,
+son fichier source et son URL canonique. Puis sonde du lab (`lab/sonder_capacites.py`) et des pièges
+(`lab/sonder_pieges.py`).
+
+**Livrables** `docs/capacites.md` (90 lignes de capacités réparties en 13 familles),
+`docs/capacites-lab.json`, `docs/pieges-lab.json`, `docs/PLAN.md`.
+
+**Bilan honnête de la colonne « confirmé en lab »** : 19 confirmées, 7 infirmées, 64 non sondées. Les
+64 restent marquées NON SONDÉ avec le test qui les trancherait : une capacité non testée n'est pas une
+capacité acquise.
+
+### Constats qui changent le parcours
+1. **Drilldown URL : hors Basic** (Gold), alors que dashboard → dashboard et le passage vers Discover
+   sont libres. La documentation est muette sur ce point ; c'est le code de la version 9.5.3 qui tranche
+   (`url_drilldown` porte `minimalLicense: 'gold'`). M3 est recomposé en conséquence, avec un encadré.
+2. **La planification d'exports récurrents est hors Basic, y compris en CSV**, et ce n'est écrit nulle
+   part dans la documentation. Second encadré « Hors licence Basic », en M5.
+3. **L'API Dashboards refuse les panneaux `map` et `alerts_table`** : un tableau de bord SOC comportant
+   une carte ne peut pas être géré en code en 9.5.3. Les corrigés n'en emploient aucun.
+4. **Connecteurs d'alerte : 2 sur 73** (`.index`, `.server-log`), relevé sur le lab. M5 s'y tient.
+5. **Depuis 9.5, « Exporter » depuis un tableau de bord rend un JSON d'API et non un ndjson**, et cet
+   export est incomplet. Le ndjson ne s'obtient plus que par Gestion de la pile → Objets enregistrés.
+
+### Incident de fabrication
+Deux sous-agents ont écrit `docs/capacites.md` en même temps — l'agent de synthèse du workflow et un
+agent lancé séparément — et leurs écritures se sont percutées : le fichier a contenu ses trois sections
+de clôture en double. Repéré à la relecture, pas signalé par les agents. Corrigé par fusion, sans perte :
+785 lignes, seize sections numérotées sans doublon.
+*Leçon retenue* : ne jamais confier le même fichier à deux agents simultanés. Les phases suivantes
+attribuent un propriétaire unique à chaque fichier.
 
 ---
 
@@ -186,5 +214,6 @@ qui ne peut pas passer au rouge n'est pas un indicateur.
 | E1 | `www.elastic.co` et `docker.elastic.co` bloqués par la politique d'egress de l'organisation (403 au CONNECT). Le README du proxy interdit de contourner. | Majeur (chaîne de fabrication uniquement) | Contourné, pas résolu | Images : miroir `mirror.gcr.io`, digest vérifié identique (D4). Documentation : dépôt source officiel `elastic/docs-content` sur GitHub (D5). Aucun effet sur le livrable, qui est hors ligne par construction. |
 | E2 | podman absent de l'environnement de fabrication. | Mineur | Résolu | podman 4.9.3 installé depuis les dépôts Ubuntu noble ; `podman kube play` disponible, fidélité à SPEC §4.1 préservée. |
 | E3 | `vm.max_map_count` à 65530, sous le minimum 262144 d'Elasticsearch. | Mineur | Résolu | Porté à 262144 par `sysctl -w`. Aucun `sudo` exécuté : la session est root dans un conteneur éphémère. `lab/preflight.sh` affichera la commande à l'humain sur un poste cible, sans l'exécuter (CLAUDE.md). |
+| E6 | SPEC §6.3 annonce que `[1025 TO *]` produit un « échec silencieux ». En 9.5.3 fr-FR, c'est FAUX : Discover affiche « Impossible d'extraire les résultats de recherche ». Le vrai piège muet est `_exists_:champ`, qui renvoie 0 résultat sans aucun message. | Mineur (prémisse de la SPEC) | Résolu, SPEC non modifiée | `docs/pieges-lab.json` relève le comportement réel ; le parcours enseignera ce qui se passe vraiment, comme SPEC §6.3 l'exige elle-même (« le guide montre le comportement réel de la version »). |
 | E5 | Le démon Docker, démarré pendant la reconnaissance de l'environnement, active `bridge-nf-call-iptables` et casse les réseaux podman `--internal`. | Mineur | Résolu | Démon arrêté (le kit ne s'en sert pas), réglage remis à 0, contrôle ajouté au pré-vol (D7). |
 | E4 | La version 9.5.4, dernière stable annoncée, n'est pas disponible ici. | Mineur | Accepté | Kit construit et vérifié en 9.5.3 (D2). La montée de version est prévue par construction : `stack.version` dans `kit.config.yaml`, `make captures` régénère les captures. |

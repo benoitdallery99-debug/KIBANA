@@ -143,3 +143,73 @@ def panneaux_en_erreur(page: Page) -> list[str]:
 def textes_des_panneaux(page: Page) -> list[str]:
     panneaux = page.locator(ts("panneau"))
     return [panneaux.nth(i).inner_text() for i in range(panneaux.count())]
+
+
+# --- Discover ---------------------------------------------------------------
+
+def ouvrir_discover(page: Page, plage_debut: str = "now-7d", plage_fin: str = "now") -> None:
+    """Ouvre Discover sur la data view du parcours, avec une plage explicite.
+
+    La data view et la plage passent par l'état d'URL : ce sont des
+    PRÉALABLES à l'exercice, pas ce qu'on veut éprouver. La requête, elle,
+    sera bien saisie au clavier dans la barre de recherche.
+    """
+    data_view = str(conf.valeur("donnees.data_view_id"))
+    etat_global = f"(time:(from:{plage_debut},to:{plage_fin}))"
+    etat_app = f"(index:'{data_view}',query:(language:kuery,query:''))"
+    aller_a(page, f"/app/discover#/?_g={etat_global}&_a={etat_app}")
+    page.wait_for_selector(ts("barre_de_requete"), timeout=90_000)
+    attendre_chargement(page)
+
+
+def saisir_kql(page: Page, requete: str) -> None:
+    """Saisit une requête KQL dans la barre de recherche, puis la soumet."""
+    barre = page.locator(ts("barre_de_requete"))
+    barre.click()
+    barre.press("Control+a")
+    barre.press("Delete")
+    if requete:
+        barre.type(requete, delay=8)
+    # Entrée soumet la requête ; le bouton « Actualiser » fait de même et sert
+    # de repli si la saisie n'a pas encore été prise en compte.
+    barre.press("Enter")
+    page.wait_for_timeout(1_500)
+    attendre_chargement(page)
+    page.wait_for_timeout(1_500)
+
+
+def nombre_de_resultats(page: Page) -> int | None:
+    """Nombre de documents affiché par Discover, ou 0 s'il annonce aucun résultat.
+
+    Renvoie None si Discover n'affiche ni compteur ni message : l'appelant doit
+    alors signaler un contrôle NON EXÉCUTÉ plutôt que de conclure à zéro.
+    """
+    if page.locator(ts("message_aucun_resultat")).count() > 0:
+        return 0
+    compteur = page.locator(ts("nombre_de_resultats"))
+    if compteur.count() == 0:
+        return None
+    texte = compteur.first.inner_text()
+    chiffres = "".join(c for c in texte if c.isdigit())
+    return int(chiffres) if chiffres else None
+
+
+def compter_avec_kql(page: Page, requete: str) -> int | None:
+    """Tape une requête KQL dans Discover et renvoie le nombre de résultats."""
+    saisir_kql(page, requete)
+    return nombre_de_resultats(page)
+
+
+def message_d_erreur_de_requete(page: Page) -> str | None:
+    """Texte de l'erreur affichée par Discover, s'il y en a une.
+
+    Sert à prouver les pièges du parcours : une syntaxe Lucene tapée en KQL ne
+    donne pas toujours une erreur — parfois elle renvoie simplement autre chose
+    que ce que le stagiaire croit demander (SPEC §6.3).
+    """
+    for selecteur in ('[data-test-subj="euiToastHeader"]', ".kbnQueryBar__textarea--invalid",
+                      '[data-test-subj="queryBarErrorMessage"]'):
+        element = page.locator(selecteur)
+        if element.count() > 0:
+            return element.first.inner_text()
+    return None
