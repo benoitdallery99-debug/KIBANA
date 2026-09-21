@@ -445,3 +445,45 @@ def test_le_corrige_du_formateur_couvre_toutes_les_questions(config):
         f"le guide du formateur annonce {faux} question(s) alors que le quiz en "
         f"pose {len(posees)}"
     )
+
+
+def test_tout_reemploi_de_reponse_est_annonce(modules):
+    """Une réponse déjà rendue doit être présentée comme un contrôle, pas comme
+    une découverte.
+
+    Trente exercices se partagent dix-neuf réponses. Les répétitions sont
+    voulues — vérifier qu'un écran rejoué par API montre la même chose, qu'un
+    second Space voit le même parc, qu'un clic pose bien le filtre attendu —
+    mais muettes, elles se lisent comme un oubli, et le stagiaire retape de
+    mémoire au lieu de refaire le geste. Chaque réemploi doit donc le dire.
+
+    L'annonce est acceptée dans la DÉMARCHE — lue après avoir répondu — ou dans
+    le CONTEXTE, lu avant. M2-E2 emploie la seconde place (« Vous avez déjà
+    répondu à la requête au module précédent ») et c'est sans doute la
+    meilleure : prévenir avant évite au stagiaire de croire à une question
+    piège. Les deux conviennent ; ne rien dire, non.
+    """
+    marqueurs = (
+        "déjà", "deja", "connaiss", "même réponse", "meme reponse",
+        "module m", "relevé au module", "celle du module", "celui du module",
+        "c'est voulu", "est le contrôle", "est le controle",
+    )
+    vus: dict[str, str] = {}
+    defauts = []
+    for _module, e in _exercices(modules):
+        renvoi = e.get("reponse")
+        if not renvoi:
+            continue
+        cle = f"{renvoi['scenario']}.{renvoi['cle']}"
+        if cle not in vus:
+            vus[cle] = e["id"]
+            continue
+        annonce = ((e.get("solution") or "") + " " + (e.get("contexte") or "")).lower()
+        if not any(m in annonce for m in marqueurs):
+            defauts.append(
+                f"{e['id']} rend la même réponse que {vus[cle]} ({cle}) "
+                "sans l'annoncer dans sa démarche"
+            )
+    assert not defauts, (
+        "réemplois de réponse non annoncés :\n  " + "\n  ".join(defauts)
+    )

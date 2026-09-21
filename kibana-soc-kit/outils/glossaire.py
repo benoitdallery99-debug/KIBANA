@@ -54,17 +54,27 @@ def _marquage(terme: str, definition: str, vu: str) -> str:
     )
 
 
-def lier(html: str, glossaire: list[dict]) -> str:
+def lier(html: str, glossaire: list[dict], deja: set[str] | None = None) -> str:
     """Marque la première occurrence de chaque terme dans du texte courant.
 
     Les termes sont traités du plus long au plus court : sans cela,
     « data view » serait coupé en deux par « data stream » et réciproquement.
+
+    « deja » porte les termes déjà marqués ailleurs, et il est MODIFIÉ au
+    passage. Sans lui, chaque appel repart de zéro : appelé une fois par module,
+    « KQL » se retrouvait marqué cinq fois dans le même document — cinq bulles
+    identiques pour le lecteur, et surtout cinq éléments partageant le même
+    « id », ce qu'aucune page valide ne fait et qu'axe-core refuse.
     """
     definitions = {
         t["terme"]: t.get("definition", "")
         for t in glossaire if t.get("terme")
     }
-    restants = sorted(definitions, key=len, reverse=True)
+    if deja is None:
+        deja = set()
+    restants = [
+        t for t in sorted(definitions, key=len, reverse=True) if t not in deja
+    ]
 
     sortie: list[str] = []
     position = 0
@@ -77,6 +87,7 @@ def lier(html: str, glossaire: list[dict]) -> str:
             if not trouve:
                 continue
             restants.remove(terme)
+            deja.add(terme)
             return (
                 texte[:trouve.start()]
                 + _marquage(terme, definitions[terme], trouve.group(0))

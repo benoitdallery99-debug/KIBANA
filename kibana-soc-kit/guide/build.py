@@ -234,8 +234,11 @@ def charger_modules() -> tuple[dict, list[dict], list[dict]]:
     # modules, et une seule fois pour l'ensemble : un terme n'est marqué qu'à sa
     # toute première apparition du parcours, pas une fois par module — sans quoi
     # le lecteur retrouverait la même bulle six fois.
+    deja_lies: set[str] = set()
     for module in modules:
-        module["corps_html"] = lier_glossaire(module["corps_html"], glossaire)
+        module["corps_html"] = lier_glossaire(
+            module["corps_html"], glossaire, deja_lies
+        )
 
     return manifeste, modules, glossaire
 
