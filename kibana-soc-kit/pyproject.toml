@@ -7,6 +7,9 @@ target-version = "py311"
 exclude = [".venv", "dist", "lab/generated"]
 
 [tool.ruff.lint]
+# Caractères typographiques français employés à dessein dans les textes et les
+# messages : ruff les signalerait comme « ambigus » alors qu'ils sont corrects.
+allowed-confusables = ["×", "’", "«", "»", "\u00a0", "\u202f", "–", "—"]
 select = [
     "E",    # pycodestyle : erreurs (dont E402, import après du code)
     "F",    # pyflakes
