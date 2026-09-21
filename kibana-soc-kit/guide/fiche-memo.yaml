@@ -30,11 +30,24 @@ recto:
 
     - titre: Zéro résultat ? Dans cet ordre
       liste:
+        - Suis-je dans le bon Space ? La pastille en haut à gauche le dit.
         - La bonne data view est-elle active ?
         - La plage de temps couvre-t-elle les données ? Par défaut elle est courte.
+        - >-
+          Est-ce la barre de requête de Discover, et non la loupe du bandeau ?
+          La recherche globale ne regarde jamais le contenu des journaux.
         - Le langage est-il KQL, ou Lucene ?
         - La valeur existe-t-elle ? Lisez-la dans la barre latérale, ne la devinez pas.
         - Le champ est-il keyword (casse exacte) ou text (analysé) ?
+
+    - titre: Zéro CHAMP disponible ? Ce n'est pas la même panne
+      liste:
+        - >-
+          Un filtre par type est resté coché dans la barre latérale : la liste
+          fond sans un mot, et les documents restent affichés.
+        - >-
+          Ou la plage de temps ne couvre aucun document : tous les champs
+          basculent alors dans « Champs vides ».
 
 verso:
   titre: Visualiser, puis publier

@@ -47,6 +47,29 @@ def kbn(auth):
 
 
 @pytest.fixture(scope="session")
+def es_stagiaire():
+    """Session HTTP vers Elasticsearch AVEC LE COMPTE DU STAGIAIRE.
+
+    Sert à vérifier ce qu'il ne doit PAS pouvoir lire. Un contrôle de
+    cloisonnement mené avec le compte « elastic » ne prouverait rien.
+    """
+    s = requests.Session()
+    s.auth = ("stagiaire", conf.secrets()["STAGIAIRE_PASSWORD"])
+    s.base = conf.url_es()
+    return s
+
+
+@pytest.fixture(scope="session")
+def kbn_stagiaire():
+    """Session HTTP vers Kibana avec le compte du stagiaire."""
+    s = requests.Session()
+    s.auth = ("stagiaire", conf.secrets()["STAGIAIRE_PASSWORD"])
+    s.headers.update({"kbn-xsrf": "true", "Content-Type": "application/json"})
+    s.base = conf.url_kibana()
+    return s
+
+
+@pytest.fixture(scope="session")
 def lab_demarre(es):
     """Ignore proprement les suites qui exigent un lab démarré, plutôt que d'échouer.
 

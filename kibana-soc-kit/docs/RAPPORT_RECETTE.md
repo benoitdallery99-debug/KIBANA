@@ -129,7 +129,7 @@ $ make verif-parcours
 16 passed
 ```
 
-Six modules, **345 minutes**, **35 exercices**, **27 objectifs**.
+Six modules, **347 minutes**, **35 exercices**, **27 objectifs**.
 
 | Module | Durée | Exercices | Guidage |
 |---|---|---|---|

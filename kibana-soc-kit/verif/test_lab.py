@@ -85,16 +85,41 @@ def test_vue_de_solution_du_space(kbn, config, lab_demarre):
 
 
 def test_data_views_a_id_fixe(kbn, config, lab_demarre):
-    """Les ID fixes rendent les tableaux de bord réutilisables sur la cible (M5)."""
-    space_id = str(config.valeur("formation.space_id"))
-    for prefixe in ("donnees", "epreuve"):
+    """Les ID fixes rendent les tableaux de bord réutilisables sur la cible (M5).
+
+    Chacune vit dans le Space qui la concerne : celle du parcours dans le Space
+    de formation, celle de l'épreuve dans le Space de l'épreuve.
+    """
+    space_formation = str(config.valeur("formation.space_id"))
+    for prefixe, space_id in (("donnees", space_formation), ("epreuve", "epreuve")):
         dv_id = str(config.valeur(f"{prefixe}.data_view_id"))
         motif = str(config.valeur(f"{prefixe}.data_view_motif"))
         r = kbn.get(f"{kbn.base}/s/{space_id}/api/data_views/data_view/{dv_id}", timeout=30)
-        assert r.status_code == 200, f"data view « {dv_id} » absente (HTTP {r.status_code})"
+        assert r.status_code == 200, (
+            f"data view « {dv_id} » absente du Space « {space_id} » "
+            f"(HTTP {r.status_code})"
+        )
         dv = r.json()["data_view"]
         assert dv["title"] == motif, f"data view « {dv_id} » pointe {dv['title']}, attendu {motif}"
         assert dv["timeFieldName"] == "@timestamp"
+
+
+def test_le_jeu_de_l_epreuve_est_hors_du_space_de_formation(kbn, config, lab_demarre):
+    """La data view de l'épreuve ne doit PAS être visible depuis la formation.
+
+    Laissée là, elle annonce au stagiaire, dès le sélecteur de source de
+    Discover, qu'un second jeu de données existe — et son motif d'index le
+    renseigne sur ce qui l'attend à l'évaluation.
+    """
+    space_formation = str(config.valeur("formation.space_id"))
+    dv_id = str(config.valeur("epreuve.data_view_id"))
+    r = kbn.get(
+        f"{kbn.base}/s/{space_formation}/api/data_views/data_view/{dv_id}", timeout=30
+    )
+    assert r.status_code == 404, (
+        f"la data view « {dv_id} » est visible depuis le Space de formation "
+        f"(HTTP {r.status_code}) : le jeu de l'épreuve y est annoncé"
+    )
 
 
 def test_roles_et_comptes(kbn, es, lab_demarre):
@@ -327,3 +352,75 @@ def test_reseau_interne_interdit_toute_sortie(config, reseau_interne):
         "le témoin sur le réseau par défaut échoue lui aussi faute de route : "
         f"le contrôle ne prouve donc rien. Obtenu : {temoin.stdout.strip()!r}"
     )
+
+
+# --------------------------------------------------------------------------
+# Cloisonnement : ce que le stagiaire ne doit PAS voir
+#
+# Les deux contrôles ci-dessous portent sur des défauts réels, trouvés en
+# relecture P8 : les corrigés étaient chargés dans le Space de formation, et le
+# rôle « stagiaire » lisait le jeu de l'épreuve toute la journée. Ils sont menés
+# avec le COMPTE DU STAGIAIRE : les mener avec « elastic » ne prouverait rien.
+# --------------------------------------------------------------------------
+
+def test_le_stagiaire_ne_lit_pas_le_jeu_de_l_epreuve(es_stagiaire, config, lab_demarre):
+    """Sinon il prépare ses réponses toute la journée et l'épreuve ne mesure rien."""
+    motif = str(config.valeur("epreuve.data_view_motif"))
+    # Un index NOMMÉ explicitement doit être refusé. Le joker, lui, ne lève pas
+    # d'erreur : il se résout silencieusement à rien — d'où les deux contrôles.
+    index_nomme = motif.replace("*", "ids.alert")
+    r = es_stagiaire.get(f"{es_stagiaire.base}/{index_nomme}/_count", timeout=30)
+    assert r.status_code == 403, (
+        f"« {index_nomme} » répond {r.status_code} au stagiaire, 403 attendu"
+    )
+
+    r = es_stagiaire.get(f"{es_stagiaire.base}/{motif}/_count", timeout=30)
+    assert r.status_code == 200
+    assert r.json()["count"] == 0, (
+        f"le joker « {motif} » rapporte {r.json()['count']} documents au stagiaire"
+    )
+
+    # Et le jeu du parcours, lui, doit rester lisible : un cloisonnement qui
+    # bloque tout n'est pas un cloisonnement, c'est une panne.
+    parcours = str(config.valeur("donnees.data_view_motif"))
+    r = es_stagiaire.get(f"{es_stagiaire.base}/{parcours}/_count", timeout=30)
+    assert r.status_code == 200 and r.json()["count"] > 0, (
+        "le stagiaire ne lit plus le jeu du parcours"
+    )
+
+
+def test_le_stagiaire_ne_voit_ni_les_corriges_ni_l_epreuve(kbn_stagiaire, config, lab_demarre):
+    """Les Spaces visibles du stagiaire : la formation, et le Space voisin.
+
+    « corriges » porte les tableaux de bord dont les titres donnent les réponses
+    de M3 et M4 ; « epreuve » n'est ouvert qu'au moment de l'évaluation, par
+    « make epreuve-ouvrir ».
+    """
+    r = kbn_stagiaire.get(f"{kbn_stagiaire.base}/api/spaces/space", timeout=30)
+    assert r.status_code == 200, f"liste des Spaces : HTTP {r.status_code}"
+    visibles = {s["id"] for s in r.json()}
+
+    formation = str(config.valeur("formation.space_id"))
+    assert formation in visibles, "le stagiaire ne voit pas son propre Space"
+    assert "reseau" in visibles, (
+        "le Space « reseau » est invisible : M3-E5 et M5-E3 n'ont plus de cible"
+    )
+    interdits = visibles & {"corriges", "epreuve"}
+    assert not interdits, f"Spaces visibles à tort par le stagiaire : {sorted(interdits)}"
+
+
+def test_aucun_corrige_dans_le_space_de_formation(kbn_stagiaire, config, lab_demarre):
+    """Un corrigé visible dès la connexion, c'est la journée entière dévoilée."""
+    formation = str(config.valeur("formation.space_id"))
+    r = kbn_stagiaire.get(
+        f"{kbn_stagiaire.base}/s/{formation}/api/saved_objects/_find"
+        "?type=dashboard&per_page=100",
+        timeout=30,
+    )
+    assert r.status_code == 200, f"recherche d'objets : HTTP {r.status_code}"
+    titres = [o["attributes"].get("title", "") for o in r.json()["saved_objects"]]
+    suspects = [
+        t for t in titres
+        if "corrig" in t.lower() or t in ("Santé de la collecte", "Vue IDS")
+    ]
+    assert not suspects, f"corrigés présents dans le Space de formation : {suspects}"

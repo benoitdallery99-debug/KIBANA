@@ -13,6 +13,8 @@ Règles tenues ici :
 
 from __future__ import annotations
 
+import datetime
+import json
 import sys
 from pathlib import Path
 
@@ -86,8 +88,44 @@ ANNOTATION = """
 """
 
 
+def age_des_donnees_en_minutes() -> float | None:
+    """Depuis combien de temps le jeu de données a-t-il été chargé ?
+
+    Une capture du kit — « la plage par défaut ne montre rien » — n'est vraie
+    que si le jeu s'est terminé il y a plus de quinze minutes : le générateur
+    ancre la fin de la fenêtre sur l'instant du chargement. Juste après
+    « make data », les quinze dernières minutes CONTIENNENT des documents, et
+    la capture montrerait le contraire de ce qu'elle annonce. Mieux vaut le
+    dire que de laisser un délai d'attente expirer sans expliquer pourquoi.
+    """
+    chemin = conf.RACINE / "data" / "manifest.json"
+    if not chemin.exists():
+        return None
+    engendre = json.loads(chemin.read_text(encoding="utf-8")).get("engendre_le")
+    if not engendre:
+        return None
+    instant = datetime.datetime.fromisoformat(engendre)
+    if instant.tzinfo is None:
+        instant = instant.replace(tzinfo=datetime.UTC)
+    maintenant = datetime.datetime.now(datetime.UTC)
+    return (maintenant - instant).total_seconds() / 60
+
+
 def main() -> int:
     plan = yaml.safe_load((DOSSIER / "plan.yaml").read_text(encoding="utf-8"))
+
+    age = age_des_donnees_en_minutes()
+    exige = max(
+        (c.get("age_minimal_donnees_min", 0) for c in plan), default=0
+    )
+    if exige and age is not None and age < exige:
+        raise SystemExit(
+            f"Données chargées il y a {age:.0f} min ; certaines captures en "
+            f"exigent {exige}. La plage par défaut de Kibana n'est vide qu'une "
+            f"fois ce délai passé — sans quoi la capture montrerait l'inverse "
+            f"de sa légende.\n"
+            f"Attendez {exige - age:.0f} min, puis relancez « make captures »."
+        )
     SORTIE.mkdir(parents=True, exist_ok=True)
     produites = []
 
@@ -95,7 +133,36 @@ def main() -> int:
         page = contexte.new_page()
         K.connexion(page)
         for capture in plan:
-            K.aller_a(page, capture["chemin"])
+            K.aller_a(page, capture["chemin"], espace=capture.get("espace"))
+            # Certains écrans n'existent qu'après un geste : le sélecteur de
+            # type de graphique de Lens, par exemple, est un menu qu'il faut
+            # ouvrir. Les gestes sont déclarés dans le plan, donc rejouables.
+            gestes_ok = True
+            for geste in capture.get("gestes") or []:
+                cible = (f'[data-test-subj="{geste["clic"]}"]' if "clic" in geste
+                         else f'button:has-text("{geste["clic_texte"]}")')
+                try:
+                    page.wait_for_selector(cible, timeout=45_000)
+                    # Un bandeau d'information de Kibana intercepte parfois le
+                    # clic : constaté sur Lens, plage de temps vide.
+                    for toast in page.query_selector_all(
+                            '[data-test-subj="toastCloseButton"]'):
+                        try:
+                            toast.click()
+                        except Exception:
+                            pass
+                    page.click(cible, force=True)
+                    page.wait_for_timeout(geste.get("attente_ms", 2_000))
+                except Exception as erreur:
+                    print(f"  [ÉCHEC] {capture['id']} : geste sur « {cible} » "
+                          f"impossible ({type(erreur).__name__})")
+                    gestes_ok = False
+                    break
+            if not gestes_ok:
+                # On ne produit PAS une image qui ne montre pas ce qu'elle
+                # annonce : « make captures » la déclarera manquante et sortira
+                # en erreur, plutôt que de livrer un écran trompeur.
+                continue
             attendre = capture.get("attendre")
             if attendre:
                 try:

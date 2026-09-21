@@ -99,6 +99,25 @@ def test_frontmatter_complet(modules):
     assert not manques, "frontmatter incomplet :\n  " + "\n  ".join(manques)
 
 
+def test_les_libelles_sont_bien_des_chaines(modules):
+    """Un libellé qui contient un deux-points doit être entre guillemets.
+
+    Sans eux, YAML lit « - Language: KQL » comme une association et non comme
+    une chaîne : le libellé disparaît alors des contrôles, sans erreur — une
+    autre façon de rendre un contrôle décoratif.
+    """
+    defauts = [
+        f"{e['id']} : {libelle!r}"
+        for _module, e in _exercices(modules)
+        for libelle in e.get("libelles_ui") or []
+        if not isinstance(libelle, str)
+    ]
+    assert not defauts, (
+        "libellés qui ne sont pas des chaînes (guillemets manquants ?) :\n  "
+        + "\n  ".join(defauts)
+    )
+
+
 def test_identifiants_uniques(modules):
     vus: dict[str, str] = {}
     doublons = []

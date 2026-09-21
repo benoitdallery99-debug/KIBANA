@@ -17,7 +17,9 @@ import json
 import random
 import sys
 import unicodedata
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import requests
 
@@ -199,6 +201,36 @@ def reperes(base: dict[str, list[dict]]) -> dict:
                 par_hote[nom] = par_hote.get(nom, 0) + 1
     hote_actif = max(par_hote, key=lambda h: par_hote[h]) if par_hote else ""
 
+    # --- Faits supplémentaires, un par exercice -----------------------------
+    # Trente exercices se partageaient treize réponses : un stagiaire pouvait
+    # retaper de mémoire une valeur relevée trois modules plus tôt, sans avoir
+    # refait le geste. Chaque fait ci-dessous est relevé sur les données
+    # engendrées et recalculable par une requête, comme tous les autres.
+    moins_volumineuse = min(par_dataset, key=lambda d: par_dataset[d])
+
+    nb_auth = par_dataset.get("windows.security", 0) + par_dataset.get("linux.auth", 0)
+
+    ports = [
+        d["destination"]["port"]
+        for evenements in base.values() for d in evenements
+        if isinstance(d.get("destination"), dict) and d["destination"].get("port")
+    ]
+    port_max = max(ports) if ports else 0
+    nb_ports_hauts = sum(1 for p in ports if p >= 1025)
+
+    # Heure ouvrée la plus chargée, dans le fuseau métier : c'est ce que montre
+    # un croisement sources × heures, et Kibana affiche dans le fuseau du
+    # navigateur — d'où la conversion explicite.
+    fuseau = ZoneInfo(str(conf.valeur("donnees.fuseau_metier")))
+    par_heure: dict[int, int] = {}
+    for evenements in base.values():
+        for d in evenements:
+            heure = datetime.fromisoformat(
+                d["@timestamp"].replace("Z", "+00:00")
+            ).astimezone(fuseau).hour
+            par_heure[heure] = par_heure.get(heure, 0) + 1
+    heure_chargee = max(par_heure, key=lambda h: par_heure[h]) if par_heure else 0
+
     signatures: dict[str, int] = {}
     for evenement in base.get("ids.alert", []):
         nom = evenement["rule"]["name"]
@@ -258,6 +290,98 @@ def reperes(base: dict[str, list[dict]]) -> dict:
                     "dataset": "*",
                     "requete": {"size": 0, "aggs": {"r": {"cardinality": {
                         "field": "host.name", "precision_threshold": 40000}}}},
+                    "chemin": "aggregations.r.value",
+                },
+            },
+            {
+                "cle": "source_la_moins_volumineuse",
+                "libelle": "Source qui produit le moins d'événements",
+                "valeur": moins_volumineuse, "type": "texte",
+                "normalisation": "minuscules, espaces retirés",
+                "controle": {
+                    "dataset": "*",
+                    "requete": {"size": 0, "aggs": {"r": {"terms": {
+                        "field": "event.dataset", "size": 1,
+                        "order": {"_count": "asc"}}}}},
+                    "chemin": "aggregations.r.buckets.0.key",
+                },
+            },
+            {
+                "cle": "nb_docs_source_dominante",
+                "libelle": "Documents produits par la source la plus volumineuse",
+                "valeur": par_dataset[plus_volumineuse], "type": "entier",
+                "normalisation": "entier",
+                "controle": {
+                    "dataset": "*",
+                    "requete": {"size": 0, "aggs": {"r": {"terms": {
+                        "field": "event.dataset", "size": 1}}}},
+                    "chemin": "aggregations.r.buckets.0.doc_count",
+                },
+            },
+            {
+                "cle": "nb_docs_auth",
+                "libelle": "Documents des deux sources d'authentification réunies",
+                "valeur": nb_auth, "type": "entier", "normalisation": "entier",
+                "controle": {
+                    "dataset": "*",
+                    "requete": {"size": 0, "query": {"terms": {
+                        "event.dataset": ["windows.security", "linux.auth"]}}},
+                    "chemin": "hits.total.value",
+                },
+            },
+            {
+                "cle": "nb_docs_ports_hauts",
+                "libelle": "Documents dont le port de destination atteint 1025",
+                "valeur": nb_ports_hauts, "type": "entier", "normalisation": "entier",
+                "controle": {
+                    "dataset": "*",
+                    "requete": {"size": 0, "query": {"range": {
+                        "destination.port": {"gte": 1025}}}},
+                    "chemin": "hits.total.value",
+                },
+            },
+            {
+                "cle": "port_destination_max",
+                "libelle": "Port de destination le plus élevé observé",
+                "valeur": port_max, "type": "entier", "normalisation": "entier",
+                "controle": {
+                    "dataset": "*",
+                    "requete": {"size": 0, "aggs": {"r": {"max": {
+                        "field": "destination.port"}}}},
+                    "chemin": "aggregations.r.value",
+                    "transformation": "entier",
+                },
+            },
+            {
+                "cle": "heure_la_plus_chargee",
+                "libelle": "Heure du jour la plus chargée, dans le fuseau métier",
+                "valeur": heure_chargee, "type": "entier", "normalisation": "entier",
+                "controle": {
+                    "dataset": "*",
+                    # Le champ « heure » n'existe pas à l'indexation : il est
+                    # calculé au vol. C'est la seule façon d'obtenir une heure
+                    # du jour — et non un instant — sans toucher au mapping.
+                    "requete": {
+                        "size": 0,
+                        "runtime_mappings": {"heure": {"type": "long", "script": {
+                            "source": "emit(doc['@timestamp'].value"
+                                      ".withZoneSameInstant(ZoneId.of(params.fuseau))"
+                                      ".getHour())",
+                            "params": {"fuseau": str(conf.valeur("donnees.fuseau_metier"))},
+                        }}},
+                        "aggs": {"r": {"terms": {"field": "heure", "size": 1}}},
+                    },
+                    "chemin": "aggregations.r.buckets.0.key",
+                },
+            },
+            {
+                "cle": "nb_signatures_distinctes",
+                "libelle": "Signatures distinctes levées par la sonde",
+                "valeur": len(signatures), "type": "entier", "normalisation": "entier",
+                "controle": {
+                    "dataset": "ids.alert",
+                    "requete": {"size": 0, "aggs": {"r": {"cardinality": {
+                        "field": "rule.name", "precision_threshold": 40000}}}},
                     "chemin": "aggregations.r.value",
                 },
             },

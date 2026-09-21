@@ -339,3 +339,50 @@
     positif parce que « ce sont des comptes par défaut » serait tout aussi
     imprudent. La synthèse au chef de salle doit porter ce qui prouve le
     verdict, pas seulement le verdict.
+
+- id: Q16
+  objectifs: [M0-O1]
+  question: >-
+    La barre latérale de Discover affiche « 0 » champ disponible, alors que la
+    table montre bien des documents. Que s'est-il passé ?
+  propositions:
+    - >-
+      La data view est cassée : il faut la recréer.
+    - >-
+      Un filtre par type de champ est resté coché dans la barre latérale. Il vide la liste sans afficher le moindre message ; les documents, eux, restent là.
+    - >-
+      La plage de temps est trop courte : aucun document ne tombe dedans.
+    - >-
+      L'index n'a pas de mapping : Elasticsearch ne sait pas quels champs existent.
+  reponse: 1
+  explication: >-
+    Deux pannes ressemblantes, à ne pas confondre. Si des documents s'affichent
+    et que la liste des champs est vide, c'est un FILTRE qui la masque : la
+    barre latérale en porte un, par type de champ, et il ne se signale que par
+    une pastille discrète. Si au contraire aucun document ne s'affiche, tous les
+    champs basculent dans « Champs vides » et c'est la plage de temps qu'il faut
+    élargir. Le premier réflexe est donc de regarder la table : elle dit laquelle
+    des deux pannes vous avez.
+
+- id: Q17
+  objectifs: [M1-O1]
+  question: >-
+    Vous tapez le nom d'une machine dans la loupe du bandeau supérieur de
+    Kibana. Rien ne ressort. Qu'en conclure ?
+  propositions:
+    - >-
+      Que la machine n'émet aucun journal sur la période.
+    - >-
+      Rien du tout : cette recherche-là ne regarde pas le contenu des journaux. Elle trouve des applications et des objets enregistrés. Pour chercher une valeur, c'est la barre de requête de Discover.
+    - >-
+      Que la data view ne couvre pas l'index de cette machine.
+    - >-
+      Que le champ host.name n'est pas indexé.
+  reponse: 1
+  explication: >-
+    La recherche globale et la barre de requête se ressemblent et ne font pas du
+    tout le même travail. La première est un navigateur : elle vous emmène vers
+    une application, un tableau de bord, une vue de données. La seconde
+    interroge les documents. Confondre les deux conduit à déclarer absente une
+    machine qui émet des milliers d'événements — et c'est une erreur qui se
+    commet surtout sous pression, quand on cherche vite.

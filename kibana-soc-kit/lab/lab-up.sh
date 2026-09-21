@@ -29,7 +29,9 @@ titre "2/6 Rendu du pod"
 "$PY" lab/rendre_pod.py
 
 titre "3/6 Démarrage du pod"
+pod_preexistant=0
 if podman pod exists "$NOM_POD" 2>/dev/null; then
+  pod_preexistant=1
   echo "  pod « $NOM_POD » déjà présent — démarrage ignoré (lab-up est idempotent)."
   podman pod start "$NOM_POD" >/dev/null 2>&1 || true
 else
@@ -56,6 +58,16 @@ while :; do
   if [ $(( $(date +%s) - debut )) -ge "$ATTENTE_ES" ]; then
     echo "  ÉCHEC : Elasticsearch n'est pas prêt après ${ATTENTE_ES}s." >&2
     echo "  Journal :  podman logs ${NOM_POD}-elasticsearch" >&2
+    if [ "$pod_preexistant" = "1" ]; then
+      # Constaté : après un redémarrage brutal de la machine hôte, podman peut
+      # annoncer le pod « Running » alors que ses conteneurs sont morts.
+      # « pod start » ne relève alors rien, sans le dire.
+      echo >&2
+      echo "  Le pod existait déjà au lancement. Si podman l'annonce démarré" >&2
+      echo "  alors que rien ne répond, ses conteneurs sont morts sans qu'il" >&2
+      echo "  l'ait enregistré. Recréez-le — le volume de données est conservé :" >&2
+      echo "      make lab-down && make lab-up" >&2
+    fi
     exit 1
   fi
   sleep 3

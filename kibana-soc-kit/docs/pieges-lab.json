@@ -11,12 +11,12 @@
       "ce_qui_echoue": {
         "requete": "destination.port : [1025 TO *]",
         "nombre_de_resultats": null,
-        "message_affiche": "Impossible d’extraire les résultats de recherche",
+        "message_affiche": null,
         "aboutit": false
       },
       "ce_qui_marche": {
         "requete": "destination.port >= 1025",
-        "nombre_de_resultats": 34945,
+        "nombre_de_resultats": 0,
         "message_affiche": null,
         "aboutit": true
       }
@@ -34,7 +34,7 @@
       },
       "ce_qui_marche": {
         "requete": "rule.name : *",
-        "nombre_de_resultats": 82613,
+        "nombre_de_resultats": 14875,
         "message_affiche": null,
         "aboutit": true
       }
@@ -52,7 +52,7 @@
       },
       "ce_qui_marche": {
         "requete": "user.name : \"svc-facturation\"",
-        "nombre_de_resultats": 5041,
+        "nombre_de_resultats": 5080,
         "message_affiche": null,
         "aboutit": true
       }
@@ -65,13 +65,13 @@
       "type": "requete",
       "ce_qui_echoue": {
         "requete": "message : \"ECHEC\"",
-        "nombre_de_resultats": 6358,
+        "nombre_de_resultats": 6396,
         "message_affiche": null,
         "aboutit": true
       },
       "ce_qui_marche": {
         "requete": "message : \"echec\"",
-        "nombre_de_resultats": 6358,
+        "nombre_de_resultats": 6396,
         "message_affiche": null,
         "aboutit": true
       }
@@ -89,8 +89,8 @@
       },
       "ce_qui_marche": {
         "requete": "destination.ip : \"10.0.0.0/8\"",
-        "nombre_de_resultats": 161539,
-        "message_affiche": "@timestampsept. 21, 2026 @ 18:54:25.000destination.ip10.20.1.10destination.port53dns.question.namemaj.editeur-logiciel.exampledns.question.registered_domainediteur-logiciel.exampledns.question.typeAdns.response_codeNOERRORecs.version8.11.0event.actionrequete-dnsevent.categorynetworkevent.datasetnetwork.dnsevent.kindeventevent.modulenetworkevent.outcomesuccessevent.typeprotocolhost.ip10.10.11.23host.namepc-compta-03messageRequete DNS maj.editeur-logiciel.example depuis 10.10.11.23network.protocoldnsnetwork.transportudporganization.nameGroupe Méridiensource.ip10.10.11.23_idhZXkxKABTKgbNTZNW7uL_ignored(null)_index.ds-logs-network.dns-formation-2026.09.21-000001_score(null)",
+        "nombre_de_resultats": 166548,
+        "message_affiche": "@timestampsept. 21, 2026 @ 23:26:45.000destination.ip10.20.1.10destination.port53dns.question.namemeteo.service-public.exampledns.question.registered_domainservice-public.exampledns.question.typeAdns.response_codeNOERRORecs.version8.11.0event.actionrequete-dnsevent.categorynetworkevent.datasetnetwork.dnsevent.kindeventevent.modulenetworkevent.outcomesuccessevent.typeprotocolhost.ip10.10.11.21host.namepc-compta-01messageRequete DNS meteo.service-public.example depuis 10.10.11.21network.protocoldnsnetwork.transportudporganization.nameGroupe Méridiensource.ip10.10.11.21_idvtPexaAB_NjqeP5TDE8g_ignored(null)_index.ds-logs-network.dns-formation-2026.09.21-000001_score(null)",
         "aboutit": true
       }
     },
@@ -101,11 +101,44 @@
       "lecon": "Kibana ouvre Discover sur une fenêtre très courte. Sur sept jours de données, l'écran paraît vide alors que tout est là. Avant de conclure à l'absence de données, on élargit la plage.",
       "ce_qui_echoue": {
         "plage": "now-15m → now",
-        "nombre_de_resultats": 0
+        "nombre_de_resultats": 94
       },
       "ce_qui_marche": {
         "plage": "now-7d → now",
-        "nombre_de_resultats": 383474
+        "nombre_de_resultats": 389281
+      }
+    },
+    {
+      "id": "filtre-de-type-de-champ",
+      "type": "interface",
+      "titre": "« 0 champ disponible » : un filtre de type est resté actif",
+      "lecon": "La barre latérale porte un filtre par type de champ. Coché, il réduit la liste des champs sans rien dire — relevé en lab : de 49 champs à 1 — alors que les documents, eux, restent affichés. Une liste de champs presque vide n'est pas une data view vide : regardez d'abord si un filtre est actif.",
+      "ce_qui_echoue": {
+        "geste": "filtre de type « text » coché",
+        "champs_affiches": 1,
+        "documents_affiches": 389281,
+        "aboutit": false
+      },
+      "ce_qui_marche": {
+        "geste": "aucun filtre de type",
+        "champs_affiches": 49,
+        "aboutit": true
+      }
+    },
+    {
+      "id": "recherche-globale-n-est-pas-la-requete",
+      "type": "interface",
+      "titre": "La recherche globale de Kibana ne cherche pas dans les documents",
+      "lecon": "La loupe du bandeau supérieur trouve des applications et des objets enregistrés. Elle ne regarde jamais le contenu des journaux. Pour chercher une valeur, c'est la barre de requête de Discover.",
+      "ce_qui_echoue": {
+        "geste": "« fw-perimetre-01 » tapé dans la recherche globale",
+        "resultats": [],
+        "aboutit": false
+      },
+      "ce_qui_marche": {
+        "requete": "host.name : \"fw-perimetre-01\"",
+        "nombre_de_resultats": 70435,
+        "aboutit": true
       }
     }
   ]

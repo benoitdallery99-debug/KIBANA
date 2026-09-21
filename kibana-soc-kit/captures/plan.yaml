@@ -35,6 +35,9 @@
   titre: Quinze minutes ne suffisent pas
   chemin: "/app/discover#/?_g=(time:(from:now-15m,to:now))&_a=(index:'formation-logs',query:(language:kuery,query:''))"
   attendre: discoverNoResults
+  # Le jeu de données se termine à l'instant du chargement : les quinze
+  # dernières minutes n'en sont vides qu'une fois ce délai écoulé.
+  age_minimal_donnees_min: 20
   legende: >-
     La même vue, sur la plage de temps par défaut de Kibana : l'écran est vide
     alors que les données sont là.
@@ -64,3 +67,81 @@
       note: La requête saisie
     - cible: discoverQueryHits
       note: Le nombre de résultats
+
+- id: M2-C1
+  module: M2
+  titre: Lens demande la forme avant les données
+  chemin: "/app/lens#/?_g=(time:(from:now-7d,to:now))"
+  attendre: lnsWorkspace
+  gestes:
+    - clic: lnsChartSwitchPopover
+      attente_ms: 2500
+  legende: >-
+    L'éditeur Lens, son sélecteur de type de graphique ouvert. Chaque entrée
+    porte la question à laquelle elle répond.
+  alt: >-
+    L'éditeur Lens. Le sélecteur de type de graphique est ouvert en haut du
+    panneau de configuration et déroule la liste des formes disponibles ;
+    la colonne de gauche liste les champs, et l'espace de travail central
+    attend qu'on y dépose des dimensions.
+  reperes:
+    - cible: lnsChartSwitchPopover
+      note: Le type de graphique, choisi avant les données
+    - cible: lnsDataPanelWrapper
+      note: Les champs disponibles
+    - cible: lnsWorkspace
+      note: L'espace de travail
+
+- id: M3-C1
+  module: M3
+  titre: Un tableau de bord répond à une question
+  chemin: "/app/dashboards#/view/kit-soc-sante-collecte"
+  espace: corriges
+  attendre: embeddablePanel
+  legende: >-
+    Un tableau de bord assemblé : l'indicateur qui décide si l'on continue à
+    lire est en haut à gauche, et la plage de temps porte sur la semaine.
+  alt: >-
+    Un tableau de bord intitulé « Santé de la collecte ». Il porte cinq
+    panneaux : un indicateur de volume en haut à gauche, une série temporelle
+    répartie par source, et un tableau du dernier événement vu par source.
+    Le sélecteur de plage de temps, en haut à droite, couvre sept jours.
+  reperes:
+    - cible: dashboardPanelTitle
+      note: Le titre d'un panneau énonce la question
+    - cible: dateRangePickerControlButton
+      note: La plage enregistrée avec l'écran
+
+- id: M4-C1
+  module: M4
+  titre: L'écran de l'analyste de permanence
+  chemin: "/app/dashboards#/view/kit-soc-vue-ids"
+  espace: corriges
+  attendre: embeddablePanel
+  legende: >-
+    Le second écran du corrigé : ce que signale la sonde, et par où commencer.
+  alt: >-
+    Un tableau de bord intitulé « Vue IDS », qui rassemble les alertes de la
+    sonde de détection : un indicateur du nombre d'alertes, un classement des
+    signatures les plus fréquentes, et un tableau des machines concernées.
+  reperes:
+    - cible: dashboardPanelTitle
+      note: Chaque panneau répond à une question
+
+- id: M5-C1
+  module: M5
+  titre: Les objets enregistrés, et leur export
+  chemin: "/app/management/kibana/objects"
+  attendre: savedObjectsTable
+  legende: >-
+    La table des objets enregistrés : c'est d'ici que part un export ndjson, et
+    c'est ici qu'un import se déclare.
+  alt: >-
+    La page « Objets enregistrés » de la gestion de la Suite. Un tableau liste
+    les tableaux de bord, visualisations et vues de données du Space, avec leur
+    type ; un bouton d'import se trouve au-dessus du tableau.
+  reperes:
+    - cible: savedObjectSearchBar
+      note: De quoi retrouver un objet parmi des centaines
+    - cible: importObjects
+      note: L'import d'un ndjson venu d'un autre Space

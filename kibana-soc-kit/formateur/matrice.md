@@ -5,14 +5,14 @@ au moins un exercice **et** une question du quiz (SPEC §2).
 
 - Objectifs : **27**
 - Exercices : **35**
-- Questions du quiz : **15**
+- Questions du quiz : **17**
 
 | Objectif | Module | Exercices | Questions |
 |---|---|---|---|
-| `M0-O1` | M0 | M0-E1, M0-E3 | Q01 |
+| `M0-O1` | M0 | M0-E1, M0-E3 | Q01, Q16 |
 | `M0-O2` | M0 | M0-E2 | Q02 |
 | `M0-O3` | M0 | M0-E2, M0-E3 | Q01 |
-| `M1-O1` | M1 | M1-E1, M1-E3 | Q03 |
+| `M1-O1` | M1 | M1-E1, M1-E3 | Q03, Q17 |
 | `M1-O2` | M1 | M1-E2, M1-E4, M1-E5, M1-E6 | Q04 |
 | `M1-O3` | M1 | M1-E2, M1-E3, M1-E6 | Q05 |
 | `M1-O4` | M1 | M1-E5 | Q06 |
@@ -39,9 +39,9 @@ au moins un exercice **et** une question du quiz (SPEC §2).
 
 ## Énoncés
 
-- **M0-O1** — À l'issue du module, le stagiaire est capable de situer les données qu'il interroge : data view, data stream, index, et de lire le type d'un champ dans la barre latérale de Discover.
+- **M0-O1** — À l'issue du module, le stagiaire est capable de se connecter, de vérifier dans quel Space il travaille, de situer les données qu'il interroge — data view, data stream, index — et de lire le type d'un champ dans la barre latérale de Discover.
 - **M0-O2** — À l'issue du module, le stagiaire est capable de régler la plage de temps de Discover et d'expliquer pourquoi un écran vide ne signifie pas une absence de données.
-- **M0-O3** — À l'issue du module, le stagiaire est capable d'énumérer les sources disponibles dans le Space de formation et de dire laquelle produit le plus d'événements.
+- **M0-O3** — À l'issue du module, le stagiaire est capable d'énumérer les sources disponibles dans le Space de formation, d'en donner le nombre, et de dire ce que les pourcentages de la barre latérale permettent de conclure — un écart massif, oui ; un classement, non.
 - **M1-O1** — À l'issue du module, le stagiaire est capable de lire la barre latérale des champs et la table des documents, d'ajouter une colonne et d'ouvrir les documents alentour d'un événement.
 - **M1-O2** — À l'issue du module, le stagiaire est capable d'écrire une requête KQL combinant égalité, and, or, not, joker, comparaison numérique et existence d'un champ.
 - **M1-O3** — À l'issue du module, le stagiaire est capable d'expliquer pourquoi la casse compte sur un champ keyword et pas sur un champ text, et d'interroger un champ ip en notation CIDR.

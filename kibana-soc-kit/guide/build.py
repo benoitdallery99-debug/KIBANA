@@ -133,6 +133,10 @@ def exercice_public(exercice: dict, reponses: dict, pieges: dict, module_id: str
         "erreurs_typiques": exercice.get("erreurs_typiques") or [],
         "doc": exercice.get("doc", ""),
         "requetes": [],
+        # Les mêmes requêtes, sans filtrage : elles alimentent le corrigé du
+        # formateur, qui doit tout montrer — y compris pour un exercice
+        # autonome, dont c'est justement la démarche à débriefer.
+        "requetes_corrige": [],
         "piege": None,
         "reponse": None,
     }
@@ -143,20 +147,22 @@ def exercice_public(exercice: dict, reponses: dict, pieges: dict, module_id: str
     # de trouver seul — c'est tout ce qui distingue « autonome » de « guidé ».
     autonome = exercice.get("guidage") == "autonome"
 
-    for i, requete in enumerate([] if autonome else exercice.get("requetes_kql") or []):
+    for i, requete in enumerate(exercice.get("requetes_kql") or []):
         if not requete.get("kql"):
             continue
-        sortie["requetes"].append({
+        sortie["requetes_corrige"].append({
             "id": f"q-{exercice['id'].lower()}-{i}",
             "langage": "KQL",
             "texte": requete["kql"],
         })
-    for i, requete in enumerate([] if autonome else exercice.get("requetes_esql") or []):
-        sortie["requetes"].append({
+    for i, requete in enumerate(exercice.get("requetes_esql") or []):
+        sortie["requetes_corrige"].append({
             "id": f"e-{exercice['id'].lower()}-{i}",
             "langage": "ES|QL",
             "texte": requete["esql"] if isinstance(requete, dict) else str(requete),
         })
+    if not autonome:
+        sortie["requetes"] = list(sortie["requetes_corrige"])
 
     identifiant_piege = exercice.get("piege")
     if identifiant_piege and identifiant_piege in pieges:

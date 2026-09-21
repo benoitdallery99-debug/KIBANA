@@ -69,6 +69,10 @@ def _transformer(valeur, transformation: str | None, t0: datetime | None = None)
         vu = datetime.fromtimestamp(float(valeur) / 1000, tz=UTC)
         reference = t0 or datetime.now(UTC)
         return round((reference - vu).total_seconds() / 60)
+    if transformation == "entier":
+        # L'agrégation « max » sur un champ entier renvoie un flottant
+        # (65445.0) : la réponse attendue, elle, est un entier.
+        return int(float(valeur))
     if transformation == "mediane_intervalle_minutes":
         instants = sorted(
             datetime.fromisoformat(h["_source"]["@timestamp"].replace("Z", "+00:00"))

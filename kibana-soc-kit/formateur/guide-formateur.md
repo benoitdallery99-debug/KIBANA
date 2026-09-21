@@ -32,8 +32,8 @@ stagiaire, et le **quiz sans réponses** pour la fin de journée.
 |---|---|---|
 | 09 h 00 | 15 min | Accueil, tour de table, ce qu'on va faire et ce qu'on ne fera pas |
 | 09 h 15 | 30 min | **M0 — Prise en main** |
-| 09 h 45 | 75 min | **M1 — Rechercher avec Discover** |
-| 11 h 00 | 15 min | Pause |
+| 09 h 45 | 77 min | **M1 — Rechercher avec Discover** |
+| 11 h 02 | 13 min | Pause |
 | 11 h 15 | 60 min | **M2 — Visualiser avec Lens** |
 | 12 h 15 | 60 min | Déjeuner |
 | 13 h 15 | 60 min | **M3 — Construire un tableau de bord** |

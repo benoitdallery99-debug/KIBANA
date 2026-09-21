@@ -295,7 +295,57 @@ le dossier formateur complet, les six PDF, les images de conteneurs et les wheel
 
 `docs/NOTE_DE_CONCEPTION.md` (4 pages) et `docs/RAPPORT_RECETTE.md` écrits. Les deux relectures
 indépendantes — `relecteur-expert` sur la grille /20 de SPEC §11, `stagiaire-candide` sur les six
-modules contre le lab — sont en cours.
+modules contre le lab — ont rendu leurs rapports. Elles convergent, et ce qu'elles trouvent est sérieux.
+
+### Ce que la relecture a trouvé, et ce qui a été corrigé
+
+**Honnêteté des statuts, d'abord.** `docs/RAPPORT_RECETTE.md` affirmait « `verif-guide` : 10 passés »,
+« Total : 76 » et « `guide.pdf` (29 pages) ». Les suites comptent 11 et 8 contrôles, le total 78, et
+`pdfinfo` relève 96 pages. Trois affirmations fausses dans le document qui sert justement de preuve.
+Corrigées, et les statuts ramenés à « à rejouer » tant que `make verif` n'a pas été relancé en entier
+après les corrections ci-dessous : un vert antérieur aux corrections n'est pas un vert.
+
+**Trois défauts bloquants côté lab.**
+1. `make lab-reset` appelait `lab/reset.sh`, qui n'existait pas — alors que le guide du formateur le
+   déclare non facultatif entre deux sessions. Écrit.
+2. Les tableaux de bord corrigés étaient chargés dans le Space de formation : leurs titres et leurs
+   descriptions (« Tableau de bord corrigé du module M4 ») s'affichaient au stagiaire dès sa première
+   connexion. Déplacés dans un Space `corriges` réservé au formateur.
+3. Le rôle `stagiaire` lisait `logs-*-epreuve` toute la journée : l'épreuve pratique ne mesurait rien.
+   Jeu et Space fermés par défaut, ouverts par `make epreuve-ouvrir`.
+
+S'y ajoutait un Space manquant : `reseau`, cible de la copie de M3-E5 et de l'import de M5-E3. Sans
+lui, ces deux exercices étaient tout simplement infaisables.
+
+**Les libellés d'interface.** Le parcours citait des intitulés qui ne sont pas ceux de l'écran, dont un
+qui envoyait le stagiaire dans la mauvaise application : l'entrée de menu des tableaux de bord
+d'analyse s'appelle `Dashboards`, en anglais, tandis que « Tableaux de bord » désigne
+`/app/security/dashboards`. De même « Métrique » pour « Indicateur », « Heatmap » pour « Carte
+thermique », « Secteurs » pour « Camembert », « Barres horizontales » pour « Horizontal à barres »,
+« Stack Management » pour « Gestion de la Suite », et « Lens », qui n'a pas d'entrée de menu du tout.
+
+Le contrôle existant passait pourtant. Il passait parce que sa liste d'exceptions contenait « Lens » et
+« Stack Management » en bloc : une liste d'exceptions large rend un contrôle décoratif. `outils/libelles.py`
+nomme désormais chaque exception avec ce qu'elle désigne, et un second test échoue si l'une d'elles
+vient à être traduite — sans quoi le guide citerait un intitulé disparu sans que rien ne casse.
+
+**Quatre défauts de rendu du guide**, dont un grave : Jinja n'échappait rien. `select_autoescape(["html"])`
+compare la dernière extension du fichier, et les gabarits s'appellent `guide.html.j2`. Activer
+l'échappement a d'ailleurs immédiatement cassé la validation des réponses — le CSS et le JS inlinés
+partaient eux aussi à l'échappement —, ce qui a été attrapé par `verif-guide` et corrigé par `| safe`
+sur les seules ressources. Les trois autres : un exercice « autonome » publiait ses requêtes de
+contrôle ; l'encadré « piège » s'affichait avant l'action au lieu d'après ; à 390 px la page débordait
+de 217 px et quatre blocs de code étaient coupés au lieu de défiler.
+
+**Une fuite de réponse**, trouvée par le garde du kit lui-même une fois `M0` réécrit : la question Q14
+du quiz énonçait « il y a deux heures », qui est la réponse attendue du scénario S5.
+
+**La pédagogie, enfin.** Trente exercices se partageaient treize réponses : un stagiaire pouvait retaper
+de mémoire une valeur relevée trois modules plus tôt. Huit faits supplémentaires ont été ajoutés au
+manifeste, chacun relevé sur les données et recalculable par requête ; on est passé à vingt réponses
+distinctes, et les rares répétitions qui restent sont des contrôles de cohérence, désormais annoncés
+comme tels dans la démarche. M0 a par ailleurs gagné ce qui lui manquait pour être praticable : la
+connexion, la vérification du Space, et le chemin réel dans le menu.
 
 ### Écart de livraison, non résolu à ce stade
 **Le push vers `YamTeam9/picturegallery` est refusé** : `403`, côté API GitHub
