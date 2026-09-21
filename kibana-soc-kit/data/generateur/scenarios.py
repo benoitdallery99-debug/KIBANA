@@ -46,7 +46,8 @@ def s1_force_brute(rng: random.Random, t0: datetime, jours: int, fuseau: str) ->
     # L'hôte visé est tiré : sans cela, il serait identique dans le jeu du
     # parcours et dans celui de l'épreuve, et la réponse se recopierait.
     cible = rng.choice([
-        h for h in ctx.TOUS_LES_HOTES if h["os"] == "windows" and h["critique"]
+        h for h in ctx.TOUS_LES_HOTES
+        if h["os"] == "windows" and h["critique"] and not h.get("equipement")
     ])
     echecs = rng.randrange(38, 73)
 
@@ -489,8 +490,11 @@ def s7_leurre(rng: random.Random, t0: datetime, jours: int, fuseau: str) -> dict
     nb = rng.randrange(1500, 2100)
 
     evenements_win, evenements_ssh = [], []
-    cibles_win = [h for h in ctx.TOUS_LES_HOTES if h["os"] == "windows"]
-    cibles_lin = [h for h in ctx.TOUS_LES_HOTES if h["os"] == "linux"]
+    # Équipements réseau exclus : on ne force pas de session SSH sur un pare-feu.
+    cibles_win = [h for h in ctx.TOUS_LES_HOTES
+                  if h["os"] == "windows" and not h.get("equipement")]
+    cibles_lin = [h for h in ctx.TOUS_LES_HOTES
+                  if h["os"] == "linux" and not h.get("equipement")]
     for i in range(nb):
         instant = depart + timedelta(seconds=int(i * rng.uniform(4, 11)))
         compte = rng.choice(COMPTES_PAR_DEFAUT)

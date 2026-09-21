@@ -15,6 +15,8 @@ import pytest
 import yaml
 
 from outils.fuites import chercher as chercher_fuites
+from outils.libelles import ANGLAIS_ASSUME
+from outils.libelles import normaliser as normaliser_libelle
 from verif.e2e import kibana as K
 
 pytestmark = pytest.mark.parcours
@@ -299,6 +301,12 @@ def test_les_libelles_cites_existent_dans_l_interface(modules, kbn, config, lab_
 
     Le contrôle se fait sur les traductions réellement servies par le lab dans
     la locale de kit.config.yaml.
+
+    La liste des exceptions est celle d'outils/libelles.py, et elle est NOMMÉE :
+    chaque entrée dit ce qu'elle désigne. Une liste d'exceptions large rendrait
+    ce contrôle décoratif — c'est ce qui s'était produit, « Lens » et « Stack
+    Management » y figurant en bloc alors qu'aucun des deux n'est affiché ainsi
+    dans cette version.
     """
     locale = str(config.valeur("kibana.locale"))
     r = kbn.get(f"{kbn.base}/translations/{locale}.json", timeout=90)
@@ -307,22 +315,46 @@ def test_les_libelles_cites_existent_dans_l_interface(modules, kbn, config, lab_
     connus = set()
     for valeur in messages.values():
         texte = valeur.get("text") if isinstance(valeur, dict) else valeur
-        if isinstance(texte, str):
-            connus.add(texte.strip())
-    # Les noms propres de l'interface ne sont pas traduits : ils n'apparaissent
-    # donc pas dans le fichier de traduction, et sont admis tels quels.
-    NON_TRADUITS = {
-        "Discover", "Lens", "Kibana", "Elasticsearch", "KQL", "Lucene", "ES|QL",
-        "Elastic", "Maps", "Canvas", "Management", "Stack Management",
-    }
+        if isinstance(texte, str) and texte:
+            connus.add(normaliser_libelle(texte))
+
+    assumes = {normaliser_libelle(x) for x in ANGLAIS_ASSUME}
     inconnus = []
     for _module, e in _exercices(modules):
         for libelle in e.get("libelles_ui") or []:
-            if libelle in NON_TRADUITS or libelle in connus:
+            forme = normaliser_libelle(libelle)
+            if forme in connus or forme in assumes:
                 continue
             inconnus.append(f"{e['id']} : « {libelle} »")
     assert not inconnus, (
         "libellés introuvables dans l'interface fr-FR du lab :\n  " + "\n  ".join(inconnus)
+    )
+
+
+def test_les_exceptions_de_libelles_sont_encore_en_anglais(kbn, config, lab_demarre):
+    """L'inverse du contrôle précédent, et il compte autant.
+
+    ANGLAIS_ASSUME liste les entrées que Kibana 9.5.3 laisse en anglais. Si une
+    version ultérieure les traduit, le guide se mettra à citer un intitulé qui
+    n'est plus à l'écran — sans que rien n'échoue. Ce test le fait échouer.
+    """
+    locale = str(config.valeur("kibana.locale"))
+    r = kbn.get(f"{kbn.base}/translations/{locale}.json", timeout=90)
+    assert r.status_code == 200
+    connus = set()
+    for valeur in r.json().get("messages", {}).values():
+        texte = valeur.get("text") if isinstance(valeur, dict) else valeur
+        if isinstance(texte, str) and texte:
+            connus.add(normaliser_libelle(texte))
+
+    traduits = [
+        f"« {libelle} » ({role})"
+        for libelle, role in ANGLAIS_ASSUME.items()
+        if normaliser_libelle(libelle) in connus
+    ]
+    assert not traduits, (
+        "ces libellés sont désormais traduits : retirez-les d'ANGLAIS_ASSUME et "
+        "reprenez le parcours qui les cite en anglais :\n  " + "\n  ".join(traduits)
     )
 
 

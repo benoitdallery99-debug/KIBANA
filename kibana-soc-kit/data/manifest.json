@@ -1,5 +1,5 @@
 {
-  "engendre_le": "2026-09-21T17:27:53.000Z",
+  "engendre_le": "2026-09-21T20:52:09.000Z",
   "jeu": "formation",
   "graine": 20260921,
   "namespace": "formation",
@@ -9,14 +9,14 @@
   "index_mode": "standard",
   "avertissement": "Données entièrement synthétiques. Adresses réservées à la documentation (RFC 5737, RFC 1918), domaines réservés (RFC 2606), personnes inventées. Aucune donnée réelle (SPEC §5.1, CLAUDE.md).",
   "volumes": {
-    "logs-windows.security-formation": 90523,
-    "logs-linux.auth-formation": 35685,
-    "logs-ids.alert-formation": 14453,
-    "logs-network.dns-formation": 101973,
-    "logs-proxy.web-formation": 74743,
-    "logs-firewall.traffic-formation": 69119
+    "logs-windows.security-formation": 90802,
+    "logs-linux.auth-formation": 35790,
+    "logs-ids.alert-formation": 14830,
+    "logs-network.dns-formation": 102318,
+    "logs-proxy.web-formation": 74980,
+    "logs-firewall.traffic-formation": 70352
   },
-  "total_documents": 386496,
+  "total_documents": 389072,
   "contexte": {
     "organisation": "Groupe Méridien",
     "domaine_ad": "MERIDIEN",
@@ -126,6 +126,15 @@
         "os": "linux",
         "critique": false,
         "role": "Relais de messagerie"
+      },
+      {
+        "nom": "fw-perimetre-01",
+        "ip": "10.30.0.1",
+        "zone": "dmz",
+        "os": "linux",
+        "critique": true,
+        "equipement": true,
+        "role": "Pare-feu de périmètre"
       },
       {
         "nom": "pc-compta-01",
@@ -289,6 +298,31 @@
         ]
       },
       {
+        "cle": "hote_le_plus_actif",
+        "libelle": "Machine qui produit le plus d'événements",
+        "valeur": "fw-perimetre-01",
+        "type": "texte",
+        "normalisation": "minuscules, espaces retirés",
+        "controle": {
+          "dataset": "*",
+          "requete": {
+            "size": 0,
+            "aggs": {
+              "r": {
+                "terms": {
+                  "field": "host.name",
+                  "size": 1
+                }
+              }
+            }
+          },
+          "chemin": "aggregations.r.buckets.0.key"
+        },
+        "empreintes": [
+          "20e9f066ce56baecee1ed8dcd0098dff5239e8738b70f2a3a3700b4448b4d76c"
+        ]
+      },
+      {
         "cle": "nb_hotes",
         "libelle": "Nombre d'hôtes distincts observés",
         "valeur": 21,
@@ -316,7 +350,7 @@
       {
         "cle": "signature_ids_la_plus_frequente",
         "libelle": "Signature IDS la plus fréquente",
-        "valeur": "ET SCAN Balayage TCP detecte",
+        "valeur": "ET POLICY Telechargement executable non signe",
         "type": "texte",
         "normalisation": "minuscules, espaces retirés",
         "controle": {
@@ -335,7 +369,7 @@
           "chemin": "aggregations.r.buckets.0.key"
         },
         "empreintes": [
-          "02537be6643501fe3d2bf44343cd495eba7ce5e5c566cd9b7d2185a4864d4417"
+          "23f06931d1fe11255cc311f0e4fb5d75b9508a3c0718d1f2c60fd93c76bbbb7d"
         ]
       }
     ]
@@ -859,8 +893,8 @@
       "titre": "Trou de collecte de deux heures",
       "recit": "Une source n'a rien envoyé pendant deux heures, au milieu de la période.",
       "_fenetre": {
-        "debut": "2026-09-18T13:27:53.000Z",
-        "fin": "2026-09-18T15:27:53.000Z"
+        "debut": "2026-09-18T16:52:09.000Z",
+        "fin": "2026-09-18T18:52:09.000Z"
       },
       "reponses": [
         {
@@ -877,8 +911,8 @@
               "query": {
                 "range": {
                   "@timestamp": {
-                    "gte": "2026-09-18T13:27:53.000Z",
-                    "lt": "2026-09-18T15:27:53.000Z"
+                    "gte": "2026-09-18T16:52:09.000Z",
+                    "lt": "2026-09-18T18:52:09.000Z"
                   }
                 }
               }

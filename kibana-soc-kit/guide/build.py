@@ -16,7 +16,7 @@ from pathlib import Path
 
 import markdown as md
 import yaml
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from jinja2 import Environment, FileSystemLoader
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -97,11 +97,18 @@ def captures_par_module() -> dict[str, list[dict]]:
 
 
 def markdown_vers_html(texte: str) -> str:
-    return md.markdown(
+    html = md.markdown(
         texte,
         extensions=["tables", "fenced_code", "sane_lists", "attr_list", "def_list"],
         output_format="html",
     )
+    # Un bloc de code long défile horizontalement dans son cadre. Une zone qui
+    # défile doit être atteignable au clavier, sans quoi son contenu est
+    # inaccessible à qui n'emploie pas la souris — axe-core le signale en
+    # « serious » (scrollable-region-focusable). « tabindex=0 » la rend
+    # focalisable ; le lecteur d'écran annonce alors un groupe qu'on peut
+    # parcourir aux flèches.
+    return html.replace("<pre>", '<pre tabindex="0">')
 
 
 def exercice_public(exercice: dict, reponses: dict, pieges: dict, module_id: str) -> dict:
@@ -130,7 +137,13 @@ def exercice_public(exercice: dict, reponses: dict, pieges: dict, module_id: str
         "reponse": None,
     }
 
-    for i, requete in enumerate(exercice.get("requetes_kql") or []):
+    # Un exercice « autonome » ne publie PAS ses requêtes. Elles existent pour
+    # que la suite de vérification rejoue l'exercice sur le lab ; les afficher
+    # au stagiaire livrerait la démarche que l'exercice lui demande justement
+    # de trouver seul — c'est tout ce qui distingue « autonome » de « guidé ».
+    autonome = exercice.get("guidage") == "autonome"
+
+    for i, requete in enumerate([] if autonome else exercice.get("requetes_kql") or []):
         if not requete.get("kql"):
             continue
         sortie["requetes"].append({
@@ -138,7 +151,7 @@ def exercice_public(exercice: dict, reponses: dict, pieges: dict, module_id: str
             "langage": "KQL",
             "texte": requete["kql"],
         })
-    for i, requete in enumerate(exercice.get("requetes_esql") or []):
+    for i, requete in enumerate([] if autonome else exercice.get("requetes_esql") or []):
         sortie["requetes"].append({
             "id": f"e-{exercice['id'].lower()}-{i}",
             "langage": "ES|QL",
@@ -231,7 +244,14 @@ def main() -> int:
 
     env = Environment(
         loader=FileSystemLoader(str(GUIDE / "gabarits")),
-        autoescape=select_autoescape(["html"]),
+        # PIÈGE : select_autoescape(["html"]) compare la DERNIÈRE extension du
+        # fichier. Nos gabarits s'appellent « guide.html.j2 » : leur extension
+        # est « .j2 », l'échappement restait donc désactivé partout, et tout
+        # « & », « < » ou guillemet venant du parcours partait tel quel dans la
+        # page. On l'active sans condition — tous les gabarits sont du HTML — et
+        # le seul fragment volontairement injecté, « corps_html », est marqué
+        # « | safe » dans les gabarits.
+        autoescape=True,
         trim_blocks=True,
         lstrip_blocks=True,
     )

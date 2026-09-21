@@ -43,12 +43,22 @@ def _postes(rng: random.Random) -> dict:
     return rng.choice(ctx.POSTES)
 
 
+def _serveurs(os_: str) -> list[dict]:
+    """Hôtes d'un système donné, équipements réseau EXCLUS.
+
+    Un pare-feu ne journalise ni ouverture de session ni création de processus :
+    l'inclure produirait des événements que la plateforme cible ne verrait jamais.
+    """
+    return [h for h in ctx.TOUS_LES_HOTES
+            if h["os"] == os_ and not h.get("equipement")]
+
+
 def _hotes_windows() -> list[dict]:
-    return [h for h in ctx.TOUS_LES_HOTES if h["os"] == "windows"]
+    return _serveurs("windows")
 
 
 def _hotes_linux() -> list[dict]:
-    return [h for h in ctx.TOUS_LES_HOTES if h["os"] == "linux"]
+    return _serveurs("linux")
 
 
 # --- Bruit de fond : authentification Windows -------------------------------

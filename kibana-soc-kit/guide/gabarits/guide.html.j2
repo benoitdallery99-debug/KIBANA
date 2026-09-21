@@ -6,9 +6,14 @@
 <title>{{ titre }}</title>
 <meta name="description" content="{{ sous_titre }}">
 <meta name="generator" content="kit de formation Kibana pour analystes SOC">
-<style>{{ css }}</style>
+<style>{{ css | safe }}</style>
 </head>
 <body>
+<!-- Lien d'évitement : premier élément focalisable de la page, il permet de
+     sauter le sommaire, qui compte une cinquantaine de liens. Sans lui, un
+     utilisateur au clavier les traverse tous avant d'atteindre le contenu, à
+     chaque changement de page. Visible seulement quand il a le focus. -->
+<a class="evitement" href="#contenu">Aller au contenu</a>
 <div class="ossature">
 
 <nav class="sommaire" aria-label="Sommaire du guide" data-ouvert="oui">
@@ -56,7 +61,7 @@
   </div>
 </nav>
 
-<main class="contenu">
+<main class="contenu" id="contenu" tabindex="-1">
   <div class="outils">
     <span class="recherche">
       <label class="visuellement-cache" for="recherche">Rechercher dans le guide</label>
@@ -155,7 +160,7 @@
       {% endfor %}
       {% endif %}
 
-      {{ m.corps_html }}
+      {{ m.corps_html | safe }}
 
       {% for c in m.captures %}
       <figure id="fig-{{ c.id }}">
@@ -195,16 +200,9 @@
             <span>{{ q.langage }}</span>
             <button class="bouton" type="button" data-copier="{{ q.id }}">Copier</button>
           </div>
-          <pre id="{{ q.id }}"><code>{{ q.texte }}</code></pre>
+          <pre id="{{ q.id }}" tabindex="0"><code>{{ q.texte }}</code></pre>
         </div>
         {% endfor %}
-
-        {% if e.piege %}
-        <div class="piege">
-          <span class="piege__titre">Le piège : {{ e.piege.titre }}</span>
-          <p>{{ e.piege.lecon }}</p>
-        </div>
-        {% endif %}
 
         {% for i in e.indices %}
         <details>
@@ -233,6 +231,15 @@
         <details>
           <summary>Voir la démarche</summary>
           <div>
+            {# Le piège se lit APRÈS coup. Annoncé avant l'action, il désamorce
+               l'exercice : le stagiaire évite l'erreur sans l'avoir commise, et
+               n'en garde donc rien. #}
+            {% if e.piege %}
+            <div class="piege">
+              <span class="piege__titre">Le piège : {{ e.piege.titre }}</span>
+              <p>{{ e.piege.lecon }}</p>
+            </div>
+            {% endif %}
             <p>{{ e.solution }}</p>
             {% if e.erreurs_typiques %}
             <p><strong>Erreurs fréquentes à ce point</strong></p>
@@ -298,6 +305,6 @@
   </footer>
 </main>
 </div>
-<script>{{ js }}</script>
+<script>{{ js | safe }}</script>
 </body>
 </html>

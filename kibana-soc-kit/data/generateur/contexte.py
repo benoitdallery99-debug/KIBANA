@@ -36,7 +36,7 @@ SOUS_RESEAUX = {
     },
 }
 
-# --- Hôtes (environ 20, SPEC §5.1) ------------------------------------------
+# --- Hôtes (une vingtaine, SPEC §5.1) ------------------------------------------
 # Chaque hôte : nom, adresse, zone, criticité. Les serveurs critiques sont ceux
 # dont la compromission ferait l'objet d'une escalade immédiate.
 HOTES: list[dict] = [
@@ -62,6 +62,16 @@ HOTES: list[dict] = [
      "role": "Portail web public"},
     {"nom": "smtp-dmz-01", "ip": "10.30.0.20", "zone": "dmz", "os": "linux", "critique": False,
      "role": "Relais de messagerie"},
+    # Le pare-feu est un hôte comme un autre : il porte un host.name et émet le
+    # plus gros volume du parc. L'omettre de cet inventaire faisait mentir la
+    # fiche de contexte remise au stagiaire — elle annonçait vingt machines
+    # quand le décompte des host.name distincts en rend vingt et une.
+    # « equipement » le tient hors des pools d'hôtes qui reçoivent des
+    # authentifications ou des processus : un pare-feu n'ouvre pas de session
+    # utilisateur. Il figure malgré tout dans l'inventaire, parce qu'il émet des
+    # journaux sous son propre host.name et qu'il en émet le plus gros volume.
+    {"nom": "fw-perimetre-01", "ip": "10.30.0.1", "zone": "dmz", "os": "linux",
+     "critique": True, "equipement": True, "role": "Pare-feu de périmètre"},
 ]
 # Postes de travail : complétés dynamiquement pour atteindre une vingtaine d'hôtes.
 POSTES = [

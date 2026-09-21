@@ -242,3 +242,67 @@ def test_typographie_francaise(html):
         "quasiment aucune espace insécable dans le guide : la passe "
         "typographique n'a pas été appliquée"
     )
+
+
+def test_aucun_debordement_horizontal_sur_telephone(page_ouverte):
+    """Le guide se lit sur un téléphone sans faire défiler la page de côté.
+
+    Deux constats distincts, et il faut les deux : la PAGE ne doit jamais
+    déborder horizontalement, et aucun bloc de code ne doit être COUPÉ — il doit
+    défiler dans son propre cadre. Le défaut trouvé en P8 donnait les deux à la
+    fois : « .contenu » est une cellule de grille, donc « min-width: auto », donc
+    elle refusait de rétrécir ; « body » masquait le débordement ; la fin des
+    requêtes disparaissait. Mesuré, ici, aux deux largeurs de téléphone usuelles.
+    """
+    page, _ = page_ouverte
+    defauts = []
+    for largeur in (390, 320):
+        page.set_viewport_size({"width": largeur, "height": 800})
+        page.wait_for_timeout(600)
+        debord = page.evaluate(
+            "() => document.documentElement.scrollWidth"
+            "     - document.documentElement.clientWidth"
+        )
+        if debord > 0:
+            defauts.append(f"{largeur} px : la page déborde de {debord} px")
+        coupes = page.evaluate("""() => {
+            const out = [];
+            document.querySelectorAll('pre').forEach(p => {
+              const ox = getComputedStyle(p).overflowX;
+              const defile = ox === 'auto' || ox === 'scroll';
+              if (p.scrollWidth > p.clientWidth + 1 && !defile)
+                out.push((p.id || p.textContent.slice(0, 40)));
+            });
+            return out;
+        }""")
+        if coupes:
+            defauts.append(f"{largeur} px : {len(coupes)} bloc(s) de code coupés — {coupes[:3]}")
+    page.set_viewport_size({"width": 1440, "height": 900})
+    assert not defauts, "mise en page téléphone :\n  " + "\n  ".join(defauts)
+
+
+def test_lien_d_evitement_present_et_premier(page_ouverte):
+    """Un lien d'évitement, et il doit être le PREMIER élément focalisable.
+
+    Le sommaire compte une cinquantaine de liens : sans ce lien, un utilisateur
+    au clavier les traverse tous avant d'atteindre le contenu.
+    """
+    page, _ = page_ouverte
+    premier = page.evaluate("""() => {
+        const sel = 'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
+        for (const el of document.querySelectorAll(sel)) {
+          const st = getComputedStyle(el);
+          if (st.display === 'none' || st.visibility === 'hidden') continue;
+          return {balise: el.tagName, classe: el.className, href: el.getAttribute('href')};
+        }
+        return null;
+    }""")
+    assert premier, "aucun élément focalisable trouvé"
+    assert "evitement" in (premier["classe"] or ""), (
+        f"le premier élément focalisable est {premier} — le lien d'évitement "
+        "doit venir en tête"
+    )
+    cible = (premier["href"] or "").lstrip("#")
+    assert cible and page.query_selector(f"#{cible}"), (
+        f"le lien d'évitement pointe sur « {premier['href']} », qui n'existe pas"
+    )

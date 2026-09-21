@@ -35,7 +35,11 @@
   --action-fond: #f1ebfd;
   --alerte: #9c2a1a;
   --alerte-fond: #fbeeec;
-  --filet: #c3ccd6;
+  /* 3,34:1 sur --papier et 3,09:1 sur --papier-appui. Le gris précédent
+     (#c3ccd6) tombait à 1,49:1 : sous les 3:1 qu'exige WCAG 1.4.11 pour un
+     trait qui délimite un composant — et les encadrés « piège » de ce guide
+     ne sont distingués que par leur trait. */
+  --filet: #7d8794;
 
   --texte: "Atkinson Hyperlegible Next", system-ui, sans-serif;
   --mono: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
@@ -54,7 +58,7 @@
     --action-fond: #241a3a;
     --alerte: #ff9b8a;
     --alerte-fond: #34201c;
-    --filet: #2b333d;
+    --filet: #616e7e;
   }
 }
 :root[data-theme="sombre"] {
@@ -66,7 +70,7 @@
   --action-fond: #241a3a;
   --alerte: #ff9b8a;
   --alerte-fond: #34201c;
-  --filet: #2b333d;
+  --filet: #616e7e;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -219,6 +223,26 @@ h3 { font-size: 1.08rem; margin: 1.6rem 0 0.4rem; font-weight: 600; }
 .action__etiquette::before { content: "▪ "; }
 .action ol, .action ul { margin: 0.3rem 0 0; padding-left: 1.2rem; }
 .action li { margin: 0.25rem 0; }
+
+/* --- Débordement horizontal ------------------------------------------------
+   PIÈGE, mesuré à 390 px : « .contenu » est une cellule de grille, et une
+   cellule de grille a « min-width: auto » — elle refuse de devenir plus étroite
+   que son contenu. Un bloc de code long la poussait donc au-delà de la fenêtre,
+   et comme « body » masque le débordement horizontal, la fin de la ligne était
+   coupée au lieu de défiler. La règle vaut à TOUTES les largeurs, et porte sur
+   tous les « pre » — ceux des blocs de requête comme ceux du corps Markdown,
+   qui étaient les vrais coupables. */
+.contenu, .colonne { min-width: 0; }
+
+pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+pre > code {
+  /* Sans cela, le « code » garde sa largeur intrinsèque et déborde du « pre ». */
+  display: block;
+  min-width: 0;
+}
 
 /* --- Blocs de requête ---------------------------------------------------- */
 .requete {
@@ -400,6 +424,7 @@ mark { background: var(--action-fond); color: var(--encre); padding: 0 0.1em; }
   /* Un tableau large défile dans son cadre ; la page, elle, ne défile jamais
      horizontalement. */
   table { display: block; overflow-x: auto; max-width: 100%; }
+
   /* Plus de marge à déborder : la couleur et le carré portent seuls la
      distinction, comme prévu dans la maquette téléphone de docs/DESIGN.md. */
   .action { margin-left: 0; }
@@ -434,4 +459,24 @@ mark { background: var(--action-fond); color: var(--encre); padding: 0 0.1em; }
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+/* --- Lien d'évitement ------------------------------------------------------
+   Hors écran tant qu'il n'a pas le focus, puis ramené en haut à gauche. On ne
+   l'affiche pas en permanence : il ne sert qu'au clavier. */
+.evitement {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  background: var(--fond-accentue, #1a4480);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 0 0 4px 0;
+}
+.evitement:focus {
+  left: 0;
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
 }

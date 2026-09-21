@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 import yaml
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -46,7 +46,14 @@ CSS_POLICES = """
 def env() -> Environment:
     return Environment(
         loader=FileSystemLoader(str(GUIDE / "gabarits")),
-        autoescape=select_autoescape(["html"]),
+        # PIÈGE : select_autoescape(["html"]) compare la DERNIÈRE extension du
+        # fichier. Nos gabarits s'appellent « guide.html.j2 » : leur extension
+        # est « .j2 », l'échappement restait donc désactivé partout, et tout
+        # « & », « < » ou guillemet venant du parcours partait tel quel dans la
+        # page. On l'active sans condition — tous les gabarits sont du HTML — et
+        # le seul fragment volontairement injecté, « corps_html », est marqué
+        # « | safe » dans les gabarits.
+        autoescape=True,
         trim_blocks=True,
         lstrip_blocks=True,
     )

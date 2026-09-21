@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <title>{{ titre }}</title>
-<style>{{ css_polices }}</style>
-<style>{{ css }}</style>
+<style>{{ css_polices | safe }}</style>
+<style>{{ css | safe }}</style>
 </head>
 <body>
 
@@ -88,7 +88,7 @@
   <ul>{% for r in m.rappel_actif %}<li>{{ r.question }}</li>{% endfor %}</ul>
   {% endif %}
 
-  {{ m.corps_html }}
+  {{ m.corps_html | safe }}
 
   {% for c in m.captures %}
   <figure>
@@ -118,13 +118,6 @@
     {% for q in e.requetes %}
     <pre>{{ q.texte }}</pre>
     {% endfor %}
-
-    {% if e.piege %}
-    <div class="piege">
-      <span class="piege__titre">Le piège : {{ e.piege.titre }}</span>
-      {{ e.piege.lecon }}
-    </div>
-    {% endif %}
 
     {% if e.indices %}
     <p><strong>Indices</strong></p>
@@ -160,6 +153,12 @@
   {% for e in m.exercices if e.solution %}
   <div class="exercice">
     <p class="exercice__entete"><span class="exercice__id">{{ e.id }}</span> — {{ e.titre }}</p>
+    {% if e.piege %}
+    <div class="piege">
+      <span class="piege__titre">Le piège : {{ e.piege.titre }}</span>
+      {{ e.piege.lecon }}
+    </div>
+    {% endif %}
     <p>{{ e.solution }}</p>
     {% if e.erreurs_typiques %}
     <p><strong>Erreurs fréquentes</strong></p>

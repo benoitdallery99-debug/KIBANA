@@ -191,6 +191,14 @@ def reperes(base: dict[str, list[dict]]) -> dict:
         if d.get("host", {}).get("name")
     }
 
+    par_hote: dict[str, int] = {}
+    for evenements in base.values():
+        for d in evenements:
+            nom = d.get("host", {}).get("name")
+            if nom:
+                par_hote[nom] = par_hote.get(nom, 0) + 1
+    hote_actif = max(par_hote, key=lambda h: par_hote[h]) if par_hote else ""
+
     signatures: dict[str, int] = {}
     for evenement in base.get("ids.alert", []):
         nom = evenement["rule"]["name"]
@@ -224,6 +232,22 @@ def reperes(base: dict[str, list[dict]]) -> dict:
                     "dataset": "*",
                     "requete": {"size": 0, "aggs": {"r": {"terms": {
                         "field": "event.dataset", "size": 1}}}},
+                    "chemin": "aggregations.r.buckets.0.key",
+                },
+            },
+            {
+                # Lisible dès M0 dans la barre latérale de Discover : le pare-feu
+                # y sort à 20 %, les postes autour de 6 %. L'écart est assez large
+                # pour survivre à l'échantillonnage du panneau de champ — ce que
+                # le contrôle ci-dessous confirme sur la TOTALITÉ des documents.
+                "cle": "hote_le_plus_actif",
+                "libelle": "Machine qui produit le plus d'événements",
+                "valeur": hote_actif, "type": "texte",
+                "normalisation": "minuscules, espaces retirés",
+                "controle": {
+                    "dataset": "*",
+                    "requete": {"size": 0, "aggs": {"r": {"terms": {
+                        "field": "host.name", "size": 1}}}},
                     "chemin": "aggregations.r.buckets.0.key",
                 },
             },

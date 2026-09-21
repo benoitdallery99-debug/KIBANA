@@ -41,12 +41,12 @@ verso:
   blocs:
     - titre: Quelle visualisation pour quelle question
       lignes:
-        - ["Combien ?", "Métrique", "Un chiffre, éventuellement avec sa tendance."]
-        - ["Comment ça évolue ?", "Ligne ou barres empilées", "Toujours en histogramme de dates."]
-        - ["Qui domine ?", "Barres horizontales", "Classement lisible dès 5 valeurs."]
-        - ["Comment ça se répartit ?", "Secteurs", "Au plus 5 parts, sinon des barres."]
+        - ["Combien ?", "Indicateur", "Un chiffre, éventuellement avec sa tendance."]
+        - ["Comment ça évolue ?", "Ligne ou Vertical à barres empilées", "Toujours en histogramme de dates."]
+        - ["Qui domine ?", "Horizontal à barres", "Classement lisible dès 5 valeurs."]
+        - ["Comment ça se répartit ?", "Camembert", "Au plus 5 parts, sinon des barres."]
         - ["Quelles valeurs exactes ?", "Tableau", "Quand le chiffre compte plus que la forme."]
-        - ["Où est-ce dense ?", "Heatmap", "Croisement de deux dimensions."]
+        - ["Où est-ce dense ?", "Carte thermique", "Croisement de deux dimensions."]
 
     - titre: Ce qui fait mentir une visualisation
       liste:
