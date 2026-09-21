@@ -14,6 +14,7 @@ import re
 import pytest
 import yaml
 
+from outils.fuites import chercher as chercher_fuites
 from verif.e2e import kibana as K
 
 pytestmark = pytest.mark.parcours
@@ -192,26 +193,21 @@ def test_chaque_exercice_renvoie_a_une_reponse_du_manifeste(modules, reponses):
     assert not defauts, "renvois de réponse :\n  " + "\n  ".join(defauts)
 
 
-def test_aucune_reponse_attendue_ecrite_en_clair(modules, reponses):
+def test_aucune_reponse_attendue_ecrite_en_clair(modules, manifeste):
     """La règle qui prime : un exercice dont la réponse est trouvable sans le
     faire est un défaut (charte §3).
 
-    On cherche chaque valeur du manifeste dans le texte entier du parcours,
-    frontmatter compris. Les valeurs peu discriminantes (petits entiers, mots
-    du vocabulaire courant) sont écartées : elles produiraient du bruit.
+    Les valeurs que la fiche de contexte publie déjà — serveurs critiques,
+    comptes de service, adresse du scanner autorisé — ne sont pas des fuites :
+    SPEC §5.4 impose de les publier, et elles s'y perdent parmi leurs
+    semblables. La règle et son exception vivent dans outils/fuites.py, partagé
+    avec le constructeur du guide.
     """
     fuites = []
-    for cle, reponse in reponses.items():
-        valeur = str(reponse["valeur"])
-        if reponse["type"] in ("entier", "entier_tolerance") and len(valeur) < 3:
-            continue
-        if reponse["type"] == "choix":
-            continue  # le verdict fait partie de l'énoncé : « incident ou faux positif ? »
-        for m in modules:
-            if valeur in m["chemin"].read_text(encoding="utf-8"):
-                fuites.append(
-                    f"{m['chemin'].name} contient la réponse {cle} = « {valeur} »"
-                )
+    for m in modules:
+        texte = m["chemin"].read_text(encoding="utf-8")
+        for fuite in chercher_fuites(texte, manifeste):
+            fuites.append(f"{m['chemin'].name} : {fuite}")
     assert not fuites, "réponses écrites en clair :\n  " + "\n  ".join(fuites)
 
 

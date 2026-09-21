@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr" {% if theme_force %}data-theme="{{ theme_force }}"{% endif %}>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ titre }}</title>
+<meta name="description" content="{{ sous_titre }}">
+<meta name="generator" content="kit de formation Kibana pour analystes SOC">
+<style>{{ css }}</style>
+</head>
+<body>
+<div class="ossature">
+
+<nav class="sommaire" aria-label="Sommaire du guide" data-ouvert="oui">
+  <button class="bouton sommaire__bascule" id="bascule-sommaire" aria-expanded="true"
+          aria-controls="sommaire-corps">Sommaire</button>
+  <div class="sommaire__corps" id="sommaire-corps">
+    <p class="sommaire__titre">Parcours</p>
+    <ol>
+      <li class="sommaire__module">
+        <a href="#contexte"><span>Contexte</span></a>
+      </li>
+      {% for m in modules %}
+      <li class="sommaire__module">
+        <a href="#{{ m.ancre }}">
+          <span>{{ m.id }} — {{ m.titre }}</span>
+          <span class="sommaire__jauge" data-jauge-module="{{ m.id }}" aria-live="off">—</span>
+        </a>
+        <div class="sommaire__exercices">
+          {% for e in m.exercices %}
+          <a href="#{{ e.ancre }}">{{ e.id }} · {{ e.titre }}</a>
+          {% endfor %}
+        </div>
+      </li>
+      {% endfor %}
+      <li class="sommaire__module"><a href="#glossaire"><span>Glossaire</span></a></li>
+    </ol>
+
+    <div class="enquete">
+      <p class="sommaire__titre">Enquête</p>
+      <div class="enquete__liste">
+        {% for s in scenarios %}
+        <span class="enquete__case" data-enquete="{{ s }}" data-resolu="non"
+              title="Scénario {{ s }}">{{ s }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main class="contenu">
+  <div class="outils">
+    <span class="recherche">
+      <label class="visuellement-cache" for="recherche">Rechercher dans le guide</label>
+      <input type="search" id="recherche" placeholder="Rechercher dans le guide…">
+    </span>
+    <span class="recherche__resultats" id="recherche-resultats" role="status"
+          aria-live="polite"></span>
+    <button class="bouton" id="bascule-theme" type="button">Thème sombre</button>
+  </div>
+
+  <header class="colonne">
+    <h1>{{ titre }}</h1>
+    <p class="module__resume">{{ sous_titre }}</p>
+    <p class="module__meta">Elastic Stack {{ version }} · licence {{ licence }} ·
+      interface {{ locale }} · {{ duree_totale }} minutes</p>
+  </header>
+
+  <section id="contexte" data-ancre data-cherchable class="colonne">
+    <h2>Le contexte de l'enquête</h2>
+    <p>Vous rejoignez le SOC de <strong>{{ contexte.organisation }}</strong>. Voici ce
+      qu'un analyste de permanence a sous les yeux. Gardez cette fiche ouverte :
+      elle contient au moins une clé dont vous aurez besoin.</p>
+    <p class="module__meta">{{ contexte.avertissement }}</p>
+
+    <h3>Le plan d'adressage</h3>
+    <table>
+      <thead><tr><th>Réseau</th><th>Plage</th><th>Rôle</th></tr></thead>
+      <tbody>
+      {% for nom, r in contexte.sous_reseaux.items() %}
+        <tr><td>{{ nom }}</td><td><code>{{ r.cidr }}</code></td><td>{{ r.role }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <h3>Les serveurs critiques</h3>
+    <table>
+      <thead><tr><th>Machine</th><th>Adresse</th><th>Rôle</th></tr></thead>
+      <tbody>
+      {% for h in contexte.hotes if h.critique %}
+        <tr><td><code>{{ h.nom }}</code></td><td><code>{{ h.ip }}</code></td>
+            <td>{{ h.role }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <h3>Les comptes de service</h3>
+    <table>
+      <thead><tr><th>Compte</th><th>Rôle</th></tr></thead>
+      <tbody>
+      {% for c in contexte.comptes_de_service %}
+        <tr><td><code>{{ c.nom }}</code></td><td>{{ c.role }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p>L'organisation compte {{ contexte.nombre_de_comptes }} comptes et
+      {{ contexte.hotes | length }} machines qui remontent des journaux.</p>
+
+    <h3>Les activités autorisées</h3>
+    <p>Certaines activités bruyantes sont <strong>connues et autorisées</strong>. Les
+      confondre avec une attaque coûte une nuit de travail à tout le monde.</p>
+    <table>
+      <thead><tr><th>Machine</th><th>Adresse</th><th>Ce qu'elle fait</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>{{ contexte.scanner_autorise.nom }}</code></td>
+          <td><code>{{ contexte.scanner_autorise.ip }}</code></td>
+          <td>{{ contexte.scanner_autorise.role }} — {{ contexte.scanner_autorise.fenetre }}.
+              Contact : {{ contexte.scanner_autorise.contact }}.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  {% for m in modules %}
+  <section id="{{ m.ancre }}" data-ancre data-cherchable>
+    <div class="colonne">
+      <h2>{{ m.id }} — {{ m.titre }}</h2>
+      <p class="module__resume">{{ m.resume }}</p>
+      <p class="module__meta">{{ m.duree_minutes }} minutes ·
+        {{ m.exercices | length }} exercice(s)</p>
+
+      <h3>Ce que vous saurez faire</h3>
+      <ul>
+        {% for o in m.objectifs %}<li>{{ o.enonce }}</li>{% endfor %}
+      </ul>
+
+      {% if m.rappel_actif %}
+      <h3>Avant de commencer — de mémoire</h3>
+      <p>Répondez sans revenir en arrière. Si une réponse ne vient pas, c'est le
+        moment de relire, pas pendant l'exercice.</p>
+      {% for r in m.rappel_actif %}
+      <details>
+        <summary>{{ r.question }}</summary>
+        <div>{{ r.reponse }}</div>
+      </details>
+      {% endfor %}
+      {% endif %}
+
+      {{ m.corps_html }}
+    </div>
+
+    {% for e in m.exercices %}
+    <article class="exercice" id="{{ e.ancre }}" data-ancre data-cherchable>
+      <div class="colonne">
+        <div class="exercice__entete">
+          <span class="exercice__id">{{ e.id }}</span>
+          <h3 style="margin:0">{{ e.titre }}</h3>
+          <span class="exercice__guidage">{{ e.guidage_libelle }}</span>
+          <span class="exercice__guidage">{{ e.duree_minutes }} min</span>
+        </div>
+
+        <p class="exercice__contexte">{{ e.contexte }}</p>
+
+        {% if e.consignes %}
+        <div class="action">
+          <span class="action__etiquette">DANS KIBANA</span>
+          <ol>{% for c in e.consignes %}<li>{{ c }}</li>{% endfor %}</ol>
+        </div>
+        {% endif %}
+
+        {% for q in e.requetes %}
+        <div class="requete">
+          <div class="requete__entete">
+            <span>{{ q.langage }}</span>
+            <button class="bouton" type="button" data-copier="{{ q.id }}">Copier</button>
+          </div>
+          <pre id="{{ q.id }}"><code>{{ q.texte }}</code></pre>
+        </div>
+        {% endfor %}
+
+        {% if e.piege %}
+        <div class="piege">
+          <span class="piege__titre">Le piège : {{ e.piege.titre }}</span>
+          <p>{{ e.piege.lecon }}</p>
+        </div>
+        {% endif %}
+
+        {% for i in e.indices %}
+        <details>
+          <summary>Indice {{ loop.index }}</summary>
+          <div>{{ i }}</div>
+        </details>
+        {% endfor %}
+
+        {% if e.reponse %}
+        <div class="reponse" data-exercice="{{ e.id }}" data-module="{{ m.id }}"
+             data-scenario="{{ e.reponse.scenario_public }}"
+             data-normalisation="{{ e.reponse.normalisation }}"
+             data-empreintes="{{ e.reponse.empreintes | join(',') }}">
+          <label class="reponse__format" for="rep-{{ e.id }}">
+            Votre réponse — {{ e.format_de_reponse }}
+          </label>
+          <div class="reponse__ligne">
+            <input type="text" id="rep-{{ e.id }}" autocomplete="off" spellcheck="false">
+            <button class="bouton" type="button" data-verifier>Vérifier ma réponse</button>
+          </div>
+          <p class="reponse__retour" role="status" aria-live="polite"></p>
+        </div>
+        {% endif %}
+
+        {% if e.solution %}
+        <details>
+          <summary>Voir la démarche</summary>
+          <div>
+            <p>{{ e.solution }}</p>
+            {% if e.erreurs_typiques %}
+            <p><strong>Erreurs fréquentes à ce point</strong></p>
+            <ul>{% for x in e.erreurs_typiques %}<li>{{ x }}</li>{% endfor %}</ul>
+            {% endif %}
+          </div>
+        </details>
+        {% endif %}
+
+        {% if e.doc %}
+        <p class="module__meta"><a href="{{ e.doc }}">Documentation Elastic sur ce point</a></p>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+  {% endfor %}
+
+  <section id="glossaire" data-ancre data-cherchable class="colonne">
+    <h2>Glossaire</h2>
+    <dl>
+      {% for t in glossaire %}
+      <dt><strong>{{ t.terme }}</strong></dt>
+      <dd>{{ t.definition }}</dd>
+      {% endfor %}
+    </dl>
+  </section>
+
+  <footer class="colonne module__meta">
+    <p>{{ avertissement_donnees }}</p>
+  </footer>
+</main>
+</div>
+<script>{{ js }}</script>
+</body>
+</html>

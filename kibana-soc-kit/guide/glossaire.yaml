@@ -1,0 +1,66 @@
+# Glossaire du guide. Chaque terme nouveau du parcours doit s'y trouver
+# (charte §6). Les définitions sont courtes : une phrase, deux au plus.
+- terme: data view
+  definition: >-
+    L'objet Kibana qui désigne un motif d'index et un champ temporel. Kibana
+    n'interroge jamais un index directement : il passe toujours par une data view.
+- terme: data stream
+  definition: >-
+    Une suite d'index qui se relaient pour accueillir un journal qui coule en
+    continu. On y écrit sous un seul nom ; Elasticsearch gère la succession.
+- terme: mapping
+  definition: >-
+    La description des champs d'un index et de leur type. Il est fixé à
+    l'indexation : on ne change pas le type d'un champ déjà écrit.
+- terme: keyword
+  definition: >-
+    Un type de champ dont la valeur est conservée telle quelle, sans découpage.
+    La comparaison est exacte, et sensible à la casse.
+- terme: text
+  definition: >-
+    Un type de champ dont la valeur est découpée en mots et mise en minuscules à
+    l'indexation. La recherche y porte sur les mots, sans égard à la casse.
+- terme: KQL
+  definition: >-
+    Le langage de requête par défaut de Kibana. Plus simple que Lucene, et
+    différent : une syntaxe Lucene tapée en KQL ne donne pas le même résultat.
+- terme: ES|QL
+  definition: >-
+    Un langage à tubes, qui enchaîne des opérations sur les données, comme un
+    shell. Il calcule là où KQL ne fait que filtrer.
+- terme: Session Discover
+  definition: >-
+    Le nom que porte, en 9.5, une recherche Discover enregistrée : sa requête,
+    ses filtres, ses colonnes et sa data view.
+- terme: agrégation
+  definition: >-
+    Un calcul fait par Elasticsearch sur un ensemble de documents : un décompte,
+    une somme, un maximum, une répartition.
+- terme: cardinality
+  definition: >-
+    L'agrégation qui compte les valeurs distinctes. Elle est APPROXIMATIVE
+    au-delà de son seuil de précision, fixé à 3000 par défaut.
+- terme: bucket
+  definition: >-
+    Un groupe formé par une agrégation : une tranche de temps, une valeur de
+    champ. Une source qui n'envoie rien ne produit aucun bucket — elle disparaît.
+- terme: ECS
+  definition: >-
+    Elastic Common Schema : la convention de nommage des champs, qui permet de
+    poser la même question à des sources différentes.
+- terme: Space
+  definition: >-
+    Un cloisonnement de Kibana : ses propres tableaux de bord, ses propres
+    recherches, ses propres droits.
+- terme: objet enregistré
+  definition: >-
+    Tout ce que Kibana garde pour vous : data view, session Discover,
+    visualisation, tableau de bord. C'est ce qui s'exporte et s'importe.
+- terme: drilldown
+  definition: >-
+    Une action attachée à un panneau, qui emmène ailleurs en conservant le
+    contexte. Vers un autre tableau de bord ou vers Discover en licence Basic.
+- terme: beaconing
+  definition: >-
+    Le fait, pour une machine compromise, de contacter son serveur de commande à
+    intervalle régulier. C'est la régularité qui trahit, pas le volume.

@@ -1,0 +1,437 @@
+/* Guide interactif — direction « La main courante » (docs/DESIGN.md).
+   Contrat : aucune ombre, aucun rayon > 4 px, --action réservé aux actions
+   Kibana et au focus, colonne de 68 caractères, tout lisible en noir et blanc. */
+
+/* --- Polices : fichiers officiels OFL, embarqués tels que distribués ------ */
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("__POLICE_TEXTE__") format("truetype-variations");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("__POLICE_ITALIQUE__") format("truetype-variations");
+  font-weight: 200 800;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Mono";
+  src: url("__POLICE_MONO__") format("truetype-variations");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --- Couleurs ------------------------------------------------------------ */
+:root {
+  --encre: #101720;
+  --encre-douce: #44515f;
+  --papier: #f3f5f8;
+  --papier-appui: #e8edf2;
+  --action: #5b21b6;
+  --action-fond: #f1ebfd;
+  --alerte: #9c2a1a;
+  --alerte-fond: #fbeeec;
+  --filet: #c3ccd6;
+
+  --texte: "Atkinson Hyperlegible Next", system-ui, sans-serif;
+  --mono: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
+
+  --colonne: 68ch;
+  --transition: 120ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="clair"]) {
+    --encre: #e6ebf2;
+    --encre-douce: #a7b3c1;
+    --papier: #12161c;
+    --papier-appui: #1b212a;
+    --action: #c4a8ff;
+    --action-fond: #241a3a;
+    --alerte: #ff9b8a;
+    --alerte-fond: #34201c;
+    --filet: #2b333d;
+  }
+}
+:root[data-theme="sombre"] {
+  --encre: #e6ebf2;
+  --encre-douce: #a7b3c1;
+  --papier: #12161c;
+  --papier-appui: #1b212a;
+  --action: #c4a8ff;
+  --action-fond: #241a3a;
+  --alerte: #ff9b8a;
+  --alerte-fond: #34201c;
+  --filet: #2b333d;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --transition: 0ms; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* --- Base ---------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--papier);
+  color: var(--encre);
+  font-family: var(--texte);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-text-size-adjust: 100%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--action);
+  outline-offset: 2px;
+}
+
+a { color: var(--action); text-underline-offset: 2px; }
+
+/* --- Ossature ------------------------------------------------------------ */
+.ossature {
+  display: grid;
+  grid-template-columns: 17rem minmax(0, 1fr);
+  gap: 0;
+  min-height: 100vh;
+}
+
+.sommaire {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 1.5rem 1.25rem 3rem;
+  border-right: 1px solid var(--filet);
+  background: var(--papier);
+}
+
+.contenu {
+  padding: 2.5rem 2rem 6rem;
+  min-width: 0;
+}
+
+.colonne { max-width: var(--colonne); }
+
+/* --- Sommaire ------------------------------------------------------------ */
+.sommaire__titre {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--encre-douce);
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+}
+.sommaire ol { list-style: none; margin: 0; padding: 0; }
+.sommaire__module > a {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.3rem 0.35rem;
+  text-decoration: none;
+  color: var(--encre);
+  border-radius: 3px;
+}
+.sommaire__module > a:hover { background: var(--papier-appui); }
+.sommaire__module > a[aria-current="true"] {
+  background: var(--papier-appui);
+  font-weight: 700;
+}
+.sommaire__jauge {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--encre-douce);
+  white-space: nowrap;
+}
+.sommaire__exercices { margin: 0.1rem 0 0.6rem 0.7rem; }
+.sommaire__exercices a {
+  display: block;
+  padding: 0.15rem 0.35rem;
+  font-size: 0.87rem;
+  color: var(--encre-douce);
+  text-decoration: none;
+  border-left: 1px solid var(--filet);
+}
+.sommaire__exercices a:hover { color: var(--encre); }
+.sommaire__exercices a[aria-current="true"] {
+  color: var(--encre);
+  border-left-color: var(--action);
+  font-weight: 600;
+}
+
+/* Rangée d'enquête S1 → S7 : la progression est une donnée, pas un ornement. */
+.enquete { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--filet); }
+.enquete__liste { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.5rem; }
+.enquete__case {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 0.15rem 0.35rem;
+  border: 1px solid var(--filet);
+  border-radius: 3px;
+  color: var(--encre-douce);
+}
+.enquete__case[data-resolu="oui"] {
+  border-color: var(--action);
+  color: var(--action);
+  font-weight: 700;
+}
+
+/* --- Titres -------------------------------------------------------------- */
+h1, h2, h3, h4 { line-height: 1.25; font-weight: 700; }
+h1 { font-size: 2rem; margin: 0 0 0.35rem; }
+h2 { font-size: 1.35rem; margin: 2.4rem 0 0.6rem; font-weight: 600; }
+h3 { font-size: 1.08rem; margin: 1.6rem 0 0.4rem; font-weight: 600; }
+.module__resume { color: var(--encre-douce); margin: 0 0 1.75rem; }
+.module__meta {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--encre-douce);
+}
+
+/* --- Bloc d'action : le marqueur UNIQUE ---------------------------------- */
+/* Filet de marge + carré plein + étiquette + débordement à gauche. Quatre
+   signaux, dont trois survivent au monochrome et à l'impression. */
+.action {
+  position: relative;
+  margin: 1.4rem 0 1.4rem -1.5rem;
+  padding: 0.85rem 1rem 0.85rem 1.4rem;
+  border-left: 3px solid var(--action);
+  background: var(--action-fond);
+}
+.action__etiquette {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--action);
+  margin-bottom: 0.3rem;
+}
+.action__etiquette::before { content: "▪ "; }
+.action ol, .action ul { margin: 0.3rem 0 0; padding-left: 1.2rem; }
+.action li { margin: 0.25rem 0; }
+
+/* --- Blocs de requête ---------------------------------------------------- */
+.requete {
+  margin: 1rem 0;
+  border: 1px solid var(--filet);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.requete__entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
+  background: var(--papier-appui);
+  border-bottom: 1px solid var(--filet);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--encre-douce);
+}
+.requete pre {
+  margin: 0;
+  padding: 0.75rem;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.bouton {
+  font-family: var(--texte);
+  font-size: 0.8rem;
+  padding: 0.22rem 0.6rem;
+  border: 1px solid var(--filet);
+  border-radius: 3px;
+  background: var(--papier);
+  color: var(--encre);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.bouton:hover { background: var(--papier-appui); }
+.bouton[data-etat="fait"] { border-color: var(--action); color: var(--action); }
+
+/* --- Exercices ----------------------------------------------------------- */
+.exercice {
+  margin: 2.5rem 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--filet);
+}
+.exercice__entete { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.6rem; }
+.exercice__id {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--encre-douce);
+}
+.exercice__guidage {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--filet);
+  border-radius: 3px;
+  color: var(--encre-douce);
+}
+.exercice__contexte {
+  margin: 0.6rem 0 1rem;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--filet);
+  color: var(--encre-douce);
+}
+
+details { margin: 0.6rem 0; }
+details > summary {
+  cursor: pointer;
+  font-size: 0.92rem;
+  color: var(--action);
+  padding: 0.25rem 0;
+}
+details > summary::marker { color: var(--action); }
+details > div { padding: 0.4rem 0 0.4rem 1rem; border-left: 1px solid var(--filet); }
+
+/* --- Validation d'une réponse -------------------------------------------- */
+.reponse { margin-top: 1.1rem; }
+.reponse__ligne { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.reponse__format { font-size: 0.82rem; color: var(--encre-douce); display: block; margin-bottom: 0.3rem; }
+.reponse input[type="text"] {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--filet);
+  border-radius: 3px;
+  background: var(--papier);
+  color: var(--encre);
+  min-width: 15rem;
+  flex: 1 1 15rem;
+}
+.reponse__retour { margin-top: 0.5rem; font-size: 0.92rem; min-height: 1.4em; }
+.reponse__retour[data-etat="juste"] { color: var(--action); font-weight: 600; }
+.reponse__retour[data-etat="faux"] { color: var(--alerte); }
+
+.piege {
+  margin: 1.2rem 0;
+  padding: 0.8rem 1rem;
+  border-left: 3px solid var(--alerte);
+  background: var(--alerte-fond);
+}
+.piege__titre { font-weight: 700; color: var(--alerte); display: block; margin-bottom: 0.25rem; }
+
+.encadre-licence {
+  margin: 1.4rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px dashed var(--filet);
+  border-radius: 4px;
+}
+.encadre-licence > strong { display: block; margin-bottom: 0.3rem; }
+
+/* --- Tableaux ------------------------------------------------------------ */
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.93rem; }
+th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--filet); }
+th { font-weight: 600; color: var(--encre-douce); }
+
+code { font-family: var(--mono); font-size: 0.93em; }
+:not(pre) > code {
+  background: var(--papier-appui);
+  padding: 0.05em 0.3em;
+  border-radius: 3px;
+}
+
+figure { margin: 1.5rem 0; }
+figure img { max-width: 100%; height: auto; border: 1px solid var(--filet); border-radius: 4px; }
+figcaption { font-size: 0.85rem; color: var(--encre-douce); margin-top: 0.4rem; }
+
+/* --- Glossaire ----------------------------------------------------------- */
+.terme {
+  border-bottom: 1px dotted var(--encre-douce);
+  cursor: help;
+}
+
+/* --- Barre d'outils ------------------------------------------------------ */
+.outils {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--filet);
+}
+.recherche input {
+  font-family: var(--texte);
+  font-size: 0.9rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--filet);
+  border-radius: 3px;
+  background: var(--papier);
+  color: var(--encre);
+  min-width: 14rem;
+}
+.recherche__resultats {
+  font-size: 0.85rem;
+  color: var(--encre-douce);
+}
+mark { background: var(--action-fond); color: var(--encre); padding: 0 0.1em; }
+
+/* --- Téléphone ----------------------------------------------------------- */
+.sommaire__bascule { display: none; }
+
+@media (max-width: 62rem) {
+  .ossature { grid-template-columns: 1fr; }
+  .sommaire {
+    position: static;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--filet);
+    padding: 1rem;
+  }
+  .sommaire__bascule { display: inline-block; }
+  .sommaire[data-ouvert="non"] .sommaire__corps { display: none; }
+  .contenu { padding: 1.5rem 1rem 4rem; }
+  /* Un tableau large défile dans son cadre ; la page, elle, ne défile jamais
+     horizontalement. */
+  table { display: block; overflow-x: auto; max-width: 100%; }
+  /* Plus de marge à déborder : la couleur et le carré portent seuls la
+     distinction, comme prévu dans la maquette téléphone de docs/DESIGN.md. */
+  .action { margin-left: 0; }
+  body { font-size: 16px; }
+}
+
+/* --- Impression ---------------------------------------------------------- */
+@media print {
+  :root {
+    --encre: #000; --encre-douce: #333; --papier: #fff;
+    --papier-appui: #f0f0f0; --action: #000; --action-fond: #fff;
+    --alerte: #000; --alerte-fond: #fff; --filet: #999;
+  }
+  .sommaire, .outils, .bouton, .reponse__ligne { display: none; }
+  .ossature { display: block; }
+  .contenu { padding: 0; }
+  .action { border-left-width: 4px; margin-left: 0; }
+  details { display: block; }
+  details > summary { list-style: none; font-weight: 700; color: #000; }
+  details[open] > div, details > div { display: block; }
+  .exercice { break-inside: avoid; page-break-inside: avoid; }
+  h1, h2, h3 { break-after: avoid; page-break-after: avoid; }
+  a { color: #000; }
+}
+
+/* --- Utilitaire ---------------------------------------------------------- */
+.visuellement-cache {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
