@@ -11,12 +11,12 @@
       "ce_qui_echoue": {
         "requete": "destination.port : [1025 TO *]",
         "nombre_de_resultats": null,
-        "message_affiche": null,
+        "message_affiche": "Impossible d’extraire les résultats de recherche",
         "aboutit": false
       },
       "ce_qui_marche": {
         "requete": "destination.port >= 1025",
-        "nombre_de_resultats": 0,
+        "nombre_de_resultats": 36025,
         "message_affiche": null,
         "aboutit": true
       }
@@ -34,7 +34,7 @@
       },
       "ce_qui_marche": {
         "requete": "rule.name : *",
-        "nombre_de_resultats": 14875,
+        "nombre_de_resultats": 85269,
         "message_affiche": null,
         "aboutit": true
       }
@@ -52,7 +52,7 @@
       },
       "ce_qui_marche": {
         "requete": "user.name : \"svc-facturation\"",
-        "nombre_de_resultats": 5080,
+        "nombre_de_resultats": 5079,
         "message_affiche": null,
         "aboutit": true
       }
@@ -65,13 +65,13 @@
       "type": "requete",
       "ce_qui_echoue": {
         "requete": "message : \"ECHEC\"",
-        "nombre_de_resultats": 6396,
+        "nombre_de_resultats": 6395,
         "message_affiche": null,
         "aboutit": true
       },
       "ce_qui_marche": {
         "requete": "message : \"echec\"",
-        "nombre_de_resultats": 6396,
+        "nombre_de_resultats": 6395,
         "message_affiche": null,
         "aboutit": true
       }
@@ -89,7 +89,7 @@
       },
       "ce_qui_marche": {
         "requete": "destination.ip : \"10.0.0.0/8\"",
-        "nombre_de_resultats": 166548,
+        "nombre_de_resultats": 166484,
         "message_affiche": "@timestampsept. 21, 2026 @ 23:26:45.000destination.ip10.20.1.10destination.port53dns.question.namemeteo.service-public.exampledns.question.registered_domainservice-public.exampledns.question.typeAdns.response_codeNOERRORecs.version8.11.0event.actionrequete-dnsevent.categorynetworkevent.datasetnetwork.dnsevent.kindeventevent.modulenetworkevent.outcomesuccessevent.typeprotocolhost.ip10.10.11.21host.namepc-compta-01messageRequete DNS meteo.service-public.example depuis 10.10.11.21network.protocoldnsnetwork.transportudporganization.nameGroupe Méridiensource.ip10.10.11.21_idvtPexaAB_NjqeP5TDE8g_ignored(null)_index.ds-logs-network.dns-formation-2026.09.21-000001_score(null)",
         "aboutit": true
       }
@@ -101,11 +101,11 @@
       "lecon": "Kibana ouvre Discover sur une fenêtre très courte. Sur sept jours de données, l'écran paraît vide alors que tout est là. Avant de conclure à l'absence de données, on élargit la plage.",
       "ce_qui_echoue": {
         "plage": "now-15m → now",
-        "nombre_de_resultats": 94
+        "nombre_de_resultats": 0
       },
       "ce_qui_marche": {
         "plage": "now-7d → now",
-        "nombre_de_resultats": 389281
+        "nombre_de_resultats": 389132
       }
     },
     {
@@ -114,9 +114,9 @@
       "titre": "« 0 champ disponible » : un filtre de type est resté actif",
       "lecon": "La barre latérale porte un filtre par type de champ. Coché, il réduit la liste des champs sans rien dire — relevé en lab : de 49 champs à 1 — alors que les documents, eux, restent affichés. Une liste de champs presque vide n'est pas une data view vide : regardez d'abord si un filtre est actif.",
       "ce_qui_echoue": {
-        "geste": "filtre de type « text » coché",
+        "geste": "filtre de type « date » coché",
         "champs_affiches": 1,
-        "documents_affiches": 389281,
+        "documents_affiches": 389132,
         "aboutit": false
       },
       "ce_qui_marche": {
@@ -137,7 +137,7 @@
       },
       "ce_qui_marche": {
         "requete": "host.name : \"fw-perimetre-01\"",
-        "nombre_de_resultats": 70435,
+        "nombre_de_resultats": 70404,
         "aboutit": true
       }
     }
