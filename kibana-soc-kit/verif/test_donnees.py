@@ -77,7 +77,8 @@ def _recalculer(es, namespace: str, controle: dict):
     """Rejoue la requête DSL d'une réponse et en extrait la valeur."""
     if not controle.get("chemin"):
         return None  # réponse non calculable par requête (verdict, durée déclarée)
-    index = f"logs-{controle['dataset']}-{namespace}"
+    dataset = controle["dataset"]
+    index = f"logs-*-{namespace}" if dataset == "*" else f"logs-{dataset}-{namespace}"
     brut = _chercher(es, index, controle["requete"])
     return _transformer(_extraire(brut, controle["chemin"]), controle.get("transformation"))
 
@@ -170,7 +171,7 @@ def test_chaque_reponse_est_recalculee_par_sa_requete(es, manifeste, lab_demarre
     namespace = manifeste["namespace"]
     ecarts = []
     verifiees = 0
-    for scenario in manifeste["scenarios"]:
+    for scenario in [manifeste["reperes"], *manifeste["scenarios"]]:
         for reponse in scenario["reponses"]:
             controle = reponse["controle"]
             recalcule = _recalculer(es, namespace, controle)

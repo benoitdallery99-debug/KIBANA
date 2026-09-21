@@ -173,6 +173,86 @@ def appliquer_retraits(base: dict[str, list[dict]], retraits: list) -> dict[str,
     return base
 
 
+def reperes(base: dict[str, list[dict]]) -> dict:
+    """Repères : des réponses vraies, stables et vérifiables, qui ne dévoilent
+    aucun scénario.
+
+    Les modules M0 à M3 enseignent des gestes ; leurs exercices ont donc besoin
+    de réponses contrôlables sans entamer l'enquête des modules M4. Ces repères
+    sont, eux aussi, RELEVÉS sur les données produites et recalculables par une
+    requête — jamais écrits à la main.
+    """
+    par_dataset = {d: len(v) for d, v in base.items()}
+    plus_volumineuse = max(par_dataset, key=lambda d: par_dataset[d])
+
+    hotes = {
+        d.get("host", {}).get("name")
+        for evenements in base.values() for d in evenements
+        if d.get("host", {}).get("name")
+    }
+
+    signatures: dict[str, int] = {}
+    for evenement in base.get("ids.alert", []):
+        nom = evenement["rule"]["name"]
+        signatures[nom] = signatures.get(nom, 0) + 1
+    signature_frequente = max(signatures, key=lambda s: signatures[s]) if signatures else ""
+
+    return {
+        "id": "R",
+        "titre": "Repères du jeu de données",
+        "recit": (
+            "Des faits vrais, stables et vérifiables sur le jeu de données, qui servent de "
+            "réponses aux exercices de prise en main sans rien dévoiler des scénarios."
+        ),
+        "reponses": [
+            {
+                "cle": "nb_sources", "libelle": "Nombre de sources qui alimentent la data view",
+                "valeur": len(base), "type": "entier", "normalisation": "entier",
+                "controle": {
+                    "dataset": "*",
+                    "requete": {"size": 0, "aggs": {"r": {"cardinality": {
+                        "field": "event.dataset", "precision_threshold": 40000}}}},
+                    "chemin": "aggregations.r.value",
+                },
+            },
+            {
+                "cle": "source_la_plus_volumineuse",
+                "libelle": "Source qui produit le plus d'événements",
+                "valeur": plus_volumineuse, "type": "texte",
+                "normalisation": "minuscules, espaces retirés",
+                "controle": {
+                    "dataset": "*",
+                    "requete": {"size": 0, "aggs": {"r": {"terms": {
+                        "field": "event.dataset", "size": 1}}}},
+                    "chemin": "aggregations.r.buckets.0.key",
+                },
+            },
+            {
+                "cle": "nb_hotes", "libelle": "Nombre d'hôtes distincts observés",
+                "valeur": len(hotes), "type": "entier", "normalisation": "entier",
+                "controle": {
+                    "dataset": "*",
+                    "requete": {"size": 0, "aggs": {"r": {"cardinality": {
+                        "field": "host.name", "precision_threshold": 40000}}}},
+                    "chemin": "aggregations.r.value",
+                },
+            },
+            {
+                "cle": "signature_ids_la_plus_frequente",
+                "libelle": "Signature IDS la plus fréquente",
+                "valeur": signature_frequente, "type": "texte",
+                "normalisation": "minuscules, espaces retirés",
+                "controle": {
+                    "dataset": "ids.alert",
+                    "requete": {"size": 0, "aggs": {"r": {"terms": {
+                        "field": "rule.name", "size": 1}}}},
+                    "chemin": "aggregations.r.buckets.0.key",
+                },
+            },
+        ],
+    }
+
+
 def main() -> int:
     a = argparse.ArgumentParser(description=__doc__)
     a.add_argument("--jeu", choices=["formation", "epreuve"], default="formation")
@@ -234,6 +314,10 @@ def main() -> int:
             print(f"  {G.nom_data_stream(dataset, namespace):34s} {envoyes:7d}")
         es("POST", f"/logs-*-{namespace}/_refresh")
 
+    reperes_calcules = reperes(base)
+    for reponse in reperes_calcules["reponses"]:
+        reponse["empreintes"] = empreintes(reponse)
+
     manifeste = {
         "engendre_le": T.iso(t0),
         "jeu": args.jeu,
@@ -251,6 +335,7 @@ def main() -> int:
         "volumes": {G.nom_data_stream(d, namespace): len(v) for d, v in base.items()},
         "total_documents": total,
         "contexte": ctx.fiche_contexte(),
+        "reperes": reperes_calcules,
         "scenarios": manifeste_scenarios,
     }
     sortie = Path(args.manifeste) if args.manifeste else conf.RACINE / "data" / (

@@ -76,6 +76,16 @@ PIEGES = [
 ]
 
 
+def relever_plage(page, debut: str, fin: str = "now") -> dict:
+    """Ouvre Discover sur une plage donnée, sans requête, et compte."""
+    K.ouvrir_discover(page, plage_debut=debut, plage_fin=fin)
+    page.wait_for_timeout(1500)
+    return {
+        "plage": f"{debut} → {fin}",
+        "nombre_de_resultats": K.nombre_de_resultats(page),
+    }
+
+
 def relever(page, requete: str) -> dict:
     nombre = K.compter_avec_kql(page, requete)
     page.wait_for_timeout(800)
@@ -113,6 +123,7 @@ def main() -> int:
         K.ouvrir_discover(page)
         for piege in PIEGES:
             entree = {k: v for k, v in piege.items() if k not in ("fautive", "juste")}
+            entree["type"] = "requete"
             entree["ce_qui_echoue"] = relever(page, piege["fautive"])
             entree["ce_qui_marche"] = relever(page, piege["juste"])
             releve["pieges"].append(entree)
@@ -121,6 +132,29 @@ def main() -> int:
                   f"juste={entree['ce_qui_marche']['nombre_de_resultats']!s:>8}"
                   + (f"  « {entree['ce_qui_echoue']['message_affiche'][:52]} »"
                      if entree["ce_qui_echoue"]["message_affiche"] else ""))
+
+    # Le piège d'ouverture du parcours : la plage de temps par défaut de Kibana
+    # est bien trop courte pour un jeu de données de sept jours. On mesure les
+    # deux, plutôt que de l'affirmer.
+    with K.navigateur() as contexte:
+        page = contexte.new_page()
+        K.connexion(page)
+        defaut = relever_plage(page, "now-15m")
+        large = relever_plage(page, "now-7d")
+    releve["pieges"].append({
+        "id": "plage-de-temps-par-defaut",
+        "type": "plage_de_temps",
+        "titre": "La plage de temps par défaut est trop courte pour le jeu de données",
+        "lecon": (
+            "Kibana ouvre Discover sur une fenêtre très courte. Sur sept jours de données, "
+            "l'écran paraît vide alors que tout est là. Avant de conclure à l'absence de "
+            "données, on élargit la plage."
+        ),
+        "ce_qui_echoue": defaut,
+        "ce_qui_marche": large,
+    })
+    print(f"  plage-de-temps-par-defaut  "
+          f"15 min={defaut['nombre_de_resultats']}  7 j={large['nombre_de_resultats']}")
 
     sortie = conf.RACINE / "docs" / "pieges-lab.json"
     sortie.write_text(json.dumps(releve, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

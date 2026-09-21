@@ -1,5 +1,5 @@
 {
-  "engendre_le": "2026-09-21T16:55:05.000Z",
+  "engendre_le": "2026-09-21T17:28:34.000Z",
   "jeu": "epreuve",
   "graine": 7310,
   "namespace": "epreuve",
@@ -9,14 +9,14 @@
   "index_mode": "standard",
   "avertissement": "Données entièrement synthétiques. Adresses réservées à la documentation (RFC 5737, RFC 1918), domaines réservés (RFC 2606), personnes inventées. Aucune donnée réelle (SPEC §5.1, CLAUDE.md).",
   "volumes": {
-    "logs-windows.security-epreuve": 90042,
-    "logs-linux.auth-epreuve": 35531,
-    "logs-ids.alert-epreuve": 14651,
-    "logs-network.dns-epreuve": 99629,
-    "logs-proxy.web-epreuve": 74452,
-    "logs-firewall.traffic-epreuve": 68662
+    "logs-windows.security-epreuve": 90410,
+    "logs-linux.auth-epreuve": 35663,
+    "logs-ids.alert-epreuve": 14776,
+    "logs-network.dns-epreuve": 100026,
+    "logs-proxy.web-epreuve": 74743,
+    "logs-firewall.traffic-epreuve": 69247
   },
-  "total_documents": 382967,
+  "total_documents": 384865,
   "contexte": {
     "organisation": "Groupe Méridien",
     "domaine_ad": "MERIDIEN",
@@ -232,6 +232,113 @@
       "contact": "Équipe Sécurité Opérationnelle"
     },
     "avertissement": "Données entièrement fictives. Adresses réservées à la documentation (RFC 5737, RFC 1918) et domaines réservés (RFC 2606)."
+  },
+  "reperes": {
+    "id": "R",
+    "titre": "Repères du jeu de données",
+    "recit": "Des faits vrais, stables et vérifiables sur le jeu de données, qui servent de réponses aux exercices de prise en main sans rien dévoiler des scénarios.",
+    "reponses": [
+      {
+        "cle": "nb_sources",
+        "libelle": "Nombre de sources qui alimentent la data view",
+        "valeur": 6,
+        "type": "entier",
+        "normalisation": "entier",
+        "controle": {
+          "dataset": "*",
+          "requete": {
+            "size": 0,
+            "aggs": {
+              "r": {
+                "cardinality": {
+                  "field": "event.dataset",
+                  "precision_threshold": 40000
+                }
+              }
+            }
+          },
+          "chemin": "aggregations.r.value"
+        },
+        "empreintes": [
+          "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683"
+        ]
+      },
+      {
+        "cle": "source_la_plus_volumineuse",
+        "libelle": "Source qui produit le plus d'événements",
+        "valeur": "network.dns",
+        "type": "texte",
+        "normalisation": "minuscules, espaces retirés",
+        "controle": {
+          "dataset": "*",
+          "requete": {
+            "size": 0,
+            "aggs": {
+              "r": {
+                "terms": {
+                  "field": "event.dataset",
+                  "size": 1
+                }
+              }
+            }
+          },
+          "chemin": "aggregations.r.buckets.0.key"
+        },
+        "empreintes": [
+          "b5b4c79a5b006a7a945f3222ed7e61cb9ebc39aeb6b020735b5ebe2e57bd00f2"
+        ]
+      },
+      {
+        "cle": "nb_hotes",
+        "libelle": "Nombre d'hôtes distincts observés",
+        "valeur": 21,
+        "type": "entier",
+        "normalisation": "entier",
+        "controle": {
+          "dataset": "*",
+          "requete": {
+            "size": 0,
+            "aggs": {
+              "r": {
+                "cardinality": {
+                  "field": "host.name",
+                  "precision_threshold": 40000
+                }
+              }
+            }
+          },
+          "chemin": "aggregations.r.value"
+        },
+        "empreintes": [
+          "6f4b6612125fb3a0daecd2799dfd6c9c299424fd920f9b308110a2c1fbd8f443"
+        ]
+      },
+      {
+        "cle": "signature_ids_la_plus_frequente",
+        "libelle": "Signature IDS la plus fréquente",
+        "valeur": "ET WEB Tentative d'injection SQL",
+        "type": "texte",
+        "normalisation": "minuscules, espaces retirés",
+        "controle": {
+          "dataset": "ids.alert",
+          "requete": {
+            "size": 0,
+            "aggs": {
+              "r": {
+                "terms": {
+                  "field": "rule.name",
+                  "size": 1
+                }
+              }
+            }
+          },
+          "chemin": "aggregations.r.buckets.0.key"
+        },
+        "empreintes": [
+          "f7b76a2953e1663f192ee59fb187f43c1c7d71b0ca89406fbd36c5eabdec9066"
+        ]
+      }
+    ]
   },
   "scenarios": [
     {
@@ -752,8 +859,8 @@
       "titre": "Trou de collecte de deux heures",
       "recit": "Une source n'a rien envoyé pendant deux heures, au milieu de la période.",
       "_fenetre": {
-        "debut": "2026-09-17T15:55:05.000Z",
-        "fin": "2026-09-17T17:55:05.000Z"
+        "debut": "2026-09-17T16:28:34.000Z",
+        "fin": "2026-09-17T18:28:34.000Z"
       },
       "reponses": [
         {
@@ -770,8 +877,8 @@
               "query": {
                 "range": {
                   "@timestamp": {
-                    "gte": "2026-09-17T15:55:05.000Z",
-                    "lt": "2026-09-17T17:55:05.000Z"
+                    "gte": "2026-09-17T16:28:34.000Z",
+                    "lt": "2026-09-17T18:28:34.000Z"
                   }
                 }
               }

@@ -7,6 +7,7 @@
       "id": "plage-lucene-en-kql",
       "titre": "La syntaxe de plage de Lucene n'existe pas en KQL",
       "lecon": "« [1025 TO *] » est de la syntaxe Lucene. En KQL, elle ne veut rien dire : il faut une comparaison.",
+      "type": "requete",
       "ce_qui_echoue": {
         "requete": "destination.port : [1025 TO *]",
         "nombre_de_resultats": null,
@@ -15,7 +16,7 @@
       },
       "ce_qui_marche": {
         "requete": "destination.port >= 1025",
-        "nombre_de_resultats": 34958,
+        "nombre_de_resultats": 34945,
         "message_affiche": null,
         "aboutit": true
       }
@@ -24,6 +25,7 @@
       "id": "exists-lucene-en-kql",
       "titre": "« _exists_ » est du Lucene ; en KQL l'existence s'écrit « champ:* »",
       "lecon": "Celui-ci est le vrai piège muet : aucune erreur, aucun résultat. Zéro résultat n'est pas une réponse, c'est une question.",
+      "type": "requete",
       "ce_qui_echoue": {
         "requete": "_exists_ : rule.name",
         "nombre_de_resultats": 0,
@@ -32,7 +34,7 @@
       },
       "ce_qui_marche": {
         "requete": "rule.name : *",
-        "nombre_de_resultats": 82660,
+        "nombre_de_resultats": 82613,
         "message_affiche": null,
         "aboutit": true
       }
@@ -41,6 +43,7 @@
       "id": "casse-sur-keyword",
       "titre": "Un champ keyword est sensible à la casse",
       "lecon": "user.name est un keyword : il est comparé tel quel, sans transformation. La casse compte.",
+      "type": "requete",
       "ce_qui_echoue": {
         "requete": "user.name : \"SVC-FACTURATION\"",
         "nombre_de_resultats": 0,
@@ -49,7 +52,7 @@
       },
       "ce_qui_marche": {
         "requete": "user.name : \"svc-facturation\"",
-        "nombre_de_resultats": 5042,
+        "nombre_de_resultats": 5041,
         "message_affiche": null,
         "aboutit": true
       }
@@ -59,15 +62,16 @@
       "titre": "Un champ text, lui, est analysé : la casse n'y compte pas",
       "lecon": "message est un champ text : il est découpé et mis en minuscules à l'indexation. Les deux requêtes donnent le même résultat — c'est le contraste avec le keyword.",
       "attendu": "meme_resultat",
+      "type": "requete",
       "ce_qui_echoue": {
         "requete": "message : \"ECHEC\"",
-        "nombre_de_resultats": 6360,
+        "nombre_de_resultats": 6358,
         "message_affiche": null,
         "aboutit": true
       },
       "ce_qui_marche": {
         "requete": "message : \"echec\"",
-        "nombre_de_resultats": 6360,
+        "nombre_de_resultats": 6358,
         "message_affiche": null,
         "aboutit": true
       }
@@ -76,6 +80,7 @@
       "id": "cidr-sur-champ-ip",
       "titre": "Un champ de type ip prend le CIDR, et refuse le joker",
       "lecon": "Sur un champ de type ip, le CIDR est compris nativement. Le joker, lui, n'a pas de sens sur une adresse : constaté en lab, Discover refuse la requête au lieu de renvoyer un résultat approchant.",
+      "type": "requete",
       "ce_qui_echoue": {
         "requete": "destination.ip : \"10.*\"",
         "nombre_de_resultats": null,
@@ -84,9 +89,23 @@
       },
       "ce_qui_marche": {
         "requete": "destination.ip : \"10.0.0.0/8\"",
-        "nombre_de_resultats": 161626,
+        "nombre_de_resultats": 161539,
         "message_affiche": "@timestampsept. 21, 2026 @ 18:54:25.000destination.ip10.20.1.10destination.port53dns.question.namemaj.editeur-logiciel.exampledns.question.registered_domainediteur-logiciel.exampledns.question.typeAdns.response_codeNOERRORecs.version8.11.0event.actionrequete-dnsevent.categorynetworkevent.datasetnetwork.dnsevent.kindeventevent.modulenetworkevent.outcomesuccessevent.typeprotocolhost.ip10.10.11.23host.namepc-compta-03messageRequete DNS maj.editeur-logiciel.example depuis 10.10.11.23network.protocoldnsnetwork.transportudporganization.nameGroupe Méridiensource.ip10.10.11.23_idhZXkxKABTKgbNTZNW7uL_ignored(null)_index.ds-logs-network.dns-formation-2026.09.21-000001_score(null)",
         "aboutit": true
+      }
+    },
+    {
+      "id": "plage-de-temps-par-defaut",
+      "type": "plage_de_temps",
+      "titre": "La plage de temps par défaut est trop courte pour le jeu de données",
+      "lecon": "Kibana ouvre Discover sur une fenêtre très courte. Sur sept jours de données, l'écran paraît vide alors que tout est là. Avant de conclure à l'absence de données, on élargit la plage.",
+      "ce_qui_echoue": {
+        "plage": "now-15m → now",
+        "nombre_de_resultats": 0
+      },
+      "ce_qui_marche": {
+        "plage": "now-7d → now",
+        "nombre_de_resultats": 383474
       }
     }
   ]
