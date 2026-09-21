@@ -1,5 +1,5 @@
 {
-  "engendre_le": "2026-09-21T22:11:57.000Z",
+  "engendre_le": "2026-09-21T22:14:06.000Z",
   "jeu": "formation",
   "graine": 20260921,
   "namespace": "formation",
@@ -9,14 +9,14 @@
   "index_mode": "standard",
   "avertissement": "Données entièrement synthétiques. Adresses réservées à la documentation (RFC 5737, RFC 1918), domaines réservés (RFC 2606), personnes inventées. Aucune donnée réelle (SPEC §5.1, CLAUDE.md).",
   "volumes": {
-    "logs-windows.security-formation": 90870,
-    "logs-linux.auth-formation": 35840,
-    "logs-ids.alert-formation": 14907,
-    "logs-network.dns-formation": 102381,
-    "logs-proxy.web-formation": 75030,
-    "logs-firewall.traffic-formation": 70520
+    "logs-windows.security-formation": 90862,
+    "logs-linux.auth-formation": 35838,
+    "logs-ids.alert-formation": 14916,
+    "logs-network.dns-formation": 102395,
+    "logs-proxy.web-formation": 75048,
+    "logs-firewall.traffic-formation": 70526
   },
-  "total_documents": 389548,
+  "total_documents": 389585,
   "contexte": {
     "organisation": "Groupe Méridien",
     "domaine_ad": "MERIDIEN",
@@ -376,19 +376,27 @@
         ]
       },
       {
-        "cle": "nb_codes_windows",
-        "libelle": "Codes d'événement distincts portés par la source Windows",
-        "valeur": 2,
+        "cle": "nb_comptes_authentification",
+        "libelle": "Comptes distincts vus dans les journaux d'authentification",
+        "valeur": 56,
         "type": "entier",
         "normalisation": "entier",
         "controle": {
-          "dataset": "windows.security",
+          "dataset": "*",
           "requete": {
             "size": 0,
+            "query": {
+              "terms": {
+                "event.dataset": [
+                  "windows.security",
+                  "linux.auth"
+                ]
+              }
+            },
             "aggs": {
               "r": {
                 "cardinality": {
-                  "field": "event.code",
+                  "field": "user.name",
                   "precision_threshold": 40000
                 }
               }
@@ -397,7 +405,7 @@
           "chemin": "aggregations.r.value"
         },
         "empreintes": [
-          "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35"
+          "7688b6ef52555962d008fff894223582c484517cea7da49ee67800adc7fc8866"
         ]
       },
       {
@@ -1064,8 +1072,8 @@
       "titre": "Trou de collecte de deux heures",
       "recit": "Une source n'a rien envoyé pendant deux heures, au milieu de la période.",
       "_fenetre": {
-        "debut": "2026-09-18T18:11:57.000Z",
-        "fin": "2026-09-18T20:11:57.000Z"
+        "debut": "2026-09-18T18:14:06.000Z",
+        "fin": "2026-09-18T20:14:06.000Z"
       },
       "reponses": [
         {
@@ -1082,8 +1090,8 @@
               "query": {
                 "range": {
                   "@timestamp": {
-                    "gte": "2026-09-18T18:11:57.000Z",
-                    "lt": "2026-09-18T20:11:57.000Z"
+                    "gte": "2026-09-18T18:14:06.000Z",
+                    "lt": "2026-09-18T20:14:06.000Z"
                   }
                 }
               }

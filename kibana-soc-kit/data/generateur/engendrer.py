@@ -208,12 +208,17 @@ def reperes(base: dict[str, list[dict]]) -> dict:
     # engendrées et recalculable par une requête, comme tous les autres.
     moins_volumineuse = min(par_dataset, key=lambda d: par_dataset[d])
 
-    # Les codes d'événement que porte la source Windows : un fait de STRUCTURE,
-    # fixé par les gabarits, donc identique d'une génération à l'autre.
-    codes_windows = {
-        d.get("event", {}).get("code")
-        for d in base.get("windows.security", [])
-        if d.get("event", {}).get("code")
+    # Les comptes vus dans les journaux d'authentification. Le vivier de comptes
+    # est fixe, et sur plus de cent mille événements ils apparaissent tous :
+    # le nombre ne bouge donc pas d'une génération à l'autre. Il n'est publié
+    # nulle part — la fiche de contexte ne nomme que les comptes de service et
+    # les comptes d'administration —, et il se relève en filtrant sur les deux
+    # sources d'authentification, ce qui est exactement le geste de l'exercice.
+    comptes_auth = {
+        d.get("user", {}).get("name")
+        for dataset in ("windows.security", "linux.auth")
+        for d in base.get(dataset, [])
+        if d.get("user", {}).get("name")
     }
 
     ports = [
@@ -326,14 +331,19 @@ def reperes(base: dict[str, list[dict]]) -> dict:
                 },
             },
             {
-                "cle": "nb_codes_windows",
-                "libelle": "Codes d'événement distincts portés par la source Windows",
-                "valeur": len(codes_windows), "type": "entier",
+                "cle": "nb_comptes_authentification",
+                "libelle": "Comptes distincts vus dans les journaux d'authentification",
+                "valeur": len(comptes_auth), "type": "entier",
                 "normalisation": "entier",
                 "controle": {
-                    "dataset": "windows.security",
-                    "requete": {"size": 0, "aggs": {"r": {"cardinality": {
-                        "field": "event.code", "precision_threshold": 40000}}}},
+                    "dataset": "*",
+                    "requete": {
+                        "size": 0,
+                        "query": {"terms": {"event.dataset": [
+                            "windows.security", "linux.auth"]}},
+                        "aggs": {"r": {"cardinality": {
+                            "field": "user.name", "precision_threshold": 40000}}},
+                    },
                     "chemin": "aggregations.r.value",
                 },
             },
