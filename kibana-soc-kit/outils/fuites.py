@@ -67,10 +67,33 @@ _MOTS_VIDES = {
 }
 
 
+# Le libellé d'une réponse et le mot qu'emploie le guide ne sont pas toujours
+# les mêmes. Le manifeste dit « hôtes », la fiche de contexte disait
+# « machines » : le garde cherchait « 21 hôtes » et laissait passer
+# « 21 machines ». Table courte et explicite, plutôt qu'une heuristique qui
+# ferait semblant de couvrir tout le français.
+_SYNONYMES = {
+    "hôtes": ("machines", "postes", "équipements"),
+    "hotes": ("machines", "postes"),
+    "sources": ("datasets", "jeux"),
+    "comptes": ("utilisateurs", "identifiants"),
+    "signatures": ("règles", "alertes"),
+}
+
+
 def _sujets(libelle: str) -> list[str]:
-    """Noms significatifs d'un libellé de réponse, pour ancrer la recherche."""
+    """Noms significatifs d'un libellé de réponse, pour ancrer la recherche.
+
+    Chaque nom entraîne avec lui ses synonymes d'usage : c'est le mot du GUIDE
+    qu'il faut attraper, pas celui du manifeste.
+    """
     mots = re.findall(r"[A-Za-zÀ-ÿ]{5,}", libelle.lower())
-    return [m for m in mots if m not in _MOTS_VIDES][:3]
+    retenus = [m for m in mots if m not in _MOTS_VIDES][:3]
+    sujets: list[str] = []
+    for mot in retenus:
+        sujets.append(mot)
+        sujets.extend(_SYNONYMES.get(mot, ()))
+    return sujets
 
 
 def reponses_a_surveiller(manifeste: dict[str, Any]) -> list[tuple[str, str, str]]:
@@ -107,9 +130,20 @@ def reponses_a_surveiller(manifeste: dict[str, Any]) -> list[tuple[str, str, str
                             f"{mot} {sujet}",
                             "entier_en_lettres",
                         ))
-                # En chiffres, un entier de moins de trois chiffres se
-                # rencontrerait partout : on ne le cherche pas sous cette forme.
+                # En chiffres, un petit entier se rencontrerait partout : « 6 »
+                # apparaît dans une date, une version, un identifiant. On ne le
+                # cherche donc pas seul — mais on le cherche SUIVI DU SUJET de
+                # la question, exactement comme la forme en toutes lettres.
+                # C'est la brèche par laquelle « 21 machines » est passé dans la
+                # fiche de contexte, où 21 est la réponse attendue de trois
+                # exercices.
                 if len(valeur) < 3:
+                    for sujet in _sujets(reponse.get("libelle", "")):
+                        a_surveiller.append((
+                            f"{bloc['id']}.{reponse['cle']}",
+                            f"{valeur} {sujet}",
+                            "entier_en_lettres",
+                        ))
                     continue
             a_surveiller.append((f"{bloc['id']}.{reponse['cle']}", valeur, reponse["type"]))
     return a_surveiller

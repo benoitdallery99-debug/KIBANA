@@ -116,8 +116,15 @@
       {% endfor %}
       </tbody>
     </table>
-    <p>L'organisation compte {{ contexte.nombre_de_comptes }} comptes et
-      {{ contexte.hotes | length }} machines qui remontent des journaux.</p>
+    {# Le décompte exact des machines a été retiré : il vaut 21, soit
+       exactement R.nb_hotes, la réponse attendue de M2-E4, M3-E4 et M5-E3.
+       SPEC §5.4 énumère ce que cette fiche publie — organisation, plan
+       d'adressage, serveurs critiques, comptes de service, adresse du
+       scanner — et la taille du parc n'y figure pas. Le nombre de comptes,
+       lui, n'est la réponse de rien et reste utile à l'enquête. #}
+    <p>L'organisation compte {{ contexte.nombre_de_comptes }} comptes. Le
+      nombre exact de machines qui remontent des journaux ne vous est pas
+      donné : c'est une chose que l'on établit soi-même, et vous le ferez.</p>
 
     <h3>Les activités autorisées</h3>
     <p>Certaines activités bruyantes sont <strong>connues et autorisées</strong>. Les
