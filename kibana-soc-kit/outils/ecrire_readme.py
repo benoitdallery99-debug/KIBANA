@@ -207,6 +207,17 @@ echo "    make data"
 """
 
 
+def _duree_du_parcours() -> int:
+    """Somme des durées annoncées par les modules de parcours/, en minutes."""
+    total = 0
+    for chemin in sorted((conf.RACINE / "parcours").glob("M*.md")):
+        for ligne in chemin.read_text(encoding="utf-8").splitlines():
+            if ligne.startswith("duree_minutes:"):
+                total += int(ligne.split(":", 1)[1])
+                break
+    return total
+
+
 def main() -> int:
     cible = Path(sys.argv[1]) if len(sys.argv) > 1 else conf.RACINE / "dist"
     cible.mkdir(parents=True, exist_ok=True)
@@ -214,7 +225,11 @@ def main() -> int:
     import json
     manifeste_chemin = conf.RACINE / "data" / "manifest.json"
     avertissement = "Données entièrement synthétiques."
-    duree = 345
+    # La durée se COMPTE, elle ne se recopie pas. Figée à 345 min, elle avait
+    # survécu à une montée de M1 de 75 à 77 min, puis au rebudgétage complet du
+    # parcours : le README annonçait une journée qui n'existait plus, alors que
+    # l'en-tête du même fichier promet que rien n'est écrit en dur.
+    duree = _duree_du_parcours()
     if manifeste_chemin.exists():
         manifeste = json.loads(manifeste_chemin.read_text(encoding="utf-8"))
         avertissement = manifeste["avertissement"]

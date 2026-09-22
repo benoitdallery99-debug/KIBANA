@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import collections
 import json
+import math
 import re
 
 import pytest
@@ -173,21 +174,66 @@ def test_chaque_objectif_est_evalue_par_un_exercice(modules):
     assert not orphelins, f"objectifs sans exercice : {orphelins}"
 
 
+# Vitesse de lecture retenue pour une prose technique en français, tableaux et
+# blocs de code compris. Elle est GÉNÉREUSE : un modèle plus fin — prose à 180,
+# quinze secondes par ligne de tableau, dix par ligne de code — donne 67 min de
+# lecture sur le parcours là où celui-ci en donne 46. La durée d'un module est
+# donc un plancher, jamais une promesse optimiste.
+MOTS_PAR_MINUTE = 180
+
+# Une question de rappel actif, posée et répondue à l'oral, prend une minute.
+MINUTES_PAR_RAPPEL = 1
+
+# SPEC §1 annonce « 6 h de parcours ». La borne haute la dépasse volontairement,
+# et l'écart est consigné (docs/JOURNAL.md, E10) : SPEC §1 ne budgète ni la
+# lecture des corps de module ni le rappel actif, que docs/CHARTE_REDACTION.md
+# rend pourtant obligatoires. Mesuré, le parcours vaut 6 h 43. Le kit garde son
+# contenu et dit la vraie durée plutôt que de la rogner pour rentrer dans une
+# prémisse ; le déroulé minuté de formateur/guide-formateur.md donne la journée
+# réelle. Ce commentaire est là pour qu'un relecteur voie la borne ET sa raison.
+BORNES_DU_PARCOURS = (300, 420)
+
+
+def _minutes_de_lecture(corps: str) -> int:
+    """Temps de lecture du corps d'un module, arrondi à la minute supérieure."""
+    return math.ceil(len(corps.split()) / MOTS_PAR_MINUTE)
+
+
 def test_durees_coherentes(modules):
-    """La somme des exercices doit tenir dans la durée annoncée du module."""
+    """La durée d'un module doit couvrir TOUT ce qu'il demande, pas ses seuls exercices.
+
+    Le contrôle ne regardait que la somme des exercices, et la durée annoncée
+    lui était exactement égale dans quatre modules sur six : ni la lecture du
+    corps ni le rappel actif n'avaient une minute, alors que la charte impose
+    l'un et l'autre. Un formateur qui planifiait la journée sur ces chiffres
+    dépassait de trois quarts d'heure sans savoir pourquoi.
+    """
     defauts = []
     total = 0
+    detail = []
     for m in modules:
-        annonce = m["entete"]["duree_minutes"]
+        entete = m["entete"]
+        annonce = entete["duree_minutes"]
         total += annonce
-        somme = sum(e.get("duree_minutes", 0) for e in m["entete"]["exercices"])
-        if somme > annonce:
-            defauts.append(
-                f"{m['entete']['id']} : {somme} min d'exercices "
-                f"pour {annonce} annoncées"
-            )
-    assert not defauts, "durées :\n  " + "\n  ".join(defauts)
-    assert 300 <= total <= 400, f"parcours de {total} min, 6 h visées (SPEC §1)"
+        exercices = sum(e.get("duree_minutes", 0) for e in entete["exercices"])
+        lecture = _minutes_de_lecture(m["corps"])
+        rappel = len(entete.get("rappel_actif") or []) * MINUTES_PAR_RAPPEL
+        besoin = exercices + lecture + rappel
+        detail.append(
+            f"{entete['id']} : {exercices} ex + {lecture} lecture + {rappel} rappel "
+            f"= {besoin} pour {annonce} annoncées"
+        )
+        if besoin > annonce:
+            defauts.append(detail[-1])
+    assert not defauts, (
+        "durées annoncées trop courtes pour ce que le module demande :\n  "
+        + "\n  ".join(defauts)
+    )
+    bas, haut = BORNES_DU_PARCOURS
+    assert bas <= total <= haut, (
+        f"parcours de {total} min, hors des bornes {bas}-{haut} (SPEC §1 et "
+        f"l'écart consigné) :\n  " + "\n  ".join(detail)
+    )
 
 
 # --------------------------------------------------------------------------

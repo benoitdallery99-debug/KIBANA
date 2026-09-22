@@ -1,7 +1,7 @@
 # Guide du formateur
 
 Kibana pour analystes SOC — Elastic Stack 9.5.3, licence Basic, interface fr-FR.
-6 h de parcours, 35 exercices, 27 objectifs, plus 45 min d'évaluation.
+6 h 43 de parcours, 35 exercices, 27 objectifs, plus 45 min d'évaluation.
 
 ---
 
@@ -36,30 +36,62 @@ stagiaire, et le **quiz sans réponses** pour la fin de journée.
 
 ## 2. Déroulé minuté
 
+La durée annoncée de chaque module couvre **tout** ce qu'il demande : ses
+exercices, la lecture de son corps, et ses questions de rappel actif. C'est la
+durée à poser dans un agenda. Mesurée ainsi, la matière vaut **6 h 43**, et non
+les 6 h que la spécification visait : la différence est la lecture et le rappel,
+que cette cible ne budgétait pas. Le kit a gardé son contenu et dit la vraie
+durée — mais la conséquence est qu'en une seule journée, la session est dense et
+se termine tard. Lisez les deux formules avant de choisir.
+
+### Formule A — quatre séances (recommandée)
+
+| Séance | Durée | Contenu |
+|---|---|---|
+| 1 | 2 h 03 | M0 — Prise en main · M1 — Rechercher avec Discover |
+| 2 | 2 h 19 | M2 — Visualiser avec Lens · M3 — Construire un tableau de bord |
+| 3 | 2 h 21 | M4 — Capstone SOC · M5 — Industrialiser |
+| 4 | 1 h 15 | Quiz, épreuve pratique, débriefing |
+
+Chaque séance s'ouvre sur les questions de rappel actif du module, qui sont
+faites pour ça — et qui reprennent, à froid, ce que la séance précédente a
+laissé. C'est la formule qui tient le mieux pour de vrais analystes en poste :
+aucune séance ne dépasse deux heures et demie, et l'évaluation ne tombe pas
+après six heures d'écran.
+
+### Formule B — une journée
+
 | Heure | Durée | Séquence |
 |---|---|---|
 | 09 h 00 | 15 min | Accueil, tour de table, ce qu'on va faire et ce qu'on ne fera pas |
-| 09 h 15 | 30 min | **M0 — Prise en main** |
-| 09 h 45 | 77 min | **M1 — Rechercher avec Discover** |
-| 11 h 02 | 13 min | Pause |
-| 11 h 15 | 60 min | **M2 — Visualiser avec Lens** |
-| 12 h 15 | 60 min | Déjeuner |
-| 13 h 15 | 60 min | **M3 — Construire un tableau de bord** |
-| 14 h 15 | 90 min | **M4 — Capstone SOC** |
-| 15 h 45 | 15 min | Pause |
-| 16 h 00 | 30 min | **M5 — Industrialiser** |
-| 16 h 30 | 30 min | Quiz, puis correction commentée |
-| 17 h 00 | 30 min | Épreuve pratique |
-| 17 h 30 | 15 min | Débriefing, évaluation à chaud |
+| 09 h 15 | 36 min | **M0 — Prise en main** |
+| 09 h 51 | 87 min | **M1 — Rechercher avec Discover** |
+| 11 h 18 | 12 min | Pause |
+| 11 h 30 | 70 min | **M2 — Visualiser avec Lens** |
+| 12 h 40 | 50 min | Déjeuner |
+| 13 h 30 | 69 min | **M3 — Construire un tableau de bord** |
+| 14 h 39 | 97 min | **M4 — Capstone SOC** |
+| 16 h 16 | 14 min | Pause |
+| 16 h 30 | 44 min | **M5 — Industrialiser** |
+| 17 h 14 | 30 min | Quiz, puis correction commentée |
+| 17 h 44 | 30 min | Épreuve pratique |
+| 18 h 14 | 15 min | Débriefing, évaluation à chaud |
 
-**Découpage en trois séances de 2 h** : M0 + M1 ; M2 + M3 ; M4 + M5 + évaluation.
-Chaque séance commence alors par les questions de rappel actif du module, qui
-sont faites pour ça.
+Fin à 18 h 29. C'est long, et il faut le dire à l'inscription plutôt qu'à
+16 heures. Si votre créneau s'arrête à 17 h 30, ne comprimez pas : passez à la
+formule A, ou reportez l'évaluation au lendemain matin — elle se tient très bien
+seule, et un quiz passé à froid mesure mieux.
 
-**Si vous prenez du retard**, sacrifiez dans cet ordre : les exercices
-semi-guidés de M2, puis M5-E3, puis un scénario de M4 parmi S2, S3 ou S5.
-Ne sacrifiez jamais M4-E10 (la synthèse) ni le scénario S7 : ce sont les deux
-seuls moments où l'on travaille le jugement plutôt que l'outil.
+**Si vous prenez du retard**, sacrifiez dans cet ordre : un scénario de M4 parmi
+S2, S3 et S5 (ils exercent le même geste sur trois pistes différentes), puis un
+deuxième, puis la construction du second écran de M4-E2 — le corrigé le fournit.
+
+Ne sacrifiez ni M2-E5 ni M5-E3, quelle que soit l'heure : chacun est le SEUL
+exercice qui évalue son objectif (M2-O5, les formules et les lignes de
+référence ; M5-O3, le transport vers un autre Space). Les couper, c'est rendre
+un objectif non mesuré. Ne sacrifiez jamais non plus M4-E10 (la synthèse) ni le
+scénario S7 : ce sont les deux seuls moments où l'on travaille le jugement
+plutôt que l'outil.
 
 ## 3. Pourquoi le parcours est construit ainsi
 
@@ -172,15 +204,36 @@ après validation. Les voici pour la correction en salle.
 
 ### La synthèse de cinq lignes (M4-E10)
 
-| Critère | 0 | 1 | 2 |
-|---|---|---|---|
-| Verdict | Absent ou noyé | Présent mais imprécis | Net, dès la première ligne |
-| Preuve | Aucune | Évoquée | Nommée et vérifiable |
-| Faux positif | Confondu avec l'incident | Signalé sans preuve | Écarté, avec ce qui le prouve |
-| Destinataire | Jargon d'analyste | Compréhensible avec effort | Lisible par un non-utilisateur de Kibana |
-| Recommandation | Absente | Vague | Une action, un responsable |
+**C'est la grille du module, pas une autre.** Le stagiaire l'a sous les yeux en
+M4-E10 et s'auto-note avec avant de rendre ; vous notez avec la même. Deux
+grilles différentes sur le même rendu, c'est un stagiaire qui a travaillé pour
+des critères qui ne sont pas ceux de sa note.
 
-Sur 10. Seuil d'acquisition : 6, **dont au moins 1 sur le critère « faux positif »**.
+| Critère | Ce qui vaut le point | Points |
+|---|---|---|
+| Fait avéré | l'incident nommé, avec le moment où il bascule | 2 |
+| Écart prouvé | l'activité écartée **et** l'élément qui l'écarte | 2 |
+| Reste ouvert | au moins une piste non close, posée en question | 1 |
+| Priorité | un ordre, pas une énumération | 1 |
+| Demande | une action, un destinataire, un délai | 1 |
+
+Sur 7. Trois défauts annulent le compte, quel qu'il soit : dépasser cinq lignes,
+citer une adresse sans dire ce qu'elle a fait, conclure par « à surveiller ».
+
+Seuil d'acquisition : **5 sur 7, dont au moins 1 sur « Écart prouvé »**. Cette
+dernière condition est la vôtre, et elle mérite d'être dite en salle avant le
+rendu : une synthèse qui ne distingue pas le scan autorisé de l'exfiltration
+décrit une salle en feu qui ne brûle pas. C'est la seule erreur de M4 qui coûte
+cher en vrai.
+
+**Ce que vous verrez le plus souvent, et ce qu'il faut en faire.**
+
+| Défaut observé | Points perdus | Ce qu'on dit au stagiaire |
+|---|---|---|
+| Six lignes, ou cinq lignes de six phrases | compte annulé | La contrainte est le cœur de l'exercice : cinq lignes, une fonction chacune |
+| L'adresse du scanner citée comme incident | « Écart prouvé » à 0 | Vous avez lu la fiche de contexte ? Elle nomme cette machine |
+| « À surveiller » en dernière ligne | compte annulé | Qui surveille, et jusqu'à quand ? Une demande, pas une intention |
+| Tout est avéré, rien n'est ouvert | « Reste ouvert » à 0 | Une enquête qui ne laisse aucune question est une enquête arrêtée trop tôt |
 
 ### L'épreuve pratique
 
