@@ -39,7 +39,20 @@ de l'enquête, littéralement.
 | `--action` | `#5b21b6` | `#c4a8ff` | **Réservé aux actions à faire dans Kibana** |
 | `--alerte` | `#9c2a1a` | `#ff9b8a` | Pièges, erreurs, avertissements |
 
-Plus un `--filet` (`#c3ccd6` / `#2b333d`), qui n'est jamais du texte.
+Plus quatre jetons d'appui, qui ne portent jamais de texte :
+
+| Rôle | Clair | Sombre | Emploi |
+|---|---|---|---|
+| `--papier-appui` | `#e8edf2` | `#1b212a` | Fond des encadrés et des blocs de code |
+| `--action-fond` | `#f1ebfd` | `#241a3a` | Fond des blocs « dans Kibana » |
+| `--alerte-fond` | `#fbeeec` | `#34201c` | Fond des encadrés « piège » |
+| `--filet` | `#7d8794` | `#616e7e` | Tout trait qui délimite un composant |
+
+Le `--filet` valait `#c3ccd6` / `#2b333d` à la première rédaction. Mesuré, il tombait à **1,49:1** en
+clair et **1,42:1** en sombre, sous les **3:1** que WCAG 1.4.11 exige d'un trait porteur
+d'information — et les encadrés « piège » de ce guide ne se distinguent QUE par leur trait : sous ce
+seuil, le piège cessait d'être signalé pour qui voit mal les contrastes. Les valeurs livrées donnent
+3,34:1 et 3,49:1 sur `--papier`, 3,09:1 et 3,11:1 sur `--papier-appui`, le fond le moins favorable.
 
 Contrastes mesurés sur le fond (calcul WCAG, script dans le journal) : encre 16,5:1 et 15,2:1 ;
 encre douce 7,4:1 et 8,5:1 ; action 8,2:1 et 9,0:1 ; alerte 7,0:1 et 8,9:1. Tous au-dessus de 4,5:1,

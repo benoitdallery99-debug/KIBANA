@@ -32,7 +32,23 @@ marge. Vérifiez ensuite que Kibana répond sur <http://localhost:5601> et que
 Discover montre des données sur sept jours.
 
 À imprimer : la **fiche mémo** (`fiche-memo.pdf`, A4 recto verso) pour chaque
-stagiaire, et le **quiz sans réponses** pour la fin de journée.
+stagiaire, et le **quiz sans réponses** (`quiz-imprimable.pdf`) pour la fin de
+journée.
+
+**Où sont les corrigés.** Les deux tableaux de bord de référence — « Santé de la
+collecte » et « Vue des alertes de la sonde » — vivent dans un Space à part,
+**Corrigés (formateur)**, que le compte « stagiaire » ne voit pas : c'est ce
+cloisonnement qui empêche d'aller y chercher les réponses entre deux exercices,
+et `make verif-lab` le vérifie. Vous y accédez avec le compte formateur, par le
+sélecteur de Space du bandeau. Leur version imprimée, avec les démarches et les
+requêtes, est `corriges.pdf`, à la racine de l'archive — gardez-la pour vous,
+elle n'est pas un document de stagiaire.
+
+Ouvrez-les au moment prévu par le déroulé (§2, créneau « Correction collective »),
+pas avant : montrés trop tôt, ils remplacent la construction que M4 demande.
+Montrés au bon moment, ils font la moitié du travail de débriefing — vous
+comparez panneau par panneau avec ce que la salle a produit, et chaque écart est
+une question à poser plutôt qu'une correction à asséner.
 
 ## 2. Déroulé minuté
 
@@ -51,7 +67,7 @@ se termine tard. Lisez les deux formules avant de choisir.
 | 1 | 2 h 03 | M0 — Prise en main · M1 — Rechercher avec Discover |
 | 2 | 2 h 19 | M2 — Visualiser avec Lens · M3 — Construire un tableau de bord |
 | 3 | 2 h 21 | M4 — Capstone SOC · M5 — Industrialiser |
-| 4 | 1 h 15 | Quiz, épreuve pratique, débriefing |
+| 4 | 1 h 15 | Correction collective des deux écrans, quiz, épreuve pratique, débriefing |
 
 Chaque séance s'ouvre sur les questions de rappel actif du module, qui sont
 faites pour ça — et qui reprennent, à froid, ce que la séance précédente a
@@ -73,7 +89,8 @@ après six heures d'écran.
 | 14 h 39 | 97 min | **M4 — Capstone SOC** |
 | 16 h 16 | 14 min | Pause |
 | 16 h 30 | 44 min | **M5 — Industrialiser** |
-| 17 h 14 | 30 min | Quiz, puis correction commentée |
+| 17 h 14 | 10 min | **Correction collective** : les deux corrigés du Space « Corrigés (formateur) », comparés aux écrans de la salle |
+| 17 h 24 | 20 min | Quiz, puis correction commentée |
 | 17 h 44 | 30 min | Épreuve pratique |
 | 18 h 14 | 15 min | Débriefing, évaluation à chaud |
 

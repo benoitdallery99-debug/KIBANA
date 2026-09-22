@@ -86,6 +86,15 @@ verso:
         - Un indicateur qui ne peut pas passer au rouge n'est pas un indicateur.
         - La plage de temps par défaut du tableau de bord est-elle la bonne ?
 
+    - titre: Raccourcis
+      lignes:
+        - ["Console : envoyer la requête", "Ctrl/Cmd + Entrée", "Le bouton vert fait la même chose."]
+        - ["Console : ouvrir la doc de la requête", "Ctrl/Cmd + /", "S'ouvre sur la page de l'API visée."]
+        - ["Console : réindenter la requête", "Ctrl/Cmd + I", "Avant de coller dans un dépôt."]
+        - ["Menu de saisie : fermer", "Échap", "Entrée ou Tab applique la suggestion."]
+        - ["Table de documents : détails d'une cellule", "Entrée", "Échap referme, les flèches déplacent."]
+        - ["Lens : combiner deux champs", "Contrôle enfoncé pendant le glisser", "Alt ou Option duplique."]
+
     - titre: Publier et réutiliser
       liste:
         - Un export ndjson se réimporte dans la même version, une mineure plus récente, ou la majeure suivante.

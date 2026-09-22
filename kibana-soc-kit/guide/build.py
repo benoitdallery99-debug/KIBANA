@@ -97,6 +97,40 @@ def captures_par_module() -> dict[str, list[dict]]:
     return par_module
 
 
+def figure_html(capture: dict) -> str:
+    """Une figure de capture, rendue comme le gabarit la rend.
+
+    Le gabarit garde la main sur les captures NON appelées, qui restent en fin
+    de module ; celle-ci sert aux captures que le texte appelle à sa place.
+    Les deux doivent produire la même chose, sinon le guide aurait deux mises
+    en page pour un même objet.
+    """
+    reperes = ""
+    if capture.get("reperes"):
+        reperes = "<br>" + " · ".join(
+            f"<span>{i} · {r['note']}</span>"
+            for i, r in enumerate(capture["reperes"], 1)
+        )
+    return (
+        f'<figure id="fig-{capture["id"]}" data-capture="{capture["id"]}">'
+        f'<img src="{capture["source"]}" alt="{capture["alt"]}" loading="lazy">'
+        f'<figcaption><strong>{capture["id"]}</strong> — {capture["titre"]}. '
+        f'{capture.get("legende", "")}{reperes}</figcaption>'
+        "</figure>"
+    )
+
+
+# Appel d'une capture depuis le corps d'un module : « ![](capture:M0-C1) ».
+# Sans lui, toutes les captures d'un module étaient déversées à la SUITE du
+# cours entier : la capture d'orientation de M0, « Discover, ses trois
+# repères », s'imprimait sept sections plus bas que la phrase qu'elle illustre,
+# sous « Écran vide et liste de champs vide ne sont pas la même panne ». Une
+# capture qu'on ne voit pas en lisant la phrase ne sert à personne.
+_APPEL_DE_CAPTURE = re.compile(
+    r"<p>\s*<img alt=\"[^\"]*\" src=\"capture:([A-Za-z0-9-]+)\"\s*/?>\s*</p>"
+)
+
+
 # Les langages que le corps d'un module écrit en bloc clôturé, et le nom sous
 # lequel le guide les affiche. Tout autre langage reste un bloc de code nu.
 LANGAGES_COPIABLES = {"kql": "KQL", "esql": "ES|QL", "json": "JSON", "bash": "Shell"}
@@ -107,7 +141,12 @@ _BLOC_DE_CODE = re.compile(
 )
 
 
-def markdown_vers_html(texte: str, prefixe: str = "c") -> str:
+def markdown_vers_html(
+    texte: str,
+    prefixe: str = "c",
+    captures: list[dict] | None = None,
+    appelees: set[str] | None = None,
+) -> str:
     html = md.markdown(
         texte,
         extensions=["tables", "fenced_code", "sane_lists", "attr_list", "def_list"],
@@ -122,6 +161,7 @@ def markdown_vers_html(texte: str, prefixe: str = "c") -> str:
     # leçon alors qu'il a oublié une barre verticale. Même habillage, même
     # bouton, même code de copie.
     compteur = [0]
+    appelees = appelees if appelees is not None else set()
 
     def habiller(m: re.Match) -> str:
         langage = LANGAGES_COPIABLES.get(m.group("langage").lower())
@@ -140,6 +180,19 @@ def markdown_vers_html(texte: str, prefixe: str = "c") -> str:
         )
 
     html = _BLOC_DE_CODE.sub(habiller, html)
+
+    # Les appels de capture, s'il y en a, prennent la place de leur paragraphe.
+    if captures is not None:
+        index = {c["id"]: c for c in captures}
+
+        def poser(m: re.Match) -> str:
+            capture = index.get(m.group(1))
+            if capture is None:
+                return ""
+            appelees.add(capture["id"])
+            return figure_html(capture)
+
+        html = _APPEL_DE_CAPTURE.sub(poser, html)
 
     # Un bloc de code long défile horizontalement dans son cadre. Une zone qui
     # défile doit être atteignable au clavier, sans quoi son contenu est
@@ -248,8 +301,18 @@ def charger_modules() -> tuple[dict, list[dict], list[dict]]:
     modules = []
     for chemin in sorted((conf.RACINE / "parcours").glob("M*.md")):
         entete, corps = frontmatter(chemin.read_text(encoding="utf-8"))
+        captures_du_module = captures.get(entete["id"], [])
+        appelees: set[str] = set()
+        corps_html = markdown_vers_html(
+            corps,
+            prefixe=f"c-{entete['id'].lower()}",
+            captures=captures_du_module,
+            appelees=appelees,
+        )
         modules.append({
-            "captures": captures.get(entete["id"], []),
+            # Seules les captures que le texte n'appelle pas restent en fin de
+            # module : les autres sont déjà posées à l'endroit qui les explique.
+            "captures": [c for c in captures_du_module if c["id"] not in appelees],
             "id": entete["id"],
             "ancre": f"module-{entete['id'].lower()}",
             "titre": entete["titre"],
@@ -257,7 +320,7 @@ def charger_modules() -> tuple[dict, list[dict], list[dict]]:
             "duree_minutes": entete.get("duree_minutes", 0),
             "objectifs": entete.get("objectifs") or [],
             "rappel_actif": entete.get("rappel_actif") or [],
-            "corps_html": markdown_vers_html(corps, prefixe=f"c-{entete['id'].lower()}"),
+            "corps_html": corps_html,
             "exercices": [
                 exercice_public(e, reponses, pieges, entete["id"])
                 for e in (entete.get("exercices") or [])
