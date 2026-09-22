@@ -19,8 +19,8 @@ comme **non exécuté**, avec sa raison — jamais comme réussi.
 | `verif-corriges` | 9 | ✅ 9 passés | import en Space vierge, rendu sans erreur, valeurs conformes, décomptes de panneaux publiés recomptés |
 | `verif-guide` | 25 | ✅ 25 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement, entités HTML intactes, toute capture visant un Space à réponses est épinglée sur une plage antérieure au jeu — donc sur des panneaux vides —, sommaire atteignable après défilement, recherche qui surligne, position courante au niveau de l'exercice, capture agrandie à sa taille réelle, filet à 3:1 sur les quatre fonds, contrat de docs/DESIGN.md relu |
 | `verif-pdf` | 10 | ✅ 10 passés | polices embarquées, sommaire paginé, signets, solutions en annexe, aucune réponse dans un document du stagiaire |
-| `verif-package` | 10 | ✅ 10 passés | empreintes, complétude, installation sans réseau, chiffres de ce rapport recomptés, toute dépendance importée est déclarée |
-| **Total** | **121** | **✅ zéro échec** | |
+| `verif-package` | 11 | ✅ 11 passés | empreintes, complétude, installation sans réseau, **l'image chargée depuis le tar livré résout la référence du pod**, chiffres de ce rapport recomptés, toute dépendance importée est déclarée |
+| **Total** | **122** | **✅ zéro échec** | |
 
 Exécution complète après `make lab-reset`, donc sur un lab reconstruit depuis un
 volume vide : c'est la seule façon de ne pas confondre « le kit fonctionne » et
@@ -214,8 +214,20 @@ la couverture est donc prouvée, pas affirmée.
 
 ```
 $ make verif-package
-10 passed in 145.98s
+11 passed in 80.14s
 ```
+
+**Le onzième contrôle existe parce que les dix premiers ne voyaient pas que le
+lab ne démarrait sur AUCUNE installation hors ligne neuve.** `podman save`
+resérialise l'image et `podman load` lui rend un autre digest de manifeste que
+celui du registre : chargé depuis le tar livré, elasticsearch arrive sous
+`sha256:a9eaec68…` quand `lab/images.yaml` épingle `sha256:9020a0ab…`. Avec
+`imagePullPolicy: Never`, `podman kube play` répond `image not known`. Les
+deux machines qui avaient fait tourner ce lab avaient tiré leurs images d'un
+registre ; `verif-package` ne testait que `pip`. Le seul cas d'usage du
+livrable était le seul qui n'était pas testé. Le contrôle charge désormais une
+image de l'archive dans un magasin podman vierge et exige que la référence du
+pod y résolve.
 
 Prouve : empreinte de l'archive conforme ; **toutes** les lignes de `SHA256SUMS`
 valides ; archive complète (images de conteneurs, wheels, guide, PDF, corrigés,
@@ -236,7 +248,7 @@ $ make lab-reset --oui
 Lab remis à neuf.  Données réancrées sur 2026-09-21 22:05.
 DUREE_SECONDES=109
 $ make verif
-20 passed · 14 passed · 33 passed · 9 passed · 25 passed · 10 passed · 10 passed
+20 passed · 14 passed · 33 passed · 9 passed · 25 passed · 10 passed · 11 passed
 ```
 
 Cette transcription est celle du PREMIER tour de revue, et elle totalise 91.
@@ -260,12 +272,12 @@ $ make verif
 9 passed in 51.52s        (verif-corriges)
 25 passed in 28.02s       (verif-guide)
 10 passed in 281.15s      (verif-pdf)
-10 passed in 145.98s      (verif-package)
+11 passed in 80.14s       (verif-package)
 $ echo $?
 0
 $ make package && make verif-package
-Archive prête : dist/kit-formation-kibana-9.5.3-20260922.tar.gz (1409 Mo)
-10 passed in 45.01s
+Archive prête : dist/kit-formation-kibana-9.5.3-20260922.tar.gz (1566 Mo)
+11 passed in 80.14s
 ```
 
 **Ce bloc date de la recette complète, AVANT la refonte visuelle du guide.**
@@ -275,8 +287,9 @@ chiffre de `verif-lab`, `verif-donnees`, `verif-parcours` ni `verif-corriges`,
 et ces quatre-là n'ont donc pas été rejoués — le lab n'était plus monté sur la
 machine de construction. Les trois phases qu'elle touche, elles, l'ont été, et
 ce sont leurs chiffres que publie la section P5 ci-dessus : `verif-guide`
-25/25 en 30,23 s, `verif-pdf` 10/10 en 289,49 s, `verif-package` 10/10 en
-58,86 s. Le guide passe de 2,88 à 4,43 Mo : c'est le poids de Source Serif 4,
+25/25 en 30,23 s, `verif-pdf` 10/10 en 289,49 s, `verif-package` 11/11 en
+80,14 s — onze et non plus dix, un contrôle ayant été ajouté depuis (voir
+plus bas). Le guide passe de 2,88 à 4,43 Mo : c'est le poids de Source Serif 4,
 embarquée telle que distribuée comme l'exige CLAUDE.md. La limite est de 20 Mo.
 
 L'empreinte de l'archive n'est pas recopiée ici, et c'est volontaire : ce

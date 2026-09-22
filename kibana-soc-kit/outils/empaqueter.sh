@@ -140,7 +140,11 @@ echo "  $(wc -l < "$ETAPE/SHA256SUMS") fichier(s) empreintés"
 
 ARCHIVE="$RACINE/dist/${NOM}.tar.gz"
 tar -czf "$ARCHIVE" -C "$RACINE/dist" "$NOM"
-sha256sum "$ARCHIVE" > "$ARCHIVE.sha256"
+# MESURÉ : « sha256sum "$ARCHIVE" » écrit le chemin ABSOLU de la machine de
+# fabrication. Sur le poste cible, « sha256sum -c » cherche alors un fichier
+# qui n'existe pas et échoue — sur une archive pourtant intacte. Le nom seul,
+# écrit depuis le répertoire qui contient l'archive, se vérifie partout.
+(cd "$(dirname "$ARCHIVE")" && sha256sum "$(basename "$ARCHIVE")") > "$ARCHIVE.sha256"
 
 printf '\n\033[32mArchive prête\033[0m : %s (%s Mo)\n' \
   "dist/${NOM}.tar.gz" "$(( $(stat -c%s "$ARCHIVE") / 1024 / 1024 ))"

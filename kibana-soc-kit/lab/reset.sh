@@ -74,12 +74,19 @@ fi
 titre "3/4 Redémarrage et réinitialisation"
 bash lab/lab-up.sh
 
-titre "4/4 Rechargement des données, réancrées sur maintenant"
+titre "4/5 Rechargement des données, réancrées sur maintenant"
 "$PY" data/generateur/engendrer.py --jeu formation
 "$PY" data/generateur/engendrer.py --jeu epreuve
 # Les corrigés vivent dans le Space « corriges » et sont repartis avec le volume :
 # on les recharge, sans quoi le formateur n'a plus de quoi débriefer M3 et M4.
 "$PY" corriges/construire.py
+
+titre "5/5 Reconstruction du guide sur les nouvelles réponses"
+# README.md prescrit « make lab-reset » avant chaque séance. Sans cette étape,
+# chaque séance commençait donc avec un guide dont les empreintes dataient de
+# la séance précédente : le stagiaire saisissait la bonne réponse et se la
+# voyait refuser. Le HTML seul suffit — c'est lui qui valide.
+"$PY" guide/build.py
 
 printf '\n\033[32mLab remis à neuf.\033[0m  Données réancrées sur %s.\n' "$(date '+%Y-%m-%d %H:%M')"
 printf 'L'"'"'épreuve pratique reste FERMÉE : « make epreuve-ouvrir » le moment venu.\n\n'

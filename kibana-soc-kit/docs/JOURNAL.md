@@ -651,6 +651,82 @@ pèse 1,2 Mo et ne peut pas être sous-ensemblée.
 
 ---
 
+### « Ça va être facile de l'installer sur un poste Windows hors réseau ? »
+
+Non, et l'instruction de cette question a révélé un défaut **bloquant** qui
+n'avait rien à voir avec Windows : **le lab ne démarrait sur aucune
+installation hors ligne neuve.**
+
+`podman save --format docker-archive` resérialise l'image ; `podman load` lui
+rend un digest de manifeste différent de celui du registre. Mesuré dans un
+magasin podman vierge : le tar livré donne
+`elasticsearch@sha256:a9eaec68…`, quand `lab/images.yaml` épingle
+`sha256:9020a0ab…`. Le pod référence le second, `imagePullPolicy: Never`
+interdit d'aller le chercher, et `podman kube play` répond `image not known`.
+
+Les deux machines qui ont fait tourner ce lab — celle de fabrication et le
+MacBook — avaient tiré leurs images d'un **registre**. Aucune n'avait jamais
+chargé un tar. Et `verif-package` ne testait que `pip`. Le défaut était donc
+structurellement invisible : **le seul cas d'usage du livrable était le seul
+qui n'était pas testé.**
+
+`lab/rendre_pod.py` vérifie désormais que le digest épinglé résout dans le
+magasin local et le réancre sinon, en le disant. L'épinglage par digest est
+conservé : il est vérifié, pas abandonné. Et `verif-package` charge une image
+de l'archive dans un magasin vierge pour exiger que la référence du pod y
+résolve — 122e contrôle.
+
+Six autres défauts, du même tonneau — mesurés, pas supposés :
+
+- **Les wheels n'étaient installables que sur CPython 3.11, Linux x86_64.**
+  Trois des dix-neuf portaient `cp311` et `manylinux_x86_64`, parce que
+  `pip download` sans `--platform` produit les roues de la machine de
+  fabrication. Sur WSL2 Ubuntu 24.04, qui livre 3.12, `pip` refusait `pyyaml`
+  dès la première ligne. `empaqueter.sh` vendorise maintenant pour quatre
+  cibles déclarées et écrit `wheels/CIBLES.txt` : 19 paquets sont devenus 72,
+  15 Mo sont devenus 173.
+- **Sept dépendances sur douze manquaient à l'archive** : `exigences.txt` y
+  était figé à la version d'avant leur déclaration. `make guide` y était donc
+  impossible — ce qui, combiné au point suivant, était grave.
+- **`make data` désynchronisait le guide, et `INSTALLATION.md` le prescrivait.**
+  Le générateur ancre sa fenêtre sur l'instant du chargement et n'accepte
+  aucune ancre fixe ; chaque engendrement change donc les réponses, dont le
+  guide embarque les empreintes. `make lab-reset` faisait pire : le guide du
+  formateur le prescrit **avant chaque séance**. `make data` et `reset.sh`
+  enchaînent désormais `make guide-html`, dix secondes. C'est exactement le
+  piège qui a fait échouer trois contrôles chez le premier utilisateur.
+- **`installer.sh` ne s'arrêtait pas sur une empreinte fausse.** Mesuré :
+  `sha256sum -c … && echo` affichait l'erreur et poursuivait, code de sortie 0
+  — quand `INSTALLATION.md` promettait « ne poursuivez pas ». Une archive
+  altérée s'installait sans que rien ne le dise. Il sort maintenant en erreur,
+  y compris quand `sha256sum` est absent.
+- **Le `.sha256` de l'archive portait un chemin absolu** de la machine de
+  fabrication : `sha256sum -c` échouait sur la cible, sur une archive pourtant
+  intacte.
+- **`guide/build.py` importait Playwright** pour une seule constante entière.
+  Construire le guide exigeait donc un navigateur de 150 Mo sur un poste hors
+  ligne qui ne lance aucun test. La constante est descendue dans
+  `outils/conf.py`.
+
+S'y ajoute un `.gitattributes`, absent jusqu'ici : rien ne protégeait les six
+scripts `bash` d'une conversion en CRLF au passage par un poste Windows, et
+l'erreur qui en résulte (`bad interpreter: …bash^M`) ne désigne pas sa cause.
+
+`docs/INSTALLATION_WINDOWS.md` répond enfin à la question posée : le kit est
+un logiciel Linux — `bash`, `make` et `.venv/bin/python` n'existent pas sous
+Windows natif — donc tout se passe dans WSL2, où aucune ligne du kit n'est à
+modifier. Le document distingue systématiquement ce qui est **mesuré**, ce qui
+est **lu dans le dépôt** et ce qui relève de la **connaissance non vérifiée
+ici** : il n'y a pas de machine Windows dans cette chaîne de fabrication, et
+prétendre le contraire serait exactement la faute que ce kit s'interdit.
+
+Enseignement, le troisième du même ordre après le MacBook et la refonte
+visuelle : **une suite verte ne prouve que ce qu'elle exécute.** Cent
+vingt-et-un contrôles ne voyaient pas qu'aucun d'eux n'avait jamais fait ce
+que fait un installateur.
+
+---
+
 ---
 
 ## P3 — Parcours — ARCHIVE DE L'ENTRÉE PRÉCÉDENTE

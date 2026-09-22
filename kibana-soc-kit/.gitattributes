@@ -1,0 +1,22 @@
+# Les scripts du lab et les sources Python gardent des fins de ligne LF, quoi
+# qu'il arrive. MESURÉ : un « \r » en fin de shebang fait répondre à bash
+# « bad interpreter: /usr/bin/env bash^M: No such file or directory », message
+# qui ne désigne pas la cause et coûte une demi-heure. Le risque est réel dès
+# que le dépôt transite par un poste Windows, un partage SMB ou un dézippage
+# avec un outil qui « corrige » les fins de ligne.
+* text=auto eol=lf
+*.sh   text eol=lf
+*.py   text eol=lf
+Makefile text eol=lf
+*.yaml text eol=lf
+*.yml  text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+
+# Binaires : jamais touchés.
+*.ttf  binary
+*.png  binary
+*.pdf  binary
+*.tar  binary
+*.gz   binary
+*.whl  binary

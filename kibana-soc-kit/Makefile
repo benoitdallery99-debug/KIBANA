@@ -100,8 +100,20 @@ epreuve-ouvrir:
 epreuve-fermer:
 	@bash lab/epreuve.sh fermer
 
+# Le manifeste des réponses change à CHAQUE engendrement : la fenêtre se
+# termine à l'instant du chargement, et le générateur n'accepte aucune ancre
+# fixe. Le guide embarque les EMPREINTES de ces réponses. Régénérer les
+# données sans reconstruire le guide, c'est livrer un guide qui refuse les
+# bonnes réponses — c'est arrivé à la première installation par un humain.
+# Les deux ne se séparent donc plus.
 data:
 	@$(PY) data/generateur/engendrer.py --jeu formation
+	@$(MAKE) --no-print-directory guide-html
+
+# Le HTML seul : dix secondes, et c'est lui qui valide les réponses. Les sept
+# PDF, eux, prennent cinq minutes et ne valident rien.
+guide-html:
+	@$(PY) guide/build.py
 
 data-epreuve:
 	@$(PY) data/generateur/engendrer.py --jeu epreuve
@@ -118,8 +130,7 @@ captures:
 corriges:
 	@$(PY) corriges/construire.py
 
-guide:
-	@$(PY) guide/build.py
+guide: guide-html
 	@$(PY) guide/pdf.py
 
 package:

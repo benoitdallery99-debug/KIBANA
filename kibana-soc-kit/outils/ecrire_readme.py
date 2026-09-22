@@ -124,7 +124,7 @@ bash lab/preflight.sh
 
 Il n'exécute jamais de commande `sudo` : il l'affiche, et vous décidez.
 
-### Sous macOS ou Windows
+### Sous macOS
 
 podman tourne dans une machine virtuelle. Les réglages se font **dans cette VM** :
 
@@ -134,6 +134,22 @@ podman machine set --memory 8192
 podman machine start
 podman machine ssh 'sudo sysctl -w vm.max_map_count=262144'
 ```
+
+Le réglage `sysctl` ci-dessus **ne survit pas** à un redémarrage de la machine
+podman : à rejouer après chaque `podman machine start`.
+
+### Sous Windows — lisez d'abord `docs/INSTALLATION_WINDOWS.md`
+
+Ce kit est un logiciel Linux : `bash`, `make` et `.venv/bin/python` n'existent
+pas sous Windows natif, et aucune des commandes de ce document ne s'y exécute.
+La seule architecture viable est **tout dans WSL2**, où ce document redevient
+valable tel quel.
+
+`docs/INSTALLATION_WINDOWS.md` donne la marche complète : les quatre
+autorisations à obtenir avant de préparer le média, les prérequis à constituer
+côté connecté (environ 2,5 Go que l'archive ne contient pas), les deux
+fichiers de configuration WSL2 sans lesquels le lab tombe au deuxième
+démarrage, et les topologies de salle. Comptez une demi-journée.
 
 ## 3. Installer
 
@@ -150,10 +166,24 @@ réseau. Il est relançable sans effet de bord.
 ```bash
 make lab-up
 make data
+make corriges
 ```
 
 Au premier démarrage, `.env` est créé : il contient les mots de passe engendrés
 pour ce poste. Il n'est pas dans l'archive et ne doit pas en sortir.
+
+**Les trois commandes, pas deux.** `make corriges` pose les tableaux de bord
+corrigés dans Kibana : ils vivent dans le lab, pas dans l'archive, et sans eux
+le formateur n'a rien à projeter pour débriefer M3 et M4.
+
+> **Pourquoi `make data` reconstruit le guide tout seul.** Le générateur ancre
+> sa fenêtre de sept jours sur l'instant du chargement, et n'accepte aucune
+> ancre fixe. Chaque engendrement change donc les réponses — et le guide
+> embarque les EMPREINTES de ces réponses pour valider ce que saisit le
+> stagiaire. Régénérer les données sans reconstruire le guide, c'est livrer un
+> guide qui REFUSE LES BONNES RÉPONSES. C'est arrivé à la première
+> installation par un humain ; `make data` et `make lab-reset` enchaînent
+> désormais la reconstruction du HTML, qui prend dix secondes.
 
 ## 5. Contrôler
 
@@ -171,6 +201,12 @@ make verif-donnees
 | Kibana reste `unavailable` | Elasticsearch pas encore prêt | Attendez ; `podman logs {pod}-kibana` dit où il en est |
 | Le lab ne répond pas sur un réseau isolé | `bridge-nf-call-iptables` à 1 | `sudo sysctl -w net.bridge.bridge-nf-call-iptables=0` |
 | Image absente au démarrage | `podman load` non fait | Relancez `./installer.sh` |
+| `podman kube play` : `image not known` | Archive antérieure au correctif des digests : `podman load` redonne un digest différent de celui du registre | `rm lab/images.yaml` puis `make lab-up` : les digests sont relevés du magasin local |
+| `pip` refuse `pyyaml` ou `charset_normalizer` | La version de Python ne correspond pas aux wheels livrées | Lisez `wheels/CIBLES.txt` et installez une version listée |
+| `bad interpreter: /usr/bin/env bash^M` | Fins de ligne CRLF, après un passage par Windows | `sed -i 's/\r$//' lab/*.sh installer.sh` |
+| `./installer.sh: Permission denied` | Extraction par un outil qui perd le bit exécutable | `chmod +x installer.sh lab/*.sh` |
+| `python3 -m venv` échoue | Sur Debian et Ubuntu, venv est un paquet séparé | `sudo apt install python3-venv` |
+| Le guide refuse une bonne réponse | Données régénérées sans reconstruction du guide | `make guide-html` |
 
 ## Désinstaller
 
@@ -189,10 +225,34 @@ RACINE="$(cd "$(dirname "${{BASH_SOURCE[0]}}")" && pwd)"
 cd "$RACINE"
 
 echo "== Vérification des empreintes =="
-if command -v sha256sum >/dev/null 2>&1 && [ -f SHA256SUMS ]; then
-  sha256sum -c --quiet SHA256SUMS && echo "  empreintes conformes"
+# MESURÉ : l'ancienne forme « sha256sum -c … && echo » n'arrêtait PAS
+# l'installation sur une empreinte fausse — le script affichait l'erreur et
+# poursuivait, code de sortie 0 — alors qu'INSTALLATION.md promettait
+# l'inverse. Une archive altérée s'installait donc sans que rien ne le dise.
+if [ ! -f SHA256SUMS ]; then
+  echo "  ERREUR : SHA256SUMS absent. L'archive est incomplète." >&2
+  exit 1
+fi
+if command -v sha256sum >/dev/null 2>&1; then
+  verif="sha256sum -c --quiet"
+elif command -v shasum >/dev/null 2>&1; then
+  verif="shasum -a 256 -c --quiet"
 else
-  echo "  (sha256sum indisponible : contrôle ignoré)"
+  echo "  ERREUR : ni sha256sum ni shasum sur ce poste." >&2
+  echo "  Installez coreutils, ou vérifiez à la main avant de poursuivre :" >&2
+  echo "    PowerShell : Get-FileHash -Algorithm SHA256 <fichier>" >&2
+  echo "  Pour passer outre en connaissance de cause : KIT_SANS_EMPREINTES=1 ./installer.sh" >&2
+  [ "${{KIT_SANS_EMPREINTES:-0}}" = "1" ] || exit 1
+  verif=""
+fi
+if [ -n "$verif" ]; then
+  if $verif SHA256SUMS; then
+    echo "  empreintes conformes"
+  else
+    echo "  ERREUR : au moins un fichier ne correspond pas à son empreinte." >&2
+    echo "  Ne poursuivez pas : retransférez l'archive." >&2
+    exit 1
+  fi
 fi
 
 echo "== Chargement des images de conteneurs =="
@@ -215,7 +275,13 @@ if [ ! -x .venv/bin/python ]; then
     echo "  Indiquez un interpréteur récent :  PYTHON=/chemin/vers/python3.12 ./installer.sh" >&2
     exit 1
   fi
-  "${{PYTHON:-python3}}" -m venv .venv
+  if ! "${{PYTHON:-python3}}" -m venv .venv 2>/tmp/kit-venv.err; then
+    echo "  ERREUR : « python3 -m venv » a échoué." >&2
+    sed 's/^/    /' /tmp/kit-venv.err >&2
+    echo "  Sur Debian et Ubuntu, le module venv est dans un paquet séparé :" >&2
+    echo "    sudo apt install python3-venv        # ou python3.12-venv" >&2
+    exit 1
+  fi
 fi
 if ! .venv/bin/python -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)'; then
   echo "  ERREUR : .venv porte un Python trop ancien. Supprimez-le et relancez." >&2
