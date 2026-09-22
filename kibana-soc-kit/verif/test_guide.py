@@ -334,6 +334,11 @@ def test_une_action_garde_le_meme_nom_partout(html):
     du quiz, avec deux familles de retours derrière. Le stagiaire presse ce
     bouton quarante-quatre fois dans la journée ; qu'il change de nom au milieu
     lui fait croire que le geste change aussi.
+
+    Le contrôle refuse aussi « valider » employé seul dans une consigne : une
+    phrase comme « décidez, avant de valider, comment traiter les objets »
+    parlait d'une boîte de dialogue de Kibana, mais le stagiaire venait de
+    presser vingt-sept fois un bouton de validation. On dit « lancer la copie ».
     """
     import html as H
 
