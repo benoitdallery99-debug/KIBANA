@@ -31,12 +31,12 @@
     <p class="exercice__entete"><span class="exercice__id">{{ e.id }}</span> —
       {{ e.titre }} <span class="exercice__id">({{ e.guidage_libelle }},
       {{ e.duree_minutes }} min)</span></p>
-    <p class="exercice__contexte">{{ e.contexte }}</p>
+    <p class="exercice__contexte">{{ e.contexte | safe }}</p>
     {% for q in e.requetes_corrige %}<pre>{{ q.texte }}</pre>{% endfor %}
-    {% if e.solution %}<p><strong>Démarche.</strong> {{ e.solution }}</p>{% endif %}
+    {% if e.solution %}<p><strong>Démarche.</strong> {{ e.solution | safe }}</p>{% endif %}
     {% if e.erreurs_typiques %}
     <p><strong>Erreurs fréquentes</strong></p>
-    <ul>{% for x in e.erreurs_typiques %}<li>{{ x }}</li>{% endfor %}</ul>
+    <ul>{% for x in e.erreurs_typiques %}<li>{{ x | safe }}</li>{% endfor %}</ul>
     {% endif %}
     {% if e.piege %}
     <div class="piege"><span class="piege__titre">Piège : {{ e.piege.titre }}</span>

@@ -29,9 +29,9 @@ h1 { font-size: 18pt; margin: 0 0 2mm; }
 
 {% for q in quiz %}
 <div class="q">
-  <p class="q__texte"><span class="q__num">{{ q.id }}.</span> {{ q.question }}</p>
+  <p class="q__texte"><span class="q__num">{{ q.id }}.</span> {{ q.question | safe }}</p>
   {% for p in q.propositions %}
-  <p class="q__prop"><span class="case"></span>{{ p }}</p>
+  <p class="q__prop"><span class="case"></span>{{ p | safe }}</p>
   {% endfor %}
 </div>
 {% endfor %}

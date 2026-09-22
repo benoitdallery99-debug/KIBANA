@@ -1,5 +1,5 @@
 {
-  "engendre_le": "2026-09-22T07:16:23.000Z",
+  "engendre_le": "2026-09-22T09:09:08.000Z",
   "jeu": "epreuve",
   "graine": 7310,
   "namespace": "epreuve",
@@ -9,14 +9,14 @@
   "index_mode": "standard",
   "avertissement": "Données entièrement synthétiques. Adresses réservées à la documentation (RFC 5737, RFC 1918), domaines réservés (RFC 2606), personnes inventées. Aucune donnée réelle (SPEC §5.1, CLAUDE.md).",
   "volumes": {
-    "logs-windows.security-epreuve": 89362,
-    "logs-linux.auth-epreuve": 35252,
-    "logs-ids.alert-epreuve": 14279,
-    "logs-network.dns-epreuve": 98867,
-    "logs-proxy.web-epreuve": 72457,
-    "logs-firewall.traffic-epreuve": 69737
+    "logs-windows.security-epreuve": 89247,
+    "logs-linux.auth-epreuve": 35221,
+    "logs-ids.alert-epreuve": 14252,
+    "logs-network.dns-epreuve": 98708,
+    "logs-proxy.web-epreuve": 71084,
+    "logs-firewall.traffic-epreuve": 69644
   },
-  "total_documents": 379954,
+  "total_documents": 378156,
   "contexte": {
     "organisation": "Groupe Méridien",
     "domaine_ad": "MERIDIEN",
@@ -1102,8 +1102,8 @@
       "titre": "Trou de collecte de deux heures",
       "recit": "Une source n'a rien envoyé pendant deux heures, au milieu de la période.",
       "_fenetre": {
-        "debut": "2026-09-18T06:16:23.000Z",
-        "fin": "2026-09-18T08:16:23.000Z"
+        "debut": "2026-09-18T11:00:00.000Z",
+        "fin": "2026-09-18T13:00:00.000Z"
       },
       "reponses": [
         {
@@ -1120,8 +1120,8 @@
               "query": {
                 "range": {
                   "@timestamp": {
-                    "gte": "2026-09-18T06:16:23.000Z",
-                    "lt": "2026-09-18T08:16:23.000Z"
+                    "gte": "2026-09-18T11:00:00.000Z",
+                    "lt": "2026-09-18T13:00:00.000Z"
                   }
                 }
               }
@@ -1153,7 +1153,7 @@
         {
           "cle": "heure_de_reprise",
           "libelle": "Heure à laquelle la collecte reprend, dans le fuseau métier",
-          "valeur": 10,
+          "valeur": 15,
           "type": "entier",
           "normalisation": "entier",
           "controle": {
@@ -1163,7 +1163,7 @@
               "query": {
                 "range": {
                   "@timestamp": {
-                    "gte": "2026-09-18T08:16:23.000Z"
+                    "gte": "2026-09-18T13:00:00.000Z"
                   }
                 }
               },
@@ -1179,7 +1179,7 @@
             "transformation": "heure_du_fuseau_metier"
           },
           "empreintes": [
-            "4a44dc15364204a80fe80e9039455cc1608281820fe2b24f1e5233ade6af1dd5"
+            "e629fa6598d732768f7c726b4b621285f9c3b85303900aa912017db7617d8bdb"
           ]
         }
       ]

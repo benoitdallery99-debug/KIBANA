@@ -85,7 +85,7 @@
 
   {% if m.rappel_actif %}
   <h3>Avant de commencer — de mémoire</h3>
-  <ul>{% for r in m.rappel_actif %}<li>{{ r.question }}</li>{% endfor %}</ul>
+  <ul>{% for r in m.rappel_actif %}<li>{{ r.question | safe }}</li>{% endfor %}</ul>
   {% endif %}
 
   {{ m.corps_html | safe }}
@@ -106,12 +106,12 @@
       <span class="exercice__id">{{ e.id }}</span> — {{ e.titre }}
       <span class="exercice__id">({{ e.guidage_libelle }}, {{ e.duree_minutes }} min)</span>
     </p>
-    <p class="exercice__contexte">{{ e.contexte }}</p>
+    <p class="exercice__contexte">{{ e.contexte | safe }}</p>
 
     {% if e.consignes %}
     <div class="action">
       <span class="action__etiquette">DANS KIBANA</span>
-      <ol>{% for c in e.consignes %}<li>{{ c }}</li>{% endfor %}</ol>
+      <ol>{% for c in e.consignes %}<li>{{ c | safe }}</li>{% endfor %}</ol>
     </div>
     {% endif %}
 
@@ -121,11 +121,11 @@
 
     {% if e.indices %}
     <p><strong>Indices</strong></p>
-    <ol>{% for i in e.indices %}<li>{{ i }}</li>{% endfor %}</ol>
+    <ol>{% for i in e.indices %}<li>{{ i | safe }}</li>{% endfor %}</ol>
     {% endif %}
 
     {% if e.reponse %}
-    <p class="champ-reponse__libelle">Votre réponse — {{ e.format_de_reponse }}</p>
+    <p class="champ-reponse__libelle">Votre réponse — {{ e.format_de_reponse | safe }}</p>
     <div class="champ-reponse"></div>
     {% endif %}
     {% if e.doc %}<p class="lien-doc">{{ e.doc }}</p>{% endif %}
@@ -159,7 +159,7 @@
       {{ e.piege.lecon }}
     </div>
     {% endif %}
-    <p>{{ e.solution }}</p>
+    <p>{{ e.solution | safe }}</p>
     {% if e.erreurs_typiques %}
     <p><strong>Erreurs fréquentes</strong></p>
     <ul>{% for x in e.erreurs_typiques %}<li>{{ x }}</li>{% endfor %}</ul>

@@ -161,8 +161,8 @@
         moment de relire, pas pendant l'exercice.</p>
       {% for r in m.rappel_actif %}
       <details>
-        <summary>{{ r.question }}</summary>
-        <div>{{ r.reponse }}</div>
+        <summary>{{ r.question | safe }}</summary>
+        <div>{{ r.reponse | safe }}</div>
       </details>
       {% endfor %}
       {% endif %}
@@ -205,12 +205,12 @@
           <span class="exercice__guidage">{{ e.duree_minutes }} min</span>
         </div>
 
-        <p class="exercice__contexte">{{ e.contexte }}</p>
+        <p class="exercice__contexte">{{ e.contexte | safe }}</p>
 
         {% if e.consignes %}
         <div class="action">
           <span class="action__etiquette">DANS KIBANA</span>
-          <ol>{% for c in e.consignes %}<li>{{ c }}</li>{% endfor %}</ol>
+          <ol>{% for c in e.consignes %}<li>{{ c | safe }}</li>{% endfor %}</ol>
         </div>
         {% endif %}
 
@@ -227,7 +227,7 @@
         {% for i in e.indices %}
         <details>
           <summary>Indice {{ loop.index }}</summary>
-          <div>{{ i }}</div>
+          <div>{{ i | safe }}</div>
         </details>
         {% endfor %}
 
@@ -237,7 +237,7 @@
              data-normalisation="{{ e.reponse.normalisation }}"
              data-empreintes="{{ e.reponse.empreintes | join(',') }}">
           <label class="reponse__format" for="rep-{{ e.id }}">
-            Votre réponse — {{ e.format_de_reponse }}
+            Votre réponse — {{ e.format_de_reponse | safe }}
           </label>
           <div class="reponse__ligne">
             <input type="text" id="rep-{{ e.id }}" autocomplete="off" spellcheck="false">
@@ -252,12 +252,17 @@
            de réponse, et non son absence. #}
         <div class="reponse reponse--rendu">
           <p class="reponse__format"><strong>Ce que vous rendez</strong></p>
-          <p>{{ e.rendu }}</p>
+          <p>{{ e.rendu | safe }}</p>
         </div>
         {% endif %}
 
         {% if e.solution %}
-        <details>
+        {# « data-solution » : ce repli-ci ne s'ouvre pas à l'impression. Le
+           correctif qui ouvrait tous les <details> avant le tirage — parce que
+           les indices s'imprimaient vides — publiait du même coup les
+           trente-cinq démarches en regard de leur exercice. Sur papier, le
+           stagiaire n'a plus le choix de ne pas regarder. #}
+        <details data-solution>
           <summary>Voir la démarche</summary>
           <div>
             {# Le piège se lit APRÈS coup. Annoncé avant l'action, il désamorce
@@ -269,10 +274,10 @@
               <p>{{ e.piege.lecon }}</p>
             </div>
             {% endif %}
-            <p>{{ e.solution }}</p>
+            <p>{{ e.solution | safe }}</p>
             {% if e.erreurs_typiques %}
             <p><strong>Erreurs fréquentes à ce point</strong></p>
-            <ul>{% for x in e.erreurs_typiques %}<li>{{ x }}</li>{% endfor %}</ul>
+            <ul>{% for x in e.erreurs_typiques %}<li>{{ x | safe }}</li>{% endfor %}</ul>
             {% endif %}
           </div>
         </details>
@@ -296,22 +301,22 @@
     <article class="exercice" id="quiz-{{ q.id }}">
       <div class="exercice__entete">
         <span class="exercice__id">{{ q.id }}</span>
-        <h3 style="margin:0">{{ q.question }}</h3>
+        <h3 style="margin:0">{{ q.question | safe }}</h3>
       </div>
       <div class="quiz" data-quiz="{{ q.id }}" data-bonne="{{ q.reponse }}">
         <fieldset style="border:0;padding:0;margin:0.6rem 0">
-          <legend class="visuellement-cache">{{ q.question }}</legend>
+          <legend class="visuellement-cache">{{ q.question | safe }}</legend>
           {% for p in q.propositions %}
           <label style="display:block;margin:0.3rem 0">
             <input type="radio" name="quiz-{{ q.id }}" value="{{ loop.index0 }}">
-            {{ p }}
+            {{ p | safe }}
           </label>
           {% endfor %}
         </fieldset>
         <button class="bouton" type="button" data-repondre>Valider ma réponse</button>
         <p class="reponse__retour" role="status" aria-live="polite"></p>
         <div class="quiz__explication" hidden>
-          <p>{{ q.explication }}</p>
+          <p>{{ q.explication | safe }}</p>
         </div>
       </div>
     </article>

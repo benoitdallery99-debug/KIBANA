@@ -429,10 +429,29 @@ def s4_exfiltration(rng: random.Random, t0: datetime, jours: int, fuseau: str) -
 SOURCE_DU_TROU = "ids.alert"
 SOURCE_MUETTE = "proxy.web"
 
+# Heures de reprise interdites pour le trou de collecte. Le jeu de l'épreuve y
+# met celle du parcours : les deux tirages sont indépendants, donc ils tombent
+# sur la même heure une fois sur huit — et ce jour-là, la réponse notée de
+# l'épreuve est celle que le stagiaire a dans ses notes du matin. On préfère
+# écarter d'avance plutôt que de compter sur la chance.
+HEURES_DE_REPRISE_EXCLUES: set[int] = set()
+
 
 def s5_trou(rng: random.Random, t0: datetime, jours: int, fuseau: str) -> dict:
     dataset = SOURCE_DU_TROU
-    debut = t0 - timedelta(days=rng.randrange(3, 5), hours=rng.randrange(0, 6))
+    # Le trou commence à une HEURE LOCALE ronde, pas à un décalage depuis T0.
+    # La nuance décide du déterminisme : une fenêtre posée « quatre jours et
+    # trois heures avant maintenant » tombe à une heure différente selon
+    # l'instant où l'on engendre le jeu, et l'heure de reprise — que M4-E7
+    # valide — changeait donc d'une génération à l'autre, à graine égale.
+    # Ancrée sur l'horloge du métier, elle ne dépend plus que de la graine.
+    recul = rng.randrange(3, 5)
+    heure = rng.randrange(9, 17)
+    # L'heure de REPRISE est celle du début plus deux ; c'est elle qui est
+    # notée, donc c'est elle qu'on écarte.
+    while (heure + 2) % 24 in HEURES_DE_REPRISE_EXCLUES:
+        heure = 9 + (heure - 9 + 1) % 8
+    debut = _nuit_du_milieu(t0, jours, fuseau, recul_jours=recul, heure=heure)
     fin = debut + timedelta(hours=2)
     return {
         "ajouts": {},

@@ -109,7 +109,7 @@ version **fait réellement**. On n'écrit pas ce que le piège est censé produi
 produit.
 
 Exemple de la différence, constaté en lab et à respecter :
-- `destination.port : [1025 TO *]` → Kibana affiche « Impossible d'extraire les résultats de
+- `destination.port : [1025 TO *]` → Kibana affiche « Impossible d’extraire les résultats de
   recherche ». C'est une erreur visible.
 - `_exists_ : rule.name` → **zéro résultat, aucun message**. C'est le piège vraiment muet.
 

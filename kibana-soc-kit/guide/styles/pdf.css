@@ -53,14 +53,14 @@ body { margin: 0; }
   font-family: "Atkinson Hyperlegible Mono";
   font-size: 9pt;
   color: #44515f;
-  border-top: 1pt solid #c3ccd6;
+  border-top: 1pt solid #7d8794;
   padding-top: 8pt;
 }
 .titre-page .avertissement {
   margin-top: 18pt;
   font-size: 8.5pt;
   color: #44515f;
-  border-left: 2pt solid #c3ccd6;
+  border-left: 2pt solid #7d8794;
   padding-left: 8pt;
 }
 
@@ -98,7 +98,7 @@ p { margin: 0 0 6pt; orphans: 3; widows: 3; }
 code, pre { font-family: "Atkinson Hyperlegible Mono"; }
 pre {
   background: #f0f2f5;
-  border: 0.5pt solid #c3ccd6;
+  border: 0.5pt solid #7d8794;
   padding: 5pt 7pt;
   font-size: 9pt;
   white-space: pre-wrap;
@@ -108,14 +108,14 @@ pre {
 :not(pre) > code { background: #f0f2f5; padding: 0.5pt 2pt; font-size: 9.5pt; }
 
 table { border-collapse: collapse; width: 100%; font-size: 9.5pt; margin: 6pt 0; }
-th, td { border-bottom: 0.5pt solid #c3ccd6; padding: 3pt 5pt; text-align: left; }
+th, td { border-bottom: 0.5pt solid #7d8794; padding: 3pt 5pt; text-align: left; }
 th { color: #44515f; }
 table, tr { break-inside: avoid; }
 
-.exercice { break-inside: avoid; margin: 12pt 0; padding-top: 6pt; border-top: 0.5pt solid #c3ccd6; }
+.exercice { break-inside: avoid; margin: 12pt 0; padding-top: 6pt; border-top: 0.5pt solid #7d8794; }
 .exercice__entete { font-weight: 700; }
 .exercice__id { font-family: "Atkinson Hyperlegible Mono"; font-size: 9pt; color: #44515f; }
-.exercice__contexte { color: #44515f; border-left: 2pt solid #c3ccd6; padding-left: 7pt; margin: 4pt 0; }
+.exercice__contexte { color: #44515f; border-left: 2pt solid #7d8794; padding-left: 7pt; margin: 4pt 0; }
 
 .action {
   border-left: 3pt solid #101720;
@@ -157,7 +157,7 @@ figure img { display: block; width: 100%; height: auto; }
 figcaption { font-size: 9pt; color: #44515f; margin-top: 5pt; }
 
 .champ-reponse {
-  border: 0.5pt solid #c3ccd6;
+  border: 0.5pt solid #7d8794;
   height: 22pt;
   margin: 4pt 0 2pt;
 }

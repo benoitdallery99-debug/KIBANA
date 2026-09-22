@@ -108,14 +108,17 @@ def test_liens_internes_valides(page_ouverte):
     assert not casses, f"ancres internes introuvables : {sorted(set(casses))}"
 
 
-def test_accessibilite_axe_core(page_ouverte, config):
-    """axe-core injecté dans la page ouverte, sans violation serious ni critical."""
-    page, _ = page_ouverte
-    axe = config.RACINE / "verif" / "outils" / "axe.min.js"
-    if not axe.exists():
-        pytest.skip("NON EXÉCUTÉ : verif/outils/axe.min.js absent.")
-    page.add_script_tag(content=axe.read_text(encoding="utf-8"))
-    resultat = page.evaluate("""async () => {
+# Largeurs auditées. La passe était figée à 1 440 px, et c'est précisément
+# SOUS 992 px que la mise en page bascule : les tableaux y deviennent des zones
+# défilantes, et la violation « serious » qu'ils portaient ne pouvait pas être
+# vue. SPEC §7.3 exige le téléphone ; on l'audite donc, aux deux largeurs qui
+# comptent — l'iPhone SE et le format le plus répandu.
+LARGEURS_AUDITEES = (1440, 375, 320)
+
+
+def _violations_axe(page, axe_js: str) -> list[dict]:
+    page.add_script_tag(content=axe_js)
+    return page.evaluate("""async () => {
         const r = await window.axe.run(document, {
             resultTypes: ['violations'],
             runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }
@@ -125,11 +128,34 @@ def test_accessibilite_axe_core(page_ouverte, config):
             noeuds: v.nodes.slice(0, 3).map(n => n.html.slice(0, 120))
         }));
     }""")
-    graves = [v for v in resultat if v["impact"] in GRAVITES_REFUSEES]
+
+
+def test_accessibilite_axe_core(page_ouverte, config):
+    """axe-core injecté dans la page ouverte, sans violation serious ni critical.
+
+    À trois largeurs, parce qu'une mise en page qui bascule change ses
+    violations en même temps que sa forme.
+    """
+    page, _ = page_ouverte
+    axe = config.RACINE / "verif" / "outils" / "axe.min.js"
+    if not axe.exists():
+        pytest.skip("NON EXÉCUTÉ : verif/outils/axe.min.js absent.")
+    axe_js = axe.read_text(encoding="utf-8")
+
+    graves = []
+    for largeur in LARGEURS_AUDITEES:
+        page.set_viewport_size({"width": largeur, "height": 900})
+        page.wait_for_timeout(400)
+        for v in _violations_axe(page, axe_js):
+            if v["impact"] in GRAVITES_REFUSEES:
+                graves.append((largeur, v))
+    page.set_viewport_size({"width": 1440, "height": 900})
+
     assert not graves, (
         "violations d'accessibilité serious ou critical :\n  "
         + "\n  ".join(
-            f"[{v['impact']}] {v['id']} — {v['help']} · {v['noeuds']}" for v in graves
+            f"[{largeur} px] [{v['impact']}] {v['id']} — {v['help']} · {v['noeuds']}"
+            for largeur, v in graves
         )
     )
 
@@ -297,6 +323,55 @@ def test_lien_d_evitement_present_et_premier(page_ouverte):
     cible = (premier["href"] or "").lstrip("#")
     assert cible and page.query_selector(f"#{cible}"), (
         f"le lien d'évitement pointe sur « {premier['href']} », qui n'existe pas"
+    )
+
+
+def test_aucun_balisage_markdown_visible(html):
+    """Le balisage n'est pas du texte : il se rend, ou il n'a rien à faire là.
+
+    Les consignes, les indices, les démarches et les propositions du quiz ne
+    passent pas par le convertisseur Markdown — le gabarit les rend tels quels.
+    Un « `event.code : \"4625\"` » écrit dans une proposition s'affichait donc
+    avec ses accents graves, et, n'étant pas dans un <code>, la passe
+    typographique y injectait des espaces insécables : la requête que le
+    stagiaire recopiait de la BONNE réponse était fausse, sans que rien ne le
+    signale. Dix accents graves figuraient aussi tels quels dans le quiz remis
+    en salle.
+    """
+    visible = re.sub(r"<[^>]+>", " ", html)
+    graves = visible.count("`")
+    gras = visible.count("**")
+    assert not graves, f"{graves} accent(s) grave(s) affiché(s) au stagiaire"
+    assert not gras, f"{gras} balisage(s) de gras affiché(s) au stagiaire"
+
+
+def test_le_texte_alternatif_de_chaque_capture_est_entier(html, plan_de_capture):
+    """Un texte alternatif tronqué ne se voit pas : il faut le comparer au plan.
+
+    La fabrique de figures interpolait sans échapper, là où le gabarit Jinja
+    échappe tout seul. Le texte alternatif de M1-C1 contient « event.code :
+    "4625" » : le guillemet droit refermait l'attribut, le navigateur tronquait
+    l'alt au milieu d'une phrase et transformait la suite en seize attributs
+    parasites. Le contrôle voisin ne voyait rien — il vérifie qu'un alt EXISTE.
+    """
+    import html as H
+
+    manquants = []
+    for capture in plan_de_capture:
+        trouve = re.search(
+            rf'data-capture="{re.escape(capture["id"])}".*?alt="([^"]*)"', html, re.S
+        )
+        if not trouve:
+            continue
+        publie = H.unescape(trouve.group(1))
+        attendu = " ".join(str(capture["alt"]).split())
+        if " ".join(publie.split()) != attendu:
+            manquants.append(
+                f"{capture['id']} : publié « {publie[:70]}… » pour « {attendu[:70]}… »"
+            )
+    assert not manquants, (
+        "textes alternatifs publiés différents du plan de capture :\n  "
+        + "\n  ".join(manquants)
     )
 
 

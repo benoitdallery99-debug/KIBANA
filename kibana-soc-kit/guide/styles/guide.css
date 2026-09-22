@@ -520,7 +520,10 @@ mark { background: var(--action-fond); color: var(--encre); padding: 0 0.1em; }
      « Voir la démarche » s'imprimaient vides. C'est le script qui les ouvre
      (beforeprint) et restaure l'état ensuite ; cette règle sert les moteurs qui
      exposent le pseudo-élément, et couvre le cas où le script est absent. */
-  details::details-content { content-visibility: visible; display: block; block-size: auto; }
+  /* Même exception que côté script : la démarche reste repliée sur papier. */
+  details:not([data-solution])::details-content {
+    content-visibility: visible; display: block; block-size: auto;
+  }
   /* Une étiquette « Votre réponse — … » sans rien pour écrire n'a aucun sens
      sur papier : la ligne de saisie devient une ligne à remplir. Le bouton,
      lui, disparaît avec « .bouton ». */

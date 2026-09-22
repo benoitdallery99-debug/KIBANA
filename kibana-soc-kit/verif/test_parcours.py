@@ -187,7 +187,7 @@ MINUTES_PAR_RAPPEL = 1
 # SPEC §1 annonce « 6 h de parcours ». La borne haute la dépasse volontairement,
 # et l'écart est consigné (docs/JOURNAL.md, E10) : SPEC §1 ne budgète ni la
 # lecture des corps de module ni le rappel actif, que docs/CHARTE_REDACTION.md
-# rend pourtant obligatoires. Mesuré, le parcours vaut 6 h 43. Le kit garde son
+# rend pourtant obligatoires. Mesuré, le parcours vaut 6 h 44. Le kit garde son
 # contenu et dit la vraie durée plutôt que de la rogner pour rentrer dans une
 # prémisse ; le déroulé minuté de formateur/guide-formateur.md donne la journée
 # réelle. Ce commentaire est là pour qu'un relecteur voie la borne ET sa raison.
@@ -408,6 +408,58 @@ def test_les_libelles_cites_existent_dans_l_interface(modules, kbn, config, lab_
             inconnus.append(f"{e['id']} : « {libelle} »")
     assert not inconnus, (
         "libellés introuvables dans l'interface fr-FR du lab :\n  " + "\n  ".join(inconnus)
+    )
+
+
+@pytest.fixture(scope="module")
+def catalogue_libelles(kbn, config, lab_demarre):
+    """Les textes servis par le lab dans la locale du kit."""
+    locale = str(config.valeur("kibana.locale"))
+    r = kbn.get(f"{kbn.base}/translations/{locale}.json", timeout=90)
+    if r.status_code != 200:
+        return set()
+    textes = set()
+    for valeur in r.json().get("messages", {}).values():
+        texte = valeur.get("text") if isinstance(valeur, dict) else valeur
+        if isinstance(texte, str) and texte:
+            textes.add(texte)
+    return textes
+
+
+def test_aucun_libelle_cite_avec_une_apostrophe_droite(modules, catalogue_libelles):
+    """L'apostrophe d'un libellé se recopie, elle ne se retape pas.
+
+    Le catalogue fr-FR sert « Impossible d’extraire les résultats de recherche »
+    avec l'apostrophe typographique sous la clé du bandeau d'erreur — celui que
+    le stagiaire obtient — et la même phrase avec l'apostrophe droite sous trois
+    autres clés, d'autres composants. Une citation écrite à la main avec
+    l'apostrophe droite passait donc le contrôle d'existence : elle existe, mais
+    pas là où le parcours la montre.
+
+    Ce contrôle refuse une citation à l'apostrophe droite dès lors que le
+    catalogue en sert la variante typographique. C'est étroit, et c'est voulu :
+    on ne devine pas quelle clé i18n le parcours vise, on refuse seulement de
+    laisser passer la forme que le lab n'affiche pas à cet endroit.
+    """
+    if not catalogue_libelles:
+        pytest.skip("NON EXÉCUTÉ : catalogue de libellés indisponible.")
+
+    typographiques = {
+        libelle for libelle in catalogue_libelles if "\u2019" in libelle
+    }
+    equivalents = {t.replace("\u2019", "'"): t for t in typographiques}
+
+    defauts = []
+    for _module, exercice in _exercices(modules):
+        for libelle in exercice.get("libelles_ui") or []:
+            if "'" in libelle and libelle in equivalents:
+                defauts.append(
+                    f"{exercice['id']} : « {libelle} » — le lab sert « "
+                    f"{equivalents[libelle]} », avec l'apostrophe typographique"
+                )
+    assert not defauts, (
+        "libellés cités avec l'apostrophe droite alors que le lab en sert la "
+        "forme typographique :\n  " + "\n  ".join(defauts)
     )
 
 

@@ -280,7 +280,12 @@
         jauge.textContent = total ? faits + "/" + total : "—";
         jauge.setAttribute(
           "aria-label",
-          total ? faits + " exercice(s) sur " + total + " validés" : "aucun exercice"
+          // Un lecteur d'écran lit « exercice parenthèse s » : le pluriel se
+          // décide, il ne se met pas entre parenthèses.
+          total
+            ? faits + (faits > 1 ? " exercices" : " exercice") + " sur " + total
+              + (faits > 1 ? " validés" : " validé")
+            : "aucun exercice"
         );
       }
     );
@@ -465,7 +470,10 @@
       if (memoire) return;           // beforeprint ET matchMedia peuvent tomber
       memoire = [];
       Array.prototype.forEach.call(
-        document.querySelectorAll("details"),
+        // Tous SAUF les démarches : voir le commentaire du gabarit. Les
+        // indices, les rappels actifs et les pièges s'ouvrent, eux — c'est
+        // pour eux que ce correctif existe.
+        document.querySelectorAll("details:not([data-solution])"),
         function (d) {
           memoire.push([d, d.open]);
           d.open = true;

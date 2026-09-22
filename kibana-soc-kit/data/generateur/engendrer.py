@@ -479,6 +479,26 @@ def main() -> int:
         base[dataset] = E.GENERATEURS[dataset](rng_bruit, instants)
         print(f"  {dataset:20s} {len(base[dataset]):7d}")
 
+    # Le jeu de l'épreuve doit différer de celui du parcours partout où le
+    # générateur a le choix. L'heure de reprise de la collecte en fait partie :
+    # elle se tire parmi huit, et deux tirages indépendants se rencontrent une
+    # fois sur huit. On lit donc celle du parcours, quand elle existe, et on la
+    # retire des possibles.
+    SC.HEURES_DE_REPRISE_EXCLUES = set()
+    if args.jeu == "epreuve":
+        parcours = conf.RACINE / "data" / "manifest.json"
+        if parcours.exists():
+            autre = json.loads(parcours.read_text(encoding="utf-8"))
+            SC.HEURES_DE_REPRISE_EXCLUES = {
+                int(r["valeur"])
+                for bloc in autre["scenarios"]
+                for r in bloc["reponses"]
+                if r["cle"] == "heure_de_reprise"
+            }
+            if SC.HEURES_DE_REPRISE_EXCLUES:
+                print(f"  heure(s) de reprise écartée(s) : "
+                      f"{sorted(SC.HEURES_DE_REPRISE_EXCLUES)}")
+
     print("Scénarios :")
     manifeste_scenarios = []
     for fabrique in SC.TOUS:

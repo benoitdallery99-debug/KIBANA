@@ -15,12 +15,12 @@ comme **non exécuté**, avec sa raison — jamais comme réussi.
 |---|---|---|---|
 | `verif-lab` | 17 | ✅ 17 passés | licence, santé, version, locale, vue de solution, isolation réseau, cloisonnement des quatre Spaces |
 | `verif-donnees` | 14 | ✅ 14 passés | volumes, mapping effectif, S1→S7, déterminisme, jeu d'épreuve distinct |
-| `verif-parcours` | 23 | ✅ 23 passés | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes, réemplois annoncés, corrigé du quiz complet, positions du quiz réparties, aucune empreinte validée deux fois, tableau des types adossé au lab |
+| `verif-parcours` | 24 | ✅ 24 passés | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes, réemplois annoncés, corrigé du quiz complet, positions du quiz réparties, aucune empreinte validée deux fois, tableau des types adossé au lab |
 | `verif-corriges` | 8 | ✅ 8 passés | import en Space vierge, rendu sans erreur, valeurs conformes |
-| `verif-guide` | 16 | ✅ 16 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement, entités HTML intactes, aucune capture prise sur un corrigé |
+| `verif-guide` | 18 | ✅ 18 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement, entités HTML intactes, aucune capture prise sur un corrigé |
 | `verif-pdf` | 10 | ✅ 10 passés | polices embarquées, sommaire paginé, signets, solutions en annexe, aucune réponse dans un document du stagiaire |
 | `verif-package` | 8 | ✅ 8 passés | empreintes, complétude, installation sans réseau |
-| **Total** | **96** | **✅ zéro échec** | |
+| **Total** | **99** | **✅ zéro échec** | |
 
 Exécution complète après `make lab-reset`, donc sur un lab reconstruit depuis un
 volume vide : c'est la seule façon de ne pas confondre « le kit fonctionne » et
@@ -123,7 +123,7 @@ $ make verif-parcours
 20 passed
 ```
 
-Six modules, **403 minutes**, **35 exercices**, **27 objectifs**. La durée d'un
+Six modules, **404 minutes**, **35 exercices**, **27 objectifs**. La durée d'un
 module couvre tout ce qu'il demande : ses exercices, la lecture de son corps et
 son rappel actif. Elle ne les couvrait pas avant le troisième tour de relecture,
 et valait exactement la somme des exercices dans quatre modules sur six.
@@ -134,7 +134,7 @@ et valait exactement la somme des exercices dans quatre modules sur six.
 | M1 Rechercher avec Discover | 87 min | 6 | démonstration → … → autonome |
 | M2 Visualiser avec Lens | 70 min | 6 | démonstration → … → autonome |
 | M3 Construire un tableau de bord | 69 min | 6 | démonstration → … → autonome |
-| M4 Capstone SOC | 97 min | 10 | **autonome** de bout en bout |
+| M4 Capstone SOC | 98 min | 10 | **autonome** de bout en bout |
 | M5 Industrialiser | 44 min | 4 | démonstration → … → autonome |
 
 Prouve : chaque requête KQL **tapée dans Discover** renvoie ce qui est annoncé ;
@@ -187,7 +187,7 @@ sommaire réellement paginé et pointant dans le document, signets, fiche mémo 
 exactement deux pages, solutions absentes du corps et rassemblées en annexe.
 
 **Sept documents produits**, pagination relevée par `pdfinfo` : `guide.pdf`
-(115 pages), `corriges.pdf` (46), `rapport-recette.pdf` (8),
+(117 pages), `corriges.pdf` (46), `rapport-recette.pdf` (11),
 `guide-formateur.pdf` (7), `note-de-conception.pdf` (5),
 `quiz-imprimable.pdf` (4), `fiche-memo.pdf` (2). Le guide et les corrigés ont
 gagné des pages au troisième tour : chaque capture y occupe désormais une page
@@ -254,18 +254,22 @@ $ make captures
 $ make guide
 dist/guide.html — 2.88 Mo, 6 modules, 35 exercices, 17 questions de quiz
 $ make verif
-17 passed in 43.51s        (verif-lab)
+17 passed in 43.77s        (verif-lab)
 14 passed in 20.27s        (verif-donnees)
-23 passed in 279.08s       (verif-parcours)
-8 passed in 57.13s         (verif-corriges)
-16 passed in 11.89s        (verif-guide)
-10 passed in 327.68s       (verif-pdf)
-8 passed in 46.91s         (verif-package)
+24 passed in 278.62s       (verif-parcours)
+8 passed in 56.67s         (verif-corriges)
+18 passed in 19.31s        (verif-guide)
+10 passed in 332.84s       (verif-pdf)
+8 passed in 45.89s         (verif-package)
 $ echo $?
 0
+$ make package && make verif-package
+Archive prête : dist/kit-formation-kibana-9.5.3-20260922.tar.gz (1409 Mo)
+Empreinte : 7d11f56603265c1ed93dc239023dd416a3a4ea4d439120acbfbcae59344e4ce7
+8 passed in 43.48s
 ```
 
-Soit **96 contrôles, zéro échec**. Le tableau de synthèse annonçait 94 « zéro
+Soit **99 contrôles, zéro échec**. Le tableau de synthèse annonçait 94 « zéro
 échec » alors que la seule transcription du document en montrait 91 : c'était
 le second écart bloquant du troisième tour, et la récidive exacte de la faute
 dont le kit avait tiré sa règle plus haut dans cette même phase. Un chiffre
@@ -303,7 +307,7 @@ autrement et bien plus loin — neuf relecteurs et autant de contre-experts. Les
 seize écarts du premier tour — sept de l'expert, neuf du candide — ont été
 corrigés, chacun assorti du contrôle qui l'aurait vu ; c'est ce dernier point
 qui compte, et qui explique que la suite soit passée de 78 à 91 contrôles
-pendant cette revue, puis à 94, puis à **96**.
+pendant cette revue, puis à 94, puis à **99**.
 
 Le bloquant du premier tour mérite d'être cité, parce qu'il illustre ce que
 vaut un garde dont personne ne vérifie la portée. `outils/fuites.py` exemptait
@@ -501,7 +505,7 @@ SPEC n'a pas été modifiée ; l'écart est consigné et c'est le comportement
 constaté qui est enseigné, comme SPEC §6.3 l'exige elle-même.
 
 1. **`destination.port : [1025 TO *]` ne produit pas un « échec silencieux ».**
-   Kibana affiche « Impossible d'extraire les résultats de recherche ». Le piège
+   Kibana affiche « Impossible d’extraire les résultats de recherche ». Le piège
    réellement muet est `_exists_ : champ`, qui renvoie zéro sans rien dire.
 2. **Les drilldowns URL exigent une licence Gold.** La documentation ne le dit
    nulle part ; c'est le code de la version qui l'établit. M3 est recomposé et
@@ -518,7 +522,7 @@ constaté qui est enseigné, comme SPEC §6.3 l'exige elle-même.
 | E6 | Deux prémisses de la SPEC corrigées (voir ci-dessus) | Mineur | Résolu, SPEC non modifiée, comportement réel enseigné |
 | E7 | 64 capacités sur 90 non sondées dans le lab | Mineur | Assumé et signalé : aucune n'étaye une affirmation du parcours |
 | E8 | SPEC §9 demande un quiz de 15 questions ; le kit en livre 17 | Mineur | Assumé : Q16 et Q17 couvrent les deux pièges d'interface de SPEC §6.3, que rien n'évaluait. Écart dans le sens du mieux, mais écart tout de même — d'où cette ligne |
-| E10 | SPEC §1 annonce « 6 h de parcours » ; mesuré lecture des corps et rappel actif compris, il vaut **6 h 43** | Mineur | Assumé et consigné : SPEC §1 ne budgète ni la lecture ni le rappel, que la charte rend obligatoires. Le kit garde son contenu et dit la vraie durée ; le guide du formateur donne deux formules, dont une en quatre séances |
+| E10 | SPEC §1 annonce « 6 h de parcours » ; mesuré lecture des corps et rappel actif compris, il vaut **6 h 44** | Mineur | Assumé et consigné : SPEC §1 ne budgète ni la lecture ni le rappel, que la charte rend obligatoires. Le kit garde son contenu et dit la vraie durée ; le guide du formateur donne deux formules, dont une en quatre séances |
 | E11 | La source muette et celle du trou de collecte sont les mêmes au parcours et à l'épreuve | Mineur | Assumé et consigné : avec six sources, trois portent une réponse de repère et une quatrième les événements de deux scénarios — il ne reste qu'un choix possible de chaque côté. Le document du stagiaire le lui dit, et la première question de l'épreuve demande en plus l'heure de reprise, que le générateur tire à neuf |
 | E9 | Le dépôt distant refuse le `push` : 403, l'application GitHub n'a pas le droit `Contents: write` sur `YamTeam9/picturegallery` | Bloquant pour la livraison, nul pour le kit | Non résolu, hors de portée : relève d'un administrateur de l'organisation. Le travail est remis sous forme de bundle git complet |
 

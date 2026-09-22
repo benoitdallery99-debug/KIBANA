@@ -12,6 +12,7 @@ import base64
 import json
 import re
 import sys
+from html import escape
 from pathlib import Path
 
 import markdown as md
@@ -104,20 +105,48 @@ def figure_html(capture: dict) -> str:
     de module ; celle-ci sert aux captures que le texte appelle à sa place.
     Les deux doivent produire la même chose, sinon le guide aurait deux mises
     en page pour un même objet.
+
+    PIÈGE, et il a coûté la moitié d'un texte alternatif : le gabarit Jinja
+    échappe tout seul (autoescape), pas une f-string. Le texte alternatif de
+    M1-C1 contient « event.code : "4625" » ; le guillemet droit refermait
+    l'attribut, le navigateur tronquait l'alt au milieu de la phrase et
+    transformait la suite en seize attributs parasites. Tout ce qui entre ici
+    est donc échappé explicitement.
     """
+    def net(valeur: object) -> str:
+        return escape(str(valeur), quote=True)
+
     reperes = ""
     if capture.get("reperes"):
         reperes = "<br>" + " · ".join(
-            f"<span>{i} · {r['note']}</span>"
+            f"<span>{i} · {net(r['note'])}</span>"
             for i, r in enumerate(capture["reperes"], 1)
         )
     return (
-        f'<figure id="fig-{capture["id"]}" data-capture="{capture["id"]}">'
-        f'<img src="{capture["source"]}" alt="{capture["alt"]}" loading="lazy">'
-        f'<figcaption><strong>{capture["id"]}</strong> — {capture["titre"]}. '
-        f'{capture.get("legende", "")}{reperes}</figcaption>'
+        f'<figure id="fig-{net(capture["id"])}" data-capture="{net(capture["id"])}">'
+        f'<img src="{capture["source"]}" alt="{net(capture["alt"])}" loading="lazy">'
+        f'<figcaption><strong>{net(capture["id"])}</strong> — {net(capture["titre"])}. '
+        f'{net(capture.get("legende", ""))}{reperes}</figcaption>'
         "</figure>"
     )
+
+
+# Le gras et le code en ligne écrits dans une consigne, un indice ou une
+# proposition de quiz. Ces champs ne passent pas par le convertisseur Markdown —
+# ils sont rendus tels quels par le gabarit —, si bien qu'un « **mot** » ou un
+# « `event.code : "4625"` » s'affichait avec ses astérisques et ses accents
+# graves. Pire pour le code : hors d'un <code>, la passe typographique y injecte
+# des espaces insécables, jusque dans la bonne réponse du quiz — une requête que
+# le stagiaire recopie devient alors fausse sans que rien ne le signale.
+_CODE_EN_LIGNE = re.compile(r"`([^`\n]+)`")
+_GRAS = re.compile(r"\*\*([^*\n]+)\*\*")
+
+
+def texte_enrichi(valeur: object) -> str:
+    """Échappe le texte, puis rend le gras et le code en ligne."""
+    html = escape(str(valeur), quote=False)
+    html = _CODE_EN_LIGNE.sub(lambda m: f"<code>{m.group(1)}</code>", html)
+    return _GRAS.sub(lambda m: f"<strong>{m.group(1)}</strong>", html)
 
 
 # Appel d'une capture depuis le corps d'un module : « ![](capture:M0-C1) ».
@@ -133,7 +162,12 @@ _APPEL_DE_CAPTURE = re.compile(
 
 # Les langages que le corps d'un module écrit en bloc clôturé, et le nom sous
 # lequel le guide les affiche. Tout autre langage reste un bloc de code nu.
-LANGAGES_COPIABLES = {"kql": "KQL", "esql": "ES|QL", "json": "JSON", "bash": "Shell"}
+LANGAGES_COPIABLES = {
+    "kql": "KQL", "esql": "ES|QL", "json": "JSON", "bash": "Shell",
+    # Une formule Lens se tape dans l'éditeur de formule, et se recopie
+    # exactement comme une requête : même bouton.
+    "lens": "Formule Lens",
+}
 
 _BLOC_DE_CODE = re.compile(
     r'<pre><code class="language-(?P<langage>[a-z|]+)">(?P<corps>.*?)</code></pre>',
@@ -217,14 +251,14 @@ def exercice_public(exercice: dict, reponses: dict, pieges: dict, module_id: str
         "guidage": exercice["guidage"],
         "guidage_libelle": GUIDAGES.get(exercice["guidage"], exercice["guidage"]),
         "duree_minutes": exercice.get("duree_minutes", 0),
-        "contexte": exercice.get("contexte", ""),
-        "consignes": exercice.get("consignes") or [],
-        "indices": exercice.get("indices") or [],
-        "format_de_reponse": exercice.get("format_de_reponse", "une valeur"),
+        "contexte": texte_enrichi(exercice.get("contexte", "")),
+        "consignes": [texte_enrichi(c) for c in (exercice.get("consignes") or [])],
+        "indices": [texte_enrichi(i) for i in (exercice.get("indices") or [])],
+        "format_de_reponse": texte_enrichi(exercice.get("format_de_reponse", "une valeur")),
         # Ce qui est remis quand l'exercice ne se valide pas par une empreinte.
-        "rendu": exercice.get("rendu", ""),
-        "solution": exercice.get("solution", ""),
-        "erreurs_typiques": exercice.get("erreurs_typiques") or [],
+        "rendu": texte_enrichi(exercice.get("rendu", "")),
+        "solution": texte_enrichi(exercice.get("solution", "")),
+        "erreurs_typiques": [texte_enrichi(x) for x in (exercice.get("erreurs_typiques") or [])],
         "doc": exercice.get("doc", ""),
         "requetes": [],
         # Les mêmes requêtes, sans filtrage : elles alimentent le corrigé du
@@ -324,7 +358,11 @@ def charger_modules() -> tuple[dict, list[dict], list[dict]]:
             "resume": entete.get("resume", ""),
             "duree_minutes": entete.get("duree_minutes", 0),
             "objectifs": entete.get("objectifs") or [],
-            "rappel_actif": entete.get("rappel_actif") or [],
+            "rappel_actif": [
+                {"question": texte_enrichi(r["question"]),
+                 "reponse": texte_enrichi(r.get("reponse", ""))}
+                for r in (entete.get("rappel_actif") or [])
+            ],
             "corps_html": corps_html,
             "exercices": [
                 exercice_public(e, reponses, pieges, entete["id"])
@@ -359,7 +397,12 @@ def charger_quiz() -> list[dict]:
     chemin = conf.RACINE / "formateur" / "quiz.yaml"
     if not chemin.exists():
         return []
-    return yaml.safe_load(chemin.read_text(encoding="utf-8")) or []
+    quiz = yaml.safe_load(chemin.read_text(encoding="utf-8")) or []
+    for question in quiz:
+        question["question"] = texte_enrichi(question["question"])
+        question["propositions"] = [texte_enrichi(p) for p in question["propositions"]]
+        question["explication"] = texte_enrichi(question.get("explication", ""))
+    return quiz
 
 
 def main() -> int:

@@ -1,4 +1,8 @@
-# Quiz — 15 questions couvrant les 27 objectifs du parcours (SPEC §9).
+# Quiz — 17 questions couvrant les 27 objectifs du parcours.
+#
+# SPEC §9 en demande 15 ; les deux questions supplémentaires couvrent les deux
+# pièges d'interface de SPEC §6.3, que rien n'évaluait. L'écart est consigné au
+# journal (E8).
 #
 # Chaque question déclare les objectifs qu'elle évalue ; formateur/matrice.py
 # prouve que l'ensemble les couvre tous et sort en 1 sinon.

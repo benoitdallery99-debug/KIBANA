@@ -414,11 +414,45 @@ l'ancienne, écrite en dur ; l'un a échoué en annonçant « silence de 0 min �
 d'une source qui parle. Un contrôle qui écrit en dur ce que le générateur choisit ne vérifie pas le
 kit : il vérifie une copie de lui.
 
-Durées rebudgétées (le parcours vaut 6 h 43, pas 6 h — écart consigné plus bas, E10), grille de
+Durées rebudgétées (le parcours vaut 6 h 44, pas 6 h — écart consigné plus bas, E10), grille de
 notation unique pour M4-E10, captures appelées par le texte au lieu d'être déversées en fin de module,
 quiz dont la clé n'est plus la proposition la plus longue 14 fois sur 17, panneau de gravité dans le
 temps ajouté au corrigé « Vue IDS », impression des 113 blocs dépliants réparée, infobulles du
 glossaire rendues révocables, tableaux larges atteignables au clavier.
+
+### Vérification des corrections du troisième tour — 16,35/20, et ce qu'elle a trouvé
+
+Les corrections ont été rouvertes une par une par neuf vérificateurs, chacun tenu de produire SA preuve
+plutôt que de reprendre celle du rapport. Sur les 48 écarts : **39 fermés, 8 partiels, 1 régression**.
+Et 10 défauts nouveaux, dont un majeur et une régression qui venaient des corrections elles-mêmes.
+
+**Le majeur était de moi.** La fabrique de figures ajoutée pour poser les captures à l'endroit du texte
+interpolait dans une f-string, là où le gabarit Jinja échappe tout seul. Le texte alternatif de M1-C1
+contient « event.code : "4625" » : le guillemet droit refermait l'attribut, le navigateur tronquait la
+phrase au milieu et transformait la suite en seize attributs parasites sur l'image. La moitié utile de
+l'alt était perdue pour qui n'accède pas à l'image, et le contrôle voisin ne pouvait rien voir — il
+vérifie qu'un alt EXISTE. Le nouveau compare l'alt rendu par le navigateur à celui du plan de capture.
+
+**La régression venait du correctif du quiz.** Les requêtes avaient bien été mises entre accents
+graves, mais rien ne rendait ce balisage : le stagiaire lisait les accents graves, et, hors d'un
+<code>, la passe typographique continuait d'injecter des espaces insécables — dans la BONNE réponse.
+Toutes les zones de texte des exercices et du quiz passent désormais par un rendu qui produit du
+<code> et du <strong> ; un contrôle refuse tout accent grave ou astérisque visible dans le guide.
+
+**Deux effets de bord, tous deux corrigés.** Le correctif d'impression ouvrait TOUS les blocs repliés :
+les trente-cinq démarches s'imprimaient en regard de leur exercice, et sur papier le stagiaire n'avait
+plus le choix de ne pas regarder. Elles restent repliées, les indices s'ouvrent. Et l'heure de reprise
+de la collecte, nouvelle réponse de M4-E7, n'était pas déterministe : la fenêtre était posée « quatre
+jours et trois heures avant maintenant », donc son heure locale changeait selon l'instant de la
+génération — le contrôle de déterminisme l'a attrapée. Elle est ancrée sur l'horloge du métier, et le
+jeu de l'épreuve écarte en plus l'heure du parcours : deux tirages indépendants parmi huit se
+rencontrent une fois sur huit, et ce jour-là la réponse notée de l'épreuve est dans les notes du matin.
+
+La passe d'accessibilité, figée à 1 440 px, audite maintenant aussi 375 et 320 px — c'est sous 992 px
+que la mise en page bascule, et la violation « serious » des tableaux ne pouvait pas y être vue.
+
+**Campagne finale : 99 contrôles, zéro échec** (17 · 14 · 24 · 8 · 18 · 10 · 8), sur données, corrigés
+et guide régénérés. Archive 1409 Mo, empreinte 7d11f566….
 
 ### Écart de livraison, non résolu à ce stade
 **Le push vers `YamTeam9/picturegallery` est refusé** : `403`, côté API GitHub
@@ -451,9 +485,9 @@ aucune réponse n'est écrite en clair, et chaque piège est décrit tel qu'il s
 | E1 | `www.elastic.co` et `docker.elastic.co` bloqués par la politique d'egress de l'organisation (403 au CONNECT). Le README du proxy interdit de contourner. | Majeur (chaîne de fabrication uniquement) | Contourné, pas résolu | Images : miroir `mirror.gcr.io`, digest vérifié identique (D4). Documentation : dépôt source officiel `elastic/docs-content` sur GitHub (D5). Aucun effet sur le livrable, qui est hors ligne par construction. |
 | E2 | podman absent de l'environnement de fabrication. | Mineur | Résolu | podman 4.9.3 installé depuis les dépôts Ubuntu noble ; `podman kube play` disponible, fidélité à SPEC §4.1 préservée. |
 | E3 | `vm.max_map_count` à 65530, sous le minimum 262144 d'Elasticsearch. | Mineur | Résolu | Porté à 262144 par `sysctl -w`. Aucun `sudo` exécuté : la session est root dans un conteneur éphémère. `lab/preflight.sh` affichera la commande à l'humain sur un poste cible, sans l'exécuter (CLAUDE.md). |
-| E6 | SPEC §6.3 annonce que `[1025 TO *]` produit un « échec silencieux ». En 9.5.3 fr-FR, c'est FAUX : Discover affiche « Impossible d'extraire les résultats de recherche ». Le vrai piège muet est `_exists_:champ`, qui renvoie 0 résultat sans aucun message. | Mineur (prémisse de la SPEC) | Résolu, SPEC non modifiée | `docs/pieges-lab.json` relève le comportement réel ; le parcours enseignera ce qui se passe vraiment, comme SPEC §6.3 l'exige elle-même (« le guide montre le comportement réel de la version »). |
+| E6 | SPEC §6.3 annonce que `[1025 TO *]` produit un « échec silencieux ». En 9.5.3 fr-FR, c'est FAUX : Discover affiche « Impossible d’extraire les résultats de recherche ». Le vrai piège muet est `_exists_:champ`, qui renvoie 0 résultat sans aucun message. | Mineur (prémisse de la SPEC) | Résolu, SPEC non modifiée | `docs/pieges-lab.json` relève le comportement réel ; le parcours enseignera ce qui se passe vraiment, comme SPEC §6.3 l'exige elle-même (« le guide montre le comportement réel de la version »). |
 | E5 | Le démon Docker, démarré pendant la reconnaissance de l'environnement, active `bridge-nf-call-iptables` et casse les réseaux podman `--internal`. | Mineur | Résolu | Démon arrêté (le kit ne s'en sert pas), réglage remis à 0, contrôle ajouté au pré-vol (D7). |
 | E8 | SPEC §9 demande un quiz de 15 questions ; le kit en livre 17. | Mineur | Assumé et consigné | Q16 et Q17 couvrent les deux pièges d'interface que SPEC §6.3 exige et que rien n'évaluait. L'écart va dans le sens du mieux, mais un écart non consigné reste un écart caché. |
-| E10 | SPEC §1 annonce « 6 h de parcours ». Mesuré lecture des corps et rappel actif compris — que SPEC §1 ne budgète pas et que la charte rend obligatoires —, le parcours vaut **6 h 43**. | Mineur | Assumé et consigné | Le kit garde son contenu et dit la vraie durée plutôt que de la rogner pour rentrer dans une prémisse. Le guide du formateur donne deux formules : quatre séances (recommandée) ou une journée qui finit à 18 h 29, annoncée comme telle à l'inscription. La borne haute du contrôle de durée porte ce commentaire et sa raison. |
+| E10 | SPEC §1 annonce « 6 h de parcours ». Mesuré lecture des corps et rappel actif compris — que SPEC §1 ne budgète pas et que la charte rend obligatoires —, le parcours vaut **6 h 44**. | Mineur | Assumé et consigné | Le kit garde son contenu et dit la vraie durée plutôt que de la rogner pour rentrer dans une prémisse. Le guide du formateur donne deux formules : quatre séances (recommandée) ou une journée qui finit à 18 h 29, annoncée comme telle à l'inscription. La borne haute du contrôle de durée porte ce commentaire et sa raison. |
 | E11 | Avec six sources, la source muette et celle du trou de collecte ne peuvent pas différer entre le parcours et l'épreuve : trois sources portent une réponse de repère, une quatrième les événements de deux scénarios. | Mineur | Assumé et consigné | Le document remis au stagiaire le lui DIT au lieu de prétendre que rien ne se répète, et la première question de l'épreuve demande en plus l'heure de reprise de la collecte, que le générateur tire à neuf. Une septième source lèverait la contrainte, au prix d'un parc moins lisible. |
 | E4 | La version 9.5.4, dernière stable annoncée, n'est pas disponible ici. | Mineur | Accepté | Kit construit et vérifié en 9.5.3 (D2). La montée de version est prévue par construction : `stack.version` dans `kit.config.yaml`, `make captures` régénère les captures. |

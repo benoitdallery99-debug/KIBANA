@@ -10,12 +10,13 @@
 
 - id: M0-C1
   module: M0
-  titre: Discover, ses quatre repères
+  titre: Discover, ses quatre zones
   chemin: "/app/discover#/?_g=(time:(from:now-7d,to:now))&_a=(index:'formation-logs',query:(language:kuery,query:''))"
   attendre: fieldList
   legende: >-
-    Discover sur sept jours de données. Les quatre repères à connaître avant
-    toute recherche.
+    Discover sur sept jours de données. Les quatre zones de l'écran à repérer
+    avant toute recherche. À ne pas confondre avec les trois repères du module,
+    qui sont des questions — où, quand, de quel type — et non des endroits.
   alt: >-
     L'écran Discover. Le sélecteur de source de données est en haut à gauche,
     la barre de requête au centre en haut, le sélecteur de plage de temps à sa
@@ -192,7 +193,7 @@
   alt: >-
     La barre de requête de Discover contient « destination.port : [1025 TO *] »,
     une syntaxe qui appartient à Lucene. À la place des résultats, Kibana
-    affiche un encadré d'erreur intitulé « Impossible d'extraire les résultats
+    affiche un encadré d'erreur intitulé « Impossible d’extraire les résultats
     de recherche ».
   reperes:
     - cible: queryInput
