@@ -510,6 +510,21 @@ et le dépôt est dans son périmètre, mais le droit `Contents: write` manque �
 pas le rôle *Write*. Cela relève de l'humain (ORCHESTRATION, cas d'arrêt b). Le travail est sauvegardé
 hors du conteneur sous forme de bundle git complet, remis à l'humain.
 
+Réessayé au cinquième tour, inchangé : `403` sur `git push`, avec le message
+« Claude doesn't have GitHub access to YamTeam9/picturegallery for your
+organization ». Deux remèdes, tous deux du ressort de l'humain : installer
+l'app Claude sur le dépôt (https://github.com/apps/claude/installations/select_target),
+ou reconnecter GitHub depuis les réglages claude.ai pour relier une
+installation existante.
+
+Le dépôt public `benoitdallery99-debug/KIBANA`, désigné ensuite, reste lui
+aussi hors d'atteinte : `add_repo` le refuse — « cross-tier adds are not
+supported in v1 » — parce que la session porte déjà des dépôts d'un autre
+propriétaire. Le remède tient en une phrase : **ouvrir une nouvelle session
+avec `benoitdallery99-debug/KIBANA` comme source initiale**. Le bundle git
+remis contient l'historique complet et se restaure par
+`git clone kit.bundle`.
+
 ---
 
 ## P3 — Parcours — ARCHIVE DE L'ENTRÉE PRÉCÉDENTE
