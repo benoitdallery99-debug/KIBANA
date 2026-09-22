@@ -96,6 +96,34 @@ def _sujets(libelle: str) -> list[str]:
     return sujets
 
 
+def _champs(controle: Any) -> list[str]:
+    """Noms de champ ECS cités par la requête de contrôle d'une réponse.
+
+    Aucune table de synonymes ne couvrira jamais le français. Mais le nom du
+    champ, lui, est un ancrage exact : une phrase qui écrit un nombre puis
+    « event.dataset » à trois mots de là parle bien du décompte en question,
+    quel que soit le nom commun employé entre les deux. C'est par là qu'est
+    passé « vos six valeurs de event.dataset » — « valeurs » n'est le synonyme
+    de rien, et ne pouvait pas l'être : il est trop courant pour être surveillé
+    seul.
+    """
+    trouves: list[str] = []
+
+    def descendre(noeud: Any) -> None:
+        if isinstance(noeud, dict):
+            for cle, valeur in noeud.items():
+                if cle == "field" and isinstance(valeur, str) and "." in valeur:
+                    trouves.append(valeur)
+                else:
+                    descendre(valeur)
+        elif isinstance(noeud, list):
+            for element in noeud:
+                descendre(element)
+
+    descendre(controle)
+    return sorted(set(trouves))
+
+
 def reponses_a_surveiller(manifeste: dict[str, Any]) -> list[tuple[str, str, str]]:
     """Renvoie (clé, valeur, type) pour chaque réponse qui ne doit pas être publiée."""
     publiees = valeurs_publiees_par_le_contexte(manifeste.get("contexte", {}))
@@ -130,6 +158,12 @@ def reponses_a_surveiller(manifeste: dict[str, Any]) -> list[tuple[str, str, str
                             f"{mot} {sujet}",
                             "entier_en_lettres",
                         ))
+                    for champ in _champs(reponse.get("controle")):
+                        a_surveiller.append((
+                            f"{bloc['id']}.{reponse['cle']}",
+                            f"{mot} {champ}",
+                            "entier_pres_du_champ",
+                        ))
                 # En chiffres, un petit entier se rencontrerait partout : « 6 »
                 # apparaît dans une date, une version, un identifiant. On ne le
                 # cherche donc pas seul — mais on le cherche SUIVI DU SUJET de
@@ -143,6 +177,12 @@ def reponses_a_surveiller(manifeste: dict[str, Any]) -> list[tuple[str, str, str
                             f"{bloc['id']}.{reponse['cle']}",
                             f"{valeur} {sujet}",
                             "entier_en_lettres",
+                        ))
+                    for champ in _champs(reponse.get("controle")):
+                        a_surveiller.append((
+                            f"{bloc['id']}.{reponse['cle']}",
+                            f"{valeur} {champ}",
+                            "entier_pres_du_champ",
                         ))
                     continue
             a_surveiller.append((f"{bloc['id']}.{reponse['cle']}", valeur, reponse["type"]))
@@ -177,6 +217,17 @@ def chercher(texte: str, manifeste: dict[str, Any]) -> list[str]:
             # pluriel.
             trouve = re.search(
                 rf"(?<![\w-]){re.escape(mot)}\s+{re.escape(sujet)}s?\b", texte, re.I
+            )
+        elif type_ == "entier_pres_du_champ":
+            # Même règle, ancrée sur le nom du champ plutôt que sur un nom
+            # commun : le nombre doit être isolé, et le champ le suivre à trois
+            # mots près — la place d'un « valeurs de », d'un « sources de » ou
+            # d'un « lignes du champ ».
+            mot, champ = valeur.split(" ", 1)
+            trouve = re.search(
+                rf"(?<![\w-]){re.escape(mot)}\s+(?:\S+\s+){{0,3}}{re.escape(champ)}\b",
+                texte,
+                re.I,
             )
         elif type_ in ("entier", "entier_tolerance"):
             # Un nombre se cherche isolé de tout caractère alphanumérique :
