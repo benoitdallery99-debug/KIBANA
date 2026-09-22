@@ -120,7 +120,7 @@ Prouve notamment :
 
 ```
 $ make verif-parcours
-33 passed in 279.09s
+33 passed in 127.97s
 ```
 
 Six modules, **407 minutes**, **35 exercices**, **27 objectifs**. La durée d'un
@@ -256,7 +256,7 @@ dist/guide.html — 2.88 Mo, 6 modules, 35 exercices, 17 questions de quiz
 $ make verif
 20 passed in 49.00s       (verif-lab)
 14 passed in 18.03s       (verif-donnees)
-33 passed in 279.09s      (verif-parcours)
+33 passed in 127.97s      (verif-parcours)
 9 passed in 51.52s        (verif-corriges)
 25 passed in 28.02s       (verif-guide)
 10 passed in 281.15s      (verif-pdf)
