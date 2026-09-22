@@ -452,7 +452,7 @@ La passe d'accessibilité, figée à 1 440 px, audite maintenant aussi 375 et 32
 que la mise en page bascule, et la violation « serious » des tableaux ne pouvait pas y être vue.
 
 **Campagne finale : 99 contrôles, zéro échec** (17 · 14 · 24 · 8 · 18 · 10 · 8), sur données, corrigés
-et guide régénérés. Archive 1409 Mo, empreinte 7d11f566….
+et guide régénérés. Archive 1409 Mo ; son empreinte est dans le .sha256 qui l'accompagne — la citer ici la rendrait fausse, puisque ce journal est dans l'archive.
 
 ### Écart de livraison, non résolu à ce stade
 **Le push vers `YamTeam9/picturegallery` est refusé** : `403`, côté API GitHub

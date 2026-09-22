@@ -265,9 +265,14 @@ $ echo $?
 0
 $ make package && make verif-package
 Archive prête : dist/kit-formation-kibana-9.5.3-20260922.tar.gz (1409 Mo)
-Empreinte : 7d11f56603265c1ed93dc239023dd416a3a4ea4d439120acbfbcae59344e4ce7
 8 passed in 43.48s
 ```
+
+L'empreinte de l'archive n'est pas recopiée ici, et c'est volontaire : ce
+document EST dans l'archive, donc toute empreinte qu'il citerait serait celle
+d'une archive antérieure à lui-même. Elle se lit dans
+`dist/kit-formation-kibana-9.5.3-20260922.tar.gz.sha256`, écrit par la même
+commande, et `SHA256SUMS` couvre chaque fichier du paquet.
 
 Soit **99 contrôles, zéro échec**. Le tableau de synthèse annonçait 94 « zéro
 échec » alors que la seule transcription du document en montrait 91 : c'était
