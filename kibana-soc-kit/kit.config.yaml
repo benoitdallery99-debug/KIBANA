@@ -12,7 +12,7 @@ kibana:
 formation:
   space_id: formation
   # Durée du parcours, en heures, et dérive admise. SPEC §1 annonçait 6 h ;
-  # mesuré, le parcours vaut 6 h 46, parce que SPEC §1 ne budgétait ni la
+  # mesuré, le parcours vaut 6 h 47, parce que SPEC §1 ne budgétait ni la
   # lecture des corps de module ni le rappel actif, que la charte impose l'un
   # et l'autre (écart E10 de docs/JOURNAL.md). La cible porte donc la durée que
   # le kit tient vraiment. « make verif-parcours » lit ces deux valeurs : ce

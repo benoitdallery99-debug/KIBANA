@@ -41,6 +41,12 @@ ANGLAIS_ASSUME = {
     "Analytics": "en-tête de section du panneau de navigation",
     "Language: KQL": "entrée du menu de la barre de requête, celle qui ouvre le "
                      "panneau « Filtrer la langue »",
+    "Filter your data using KQL syntax": "texte gris de la barre de requête de "
+                     "Discover et des tableaux de bord. Relevé dans le lab : la "
+                     "chaîne n'a AUCUNE traduction dans les 60 705 libellés de "
+                     "fr-FR. C'est la phrase anglaise la plus vue du parcours — "
+                     "elle est à l'écran en permanence, et dans cinq captures "
+                     "sur huit",
 }
 
 # « Discover », « Maps » et « Machine Learning » NE sont PAS ici : ces trois-là

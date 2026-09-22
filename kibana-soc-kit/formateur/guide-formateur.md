@@ -1,7 +1,7 @@
 # Guide du formateur
 
 Kibana pour analystes SOC — Elastic Stack 9.5.3, licence Basic, interface fr-FR.
-6 h 46 de parcours, 35 exercices, 27 objectifs, plus 1 h 15 d'évaluation —
+6 h 47 de parcours, 35 exercices, 27 objectifs, plus 1 h 15 d'évaluation —
 correction collective des deux écrans, quiz, épreuve pratique, débriefing. SPEC §1
 n'en budgète que 45, pour le quiz et l'épreuve seuls.
 
@@ -58,7 +58,7 @@ une question à poser plutôt qu'une correction à asséner.
 
 La durée annoncée de chaque module couvre **tout** ce qu'il demande : ses
 exercices, la lecture de son corps, et ses questions de rappel actif. C'est la
-durée à poser dans un agenda. Mesurée ainsi, la matière vaut **6 h 46**, et non
+durée à poser dans un agenda. Mesurée ainsi, la matière vaut **6 h 47**, et non
 les 6 h que la spécification visait : la différence est la lecture et le rappel,
 que cette cible ne budgétait pas. Le kit a gardé son contenu et dit la vraie
 durée — mais la conséquence est qu'en une seule journée, la session est dense et
@@ -68,7 +68,7 @@ se termine tard. Lisez les deux formules avant de choisir.
 
 | Séance | Durée | Contenu |
 |---|---|---|
-| 1 | 2 h 03 | M0 — Prise en main · M1 — Rechercher avec Discover |
+| 1 | 2 h 04 | M0 — Prise en main · M1 — Rechercher avec Discover |
 | 2 | 2 h 21 | M2 — Visualiser avec Lens · M3 — Construire un tableau de bord |
 | 3 | 2 h 22 | M4 — Capstone SOC · M5 — Industrialiser |
 | 4 | 1 h 15 | Correction collective des deux écrans, quiz, épreuve pratique, débriefing |
@@ -84,9 +84,9 @@ après six heures d'écran.
 | Heure | Durée | Séquence |
 |---|---|---|
 | 09 h 00 | 15 min | Accueil, tour de table, ce qu'on va faire et ce qu'on ne fera pas |
-| 09 h 15 | 36 min | **M0 — Prise en main** |
-| 09 h 51 | 87 min | **M1 — Rechercher avec Discover** |
-| 11 h 18 | 12 min | Pause |
+| 09 h 15 | 37 min | **M0 — Prise en main** |
+| 09 h 52 | 87 min | **M1 — Rechercher avec Discover** |
+| 11 h 19 | 11 min | Pause |
 | 11 h 30 | 71 min | **M2 — Visualiser avec Lens** |
 | 12 h 41 | 49 min | Déjeuner |
 | 13 h 30 | 70 min | **M3 — Construire un tableau de bord** |
