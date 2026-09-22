@@ -241,13 +241,30 @@ def test_durees_coherentes(modules):
 # --------------------------------------------------------------------------
 
 def test_chaque_exercice_renvoie_a_une_reponse_du_manifeste(modules, reponses):
+    """Tout exercice se vérifie : par une empreinte, ou par un rendu déclaré.
+
+    La règle d'origine — une réponse du manifeste pour tout ce qui n'est pas une
+    démonstration — a servi jusqu'au capstone, où elle s'est retournée : pour
+    donner une empreinte à « construisez ce tableau de bord » et à « rédigez
+    cinq lignes », on avait fait valider à ces exercices une valeur relevée le
+    matin. L'empreinte était là, et elle ne mesurait rien.
+
+    Un exercice peut donc, à la place, déclarer « rendu » : ce qui est remis, et
+    comment on le juge. C'est une porte étroite — il faut l'écrire, et le
+    formateur y lit sa grille — et non l'absence de contrôle.
+    """
     defauts = []
     for _module, e in _exercices(modules):
         renvoi = e.get("reponse")
         if e["guidage"] == "demonstration":
             continue  # une démonstration se lit, elle n'attend pas de réponse
         if not renvoi:
-            defauts.append(f"{e['id']} : aucun renvoi « reponse »")
+            rendu = (e.get("rendu") or "").strip()
+            if len(rendu) < 40:
+                defauts.append(
+                    f"{e['id']} : ni renvoi « reponse », ni « rendu » décrivant "
+                    "ce qui est remis et comment il est jugé"
+                )
             continue
         if isinstance(renvoi, dict) and "valeur" in renvoi:
             defauts.append(f"{e['id']} : contient une valeur en dur — interdit")

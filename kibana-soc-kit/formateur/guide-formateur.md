@@ -36,7 +36,7 @@ stagiaire, et le **quiz sans réponses** (`quiz-imprimable.pdf`) pour la fin de
 journée.
 
 **Où sont les corrigés.** Les deux tableaux de bord de référence — « Santé de la
-collecte » et « Vue des alertes de la sonde » — vivent dans un Space à part,
+collecte » et « Vue IDS » — vivent dans un Space à part,
 **Corrigés (formateur)**, que le compte « stagiaire » ne voit pas : c'est ce
 cloisonnement qui empêche d'aller y chercher les réponses entre deux exercices,
 et `make verif-lab` le vérifie. Vous y accédez avec le compte formateur, par le

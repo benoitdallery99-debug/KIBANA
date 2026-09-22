@@ -221,6 +221,8 @@ def exercice_public(exercice: dict, reponses: dict, pieges: dict, module_id: str
         "consignes": exercice.get("consignes") or [],
         "indices": exercice.get("indices") or [],
         "format_de_reponse": exercice.get("format_de_reponse", "une valeur"),
+        # Ce qui est remis quand l'exercice ne se valide pas par une empreinte.
+        "rendu": exercice.get("rendu", ""),
         "solution": exercice.get("solution", ""),
         "erreurs_typiques": exercice.get("erreurs_typiques") or [],
         "doc": exercice.get("doc", ""),

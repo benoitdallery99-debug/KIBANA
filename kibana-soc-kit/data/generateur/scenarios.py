@@ -411,15 +411,22 @@ def s4_exfiltration(rng: random.Random, t0: datetime, jours: int, fuseau: str) -
 # libre, et la relecture du troisième tour a montré pourquoi : avec six sources,
 # trois portent déjà une réponse de repère — network.dns est la plus
 # volumineuse, ids.alert la moins volumineuse, firewall.traffic celle des ports
-# hauts —, et windows.security porte les événements de S1 comme de S7. Choisir
-# l'une des trois premières donnait à S5 ou S6 la MÊME EMPREINTE qu'un repère :
-# le stagiaire validait M4-E7 et M4-E8 avec une valeur relevée le matin, au
-# module M1 ou M2. Choisir windows.security aurait fait disparaître des
-# événements dont S1 a déjà figé les décomptes.
-# Il reste linux.auth pour le trou et proxy.web pour le silence. S4 place son
-# exfiltration quatre nuits en arrière, à une heure du matin : les deux
-# dernières heures de proxy.web, que S6 retire, ne la touchent pas.
-SOURCE_DU_TROU = "linux.auth"
+# hauts —, et windows.security porte les événements de S1 comme de S7.
+#
+# S6 avait « firewall.traffic », donc la MÊME EMPREINTE que
+# R.source_ports_hauts : le stagiaire validait M4-E8 avec la valeur relevée à
+# M1-E5, le matin. Il passe à proxy.web, qui ne porte aucune réponse de repère
+# et dont S4 n'occupe que la nuit d'il y a quatre jours — les deux dernières
+# heures que S6 retire ne la touchent pas.
+#
+# S5 garde « ids.alert », qui a pourtant la même empreinte que
+# R.source_la_moins_volumineuse : la collision est levée autrement, parce
+# qu'elle est insoluble ici. Il ne resterait que linux.auth, dont le nom est
+# publié dans les exemples de KQL du module M1 — en faire une réponse le
+# rendrait illisible au garde de fuite, pour rien. M4-E7 ne valide donc plus le
+# nom de la source mais l'HEURE À LAQUELLE LA COLLECTE REPREND, que seul l'écran
+# de santé donne.
+SOURCE_DU_TROU = "ids.alert"
 SOURCE_MUETTE = "proxy.web"
 
 
@@ -452,6 +459,26 @@ def s5_trou(rng: random.Random, t0: datetime, jours: int, fuseau: str) -> dict:
                     "cle": "duree_heures", "libelle": "Durée du trou, en heures", "valeur": 2,
                     "type": "entier", "normalisation": "entier",
                     "controle": {"dataset": dataset, "requete": {"size": 0}, "chemin": None},
+                },
+                # L'heure à laquelle la collecte REPREND. C'est elle que M4-E7
+                # valide, et non le nom de la source : celui-ci porte la même
+                # empreinte que R.source_la_moins_volumineuse, déjà rendue au
+                # module M2, ce qui vidait l'exercice de son contenu. L'heure,
+                # elle, ne se lit que sur l'écran de santé, et seulement une
+                # fois l'intervalle réduit assez pour voir le creux.
+                {
+                    "cle": "heure_de_reprise",
+                    "libelle": "Heure à laquelle la collecte reprend, dans le fuseau métier",
+                    "valeur": int(fin.astimezone(ZoneInfo(fuseau)).hour),
+                    "type": "entier", "normalisation": "entier",
+                    "controle": {
+                        "dataset": dataset,
+                        "requete": {"size": 0,
+                                    "query": {"range": {"@timestamp": {"gte": T.iso(fin)}}},
+                                    "aggs": {"r": {"min": {"field": "@timestamp"}}}},
+                        "chemin": "aggregations.r.value",
+                        "transformation": "heure_du_fuseau_metier",
+                    },
                 },
             ],
         },
@@ -579,7 +606,8 @@ def s7_leurre(rng: random.Random, t0: datetime, jours: int, fuseau: str) -> dict
 
 
 # L'ORDRE COMPTE. Les retraits sont appliqués au fur et à mesure : un scénario
-# qui creuse un trou doit donc passer APRÈS ceux qui déposent des événements
-# dans la même source, sans quoi le trou se rebouche derrière lui. S7 dépose son
-# leurre sur linux.auth, où S5 creuse : il passe avant.
-TOUS = [s1_force_brute, s2_balayage, s3_balise, s4_exfiltration, s7_leurre, s5_trou, s6_muette]
+# qui creuse un trou doit passer APRÈS ceux qui déposent des événements dans la
+# même source, sans quoi le trou se rebouche derrière lui. Aucun scénario
+# n'écrit dans ids.alert ni dans proxy.web après S4 : l'ordre naturel suffit, et
+# le manifeste est de toute façon retrié par identifiant.
+TOUS = [s1_force_brute, s2_balayage, s3_balise, s4_exfiltration, s5_trou, s6_muette, s7_leurre]

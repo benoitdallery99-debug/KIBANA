@@ -386,19 +386,12 @@ code { font-family: var(--mono); font-size: 0.93em; }
    PIÈGE, mesuré : une capture de 1 600 px logiques ramenée à la colonne de
    68 caractères se rend à 749 px, soit 47 % de sa taille — plus aucun nom de
    champ ni compteur de documents n'y est lisible, c'est-à-dire exactement ce
-   que les légendes demandent de regarder. Le gabarit émet donc les figures
-   HORS du « .colonne », et elles prennent toute la largeur du contenu, plafonnée
+   que les légendes demandent de regarder. Les figures échappent donc à la
+   contrainte de colonne et prennent toute la largeur du contenu, plafonnée
    à la taille logique de la capture pour ne jamais l'agrandir au-delà.
    La légende, elle, retourne à la colonne : on ne lit pas une phrase sur
    1 100 px de large. */
 figure { margin: 1.5rem 0; max-width: min(100%, 100rem); }
-/* Une capture appelée par le texte reste À L'ENDROIT de la phrase qu'elle
-   illustre — donc dans la colonne de lecture, qui est étroite par construction.
-   Elle en sort en largeur sans en sortir en position : la colonne fait 68ch,
-   le contenu est plus large, et la figure reprend cette largeur-là. « max-width
-   none » annule l'héritage de la colonne, et la marge droite négative lui rend
-   la place. Sur un contenu plus étroit que la colonne — téléphone —, le calcul
-   donne zéro et rien ne bouge. */
 /* Le corps d'un module porte des figures appelées par le texte : elles doivent
    rester à l'endroit de la phrase qu'elles illustrent, ET prendre la largeur du
    contenu. On retire donc la contrainte de colonne du conteneur et on la rend à

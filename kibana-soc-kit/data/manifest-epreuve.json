@@ -1,5 +1,5 @@
 {
-  "engendre_le": "2026-09-21T22:04:38.000Z",
+  "engendre_le": "2026-09-22T07:16:23.000Z",
   "jeu": "epreuve",
   "graine": 7310,
   "namespace": "epreuve",
@@ -9,14 +9,14 @@
   "index_mode": "standard",
   "avertissement": "Données entièrement synthétiques. Adresses réservées à la documentation (RFC 5737, RFC 1918), domaines réservés (RFC 2606), personnes inventées. Aucune donnée réelle (SPEC §5.1, CLAUDE.md).",
   "volumes": {
-    "logs-windows.security-epreuve": 90761,
-    "logs-linux.auth-epreuve": 35803,
-    "logs-ids.alert-epreuve": 14962,
-    "logs-network.dns-epreuve": 100438,
-    "logs-proxy.web-epreuve": 75028,
-    "logs-firewall.traffic-epreuve": 70666
+    "logs-windows.security-epreuve": 89362,
+    "logs-linux.auth-epreuve": 35252,
+    "logs-ids.alert-epreuve": 14279,
+    "logs-network.dns-epreuve": 98867,
+    "logs-proxy.web-epreuve": 72457,
+    "logs-firewall.traffic-epreuve": 69737
   },
-  "total_documents": 387658,
+  "total_documents": 379954,
   "contexte": {
     "organisation": "Groupe Méridien",
     "domaine_ad": "MERIDIEN",
@@ -376,15 +376,85 @@
         ]
       },
       {
-        "cle": "nb_docs_source_dominante",
-        "libelle": "Documents produits par la source la plus volumineuse",
-        "valeur": 100438,
+        "cle": "nb_sources_avec_compte",
+        "libelle": "Sources qui renseignent un nom de compte",
+        "valeur": 3,
         "type": "entier",
         "normalisation": "entier",
         "controle": {
           "dataset": "*",
           "requete": {
             "size": 0,
+            "query": {
+              "exists": {
+                "field": "user.name"
+              }
+            },
+            "aggs": {
+              "r": {
+                "cardinality": {
+                  "field": "event.dataset",
+                  "precision_threshold": 40000
+                }
+              }
+            }
+          },
+          "chemin": "aggregations.r.value"
+        },
+        "empreintes": [
+          "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce"
+        ]
+      },
+      {
+        "cle": "nb_comptes_authentification",
+        "libelle": "Comptes distincts vus dans les journaux d'authentification",
+        "valeur": 56,
+        "type": "entier",
+        "normalisation": "entier",
+        "controle": {
+          "dataset": "*",
+          "requete": {
+            "size": 0,
+            "query": {
+              "terms": {
+                "event.dataset": [
+                  "windows.security",
+                  "linux.auth"
+                ]
+              }
+            },
+            "aggs": {
+              "r": {
+                "cardinality": {
+                  "field": "user.name",
+                  "precision_threshold": 40000
+                }
+              }
+            }
+          },
+          "chemin": "aggregations.r.value"
+        },
+        "empreintes": [
+          "7688b6ef52555962d008fff894223582c484517cea7da49ee67800adc7fc8866"
+        ]
+      },
+      {
+        "cle": "source_ports_hauts",
+        "libelle": "Source qui produit le plus de connexions vers un port de 1025 ou plus",
+        "valeur": "firewall.traffic",
+        "type": "texte",
+        "normalisation": "minuscules, espaces retirés",
+        "controle": {
+          "dataset": "*",
+          "requete": {
+            "size": 0,
+            "query": {
+              "range": {
+                "destination.port": {
+                  "gte": 1025
+                }
+              }
+            },
             "aggs": {
               "r": {
                 "terms": {
@@ -394,61 +464,10 @@
               }
             }
           },
-          "chemin": "aggregations.r.buckets.0.doc_count"
+          "chemin": "aggregations.r.buckets.0.key"
         },
         "empreintes": [
-          "6588db00fac72950078154a082ef24a189d582b20d076aa99d7e870117a548fb"
-        ]
-      },
-      {
-        "cle": "nb_docs_auth",
-        "libelle": "Documents des deux sources d'authentification réunies",
-        "valeur": 126564,
-        "type": "entier",
-        "normalisation": "entier",
-        "controle": {
-          "dataset": "*",
-          "requete": {
-            "size": 0,
-            "track_total_hits": true,
-            "query": {
-              "terms": {
-                "event.dataset": [
-                  "windows.security",
-                  "linux.auth"
-                ]
-              }
-            }
-          },
-          "chemin": "hits.total.value"
-        },
-        "empreintes": [
-          "0f1a441e125a811bb29818e8fd3d304a36dc6ee0acbc08bfdcd741ef3cbb2268"
-        ]
-      },
-      {
-        "cle": "nb_docs_ports_hauts",
-        "libelle": "Documents dont le port de destination atteint 1025",
-        "valeur": 36329,
-        "type": "entier",
-        "normalisation": "entier",
-        "controle": {
-          "dataset": "*",
-          "requete": {
-            "size": 0,
-            "track_total_hits": true,
-            "query": {
-              "range": {
-                "destination.port": {
-                  "gte": 1025
-                }
-              }
-            }
-          },
-          "chemin": "hits.total.value"
-        },
-        "empreintes": [
-          "1da0bc310dad1e2d25f2e6273d4800a1f0a2739adabab3d7369fe4a2c9a6b170"
+          "4ed578996f0bb6301418909fd3e5d51c96ef6213f18222ad0ae982c34957cd35"
         ]
       },
       {
@@ -540,7 +559,7 @@
       {
         "cle": "signature_ids_la_plus_frequente",
         "libelle": "Signature IDS la plus fréquente",
-        "valeur": "ET SCAN Balayage TCP detecte",
+        "valeur": "ET MALWARE Balise periodique suspecte",
         "type": "texte",
         "normalisation": "minuscules, espaces retirés",
         "controle": {
@@ -559,7 +578,7 @@
           "chemin": "aggregations.r.buckets.0.key"
         },
         "empreintes": [
-          "02537be6643501fe3d2bf44343cd495eba7ce5e5c566cd9b7d2185a4864d4417"
+          "abe77cbda00399529f0226993a7ddf0ca16b803e75c9667638bda700a59375e8"
         ]
       }
     ]
@@ -1083,8 +1102,8 @@
       "titre": "Trou de collecte de deux heures",
       "recit": "Une source n'a rien envoyé pendant deux heures, au milieu de la période.",
       "_fenetre": {
-        "debut": "2026-09-17T21:04:38.000Z",
-        "fin": "2026-09-17T23:04:38.000Z"
+        "debut": "2026-09-18T06:16:23.000Z",
+        "fin": "2026-09-18T08:16:23.000Z"
       },
       "reponses": [
         {
@@ -1101,8 +1120,8 @@
               "query": {
                 "range": {
                   "@timestamp": {
-                    "gte": "2026-09-17T21:04:38.000Z",
-                    "lt": "2026-09-17T23:04:38.000Z"
+                    "gte": "2026-09-18T06:16:23.000Z",
+                    "lt": "2026-09-18T08:16:23.000Z"
                   }
                 }
               }
@@ -1130,6 +1149,38 @@
           "empreintes": [
             "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35"
           ]
+        },
+        {
+          "cle": "heure_de_reprise",
+          "libelle": "Heure à laquelle la collecte reprend, dans le fuseau métier",
+          "valeur": 10,
+          "type": "entier",
+          "normalisation": "entier",
+          "controle": {
+            "dataset": "ids.alert",
+            "requete": {
+              "size": 0,
+              "query": {
+                "range": {
+                  "@timestamp": {
+                    "gte": "2026-09-18T08:16:23.000Z"
+                  }
+                }
+              },
+              "aggs": {
+                "r": {
+                  "min": {
+                    "field": "@timestamp"
+                  }
+                }
+              }
+            },
+            "chemin": "aggregations.r.value",
+            "transformation": "heure_du_fuseau_metier"
+          },
+          "empreintes": [
+            "4a44dc15364204a80fe80e9039455cc1608281820fe2b24f1e5233ade6af1dd5"
+          ]
         }
       ]
     },
@@ -1141,11 +1192,11 @@
         {
           "cle": "source",
           "libelle": "Source muette",
-          "valeur": "firewall.traffic",
+          "valeur": "proxy.web",
           "type": "texte",
           "normalisation": "minuscules, espaces retirés",
           "controle": {
-            "dataset": "firewall.traffic",
+            "dataset": "proxy.web",
             "requete": {
               "size": 0,
               "aggs": {
@@ -1162,7 +1213,7 @@
             "tolerance": 25
           },
           "empreintes": [
-            "4ed578996f0bb6301418909fd3e5d51c96ef6213f18222ad0ae982c34957cd35"
+            "4d70ff098a81d15231402b4c91fad7e30cf2af1875b3127b1026b410259dc523"
           ]
         }
       ]

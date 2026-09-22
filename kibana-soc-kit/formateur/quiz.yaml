@@ -189,7 +189,8 @@
   objectifs: [M2-O4]
   question: >-
     Un « Indicateur » dont la fonction est « Décompte unique » sur le champ
-    dns.question.name affiche 4 907 domaines distincts. Que vaut ce chiffre ?
+    dns.question.name affiche près de cinq mille domaines distincts. Que vaut
+    ce chiffre ?
   propositions:
     - >-
       Il est exact si la plage de temps est inférieure à sept jours.
@@ -199,14 +200,16 @@
       Il est approximatif, mais Kibana affiche un avertissement sur le panneau dès
       que le décompte dépasse le seuil de précision.
     - >-
-      Il est approximatif au-delà d'environ trois mille valeurs, et rien ne l'indique à l'écran.
+      Il est approximatif au-delà de 3 000 valeurs environ, et rien ne l'indique à l'écran.
   reponse: 3
   explication: >-
     Le décompte de valeurs distinctes repose sur une estimation
-    (HyperLogLog++), exacte en deçà de son seuil de précision — trois mille par
-    défaut — et approximative au-delà. Constaté en lab : l'indicateur affiche
-    4 907 domaines, alors que le décompte exhaustif en dénombre 4 856 — chiffre
-    que l'on retrouve en portant le seuil de précision à 40 000.
+    (HyperLogLog++), exacte en deçà de son seuil de précision — 3 000 par
+    défaut — et approximative au-delà. Sur le jeu du parcours, l'écart se
+    mesure : le chiffre affiché et celui obtenu en portant le seuil à 40 000
+    diffèrent de quelques dizaines, et ils changent d'une réinitialisation du
+    lab à l'autre. Faites-le faire au stagiaire plutôt que de citer un nombre,
+    qui serait faux dès la séance suivante — c'est l'exercice M2-E4.
     Kibana n'affiche AUCUN avertissement. Un chiffre qu'on publie doit donc
     rester sous le seuil, ou être recalculé autrement.
 

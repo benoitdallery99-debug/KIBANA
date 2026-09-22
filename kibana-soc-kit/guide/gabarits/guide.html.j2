@@ -245,6 +245,15 @@
           </div>
           <p class="reponse__retour" role="status" aria-live="polite"></p>
         </div>
+        {% elif e.rendu %}
+        {# Trois exercices du capstone ne se valident pas par une valeur : on y
+           construit un écran, ou on y rédige cinq lignes. Leur rendu est décrit
+           ici, avec la façon dont il est jugé — c'est ce qui remplace le champ
+           de réponse, et non son absence. #}
+        <div class="reponse reponse--rendu">
+          <p class="reponse__format"><strong>Ce que vous rendez</strong></p>
+          <p>{{ e.rendu }}</p>
+        </div>
         {% endif %}
 
         {% if e.solution %}

@@ -148,16 +148,17 @@
   alt: >-
     Un tableau de bord intitulé « Vue IDS », affiché sur une plage de temps
     réglée dix ans en arrière, où le jeu de données ne contient aucun document.
-    On y lit l'agencement de ses sept panneaux et leurs titres, tous formulés
+    On y lit l'agencement de ses huit panneaux et leurs titres, tous formulés
     en questions. En haut, « Combien d'alertes sur la période ? » : un compteur
     « Alertes IDS » qui affiche 0 ; à sa droite, « Combien de signatures
     distinctes ? » : un compteur « Signatures distinctes » qui affiche 0.
     Viennent ensuite « Comment les alertes se répartissent-elles par
-    gravité ? », « Quelles signatures se déclenchent le plus ? », « Quelles
-    sources déclenchent le plus d'alertes ? » et « Quelles destinations sont
-    les plus visées ? », qui affichent tous « Résultat introuvable ». Le
-    septième, « Quelles sont les dernières alertes reçues ? », n'apparaît qu'en
-    partie : le bas de la fenêtre le coupe.
+    gravité ? », « Comment la gravité évolue-t-elle au fil du temps ? »,
+    « Quelles sources déclenchent le plus d'alertes ? », « Quelles signatures
+    se déclenchent le plus ? », « Quelles sont les dernières alertes reçues ? »
+    et « Quelles destinations sont les plus visées ? », qui affichent tous
+    « Résultat introuvable ». Les derniers n'apparaissent qu'en partie : le bas
+    de la fenêtre les coupe.
   reperes:
     - cible: dashboardPanelTitle
       note: Chaque panneau répond à une question

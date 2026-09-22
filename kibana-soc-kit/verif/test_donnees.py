@@ -16,8 +16,11 @@ import tempfile
 from datetime import UTC, datetime, timedelta
 from itertools import pairwise
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import pytest
+
+from outils import conf
 
 pytestmark = pytest.mark.donnees
 
@@ -61,6 +64,12 @@ def _transformer(valeur, transformation: str | None, t0: datetime | None = None)
         vu = datetime.fromtimestamp(float(valeur) / 1000, tz=UTC)
         reference = t0 or datetime.now(UTC)
         return round((reference - vu).total_seconds() / 60)
+    if transformation == "heure_du_fuseau_metier":
+        # L'heure d'un horodatage, lue dans le fuseau du métier — celui que
+        # Kibana affiche au stagiaire. En UTC, l'heure serait juste et la
+        # réponse fausse : ce que le stagiaire lit à l'écran est l'heure locale.
+        vu = datetime.fromtimestamp(float(valeur) / 1000, tz=UTC)
+        return vu.astimezone(ZoneInfo(str(conf.valeur("donnees.fuseau_metier")))).hour
     if transformation == "entier":
         # L'agrégation « max » sur un champ entier renvoie un flottant
         # (65445.0) : la réponse attendue, elle, est un entier.

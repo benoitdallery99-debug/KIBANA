@@ -100,6 +100,45 @@
       },
       "type": "vis",
       "config": {
+        "type": "xy",
+        "title": "Comment la gravité évolue-t-elle au fil du temps ?",
+        "layers": [
+          {
+            "type": "bar_stacked",
+            "data_source": {
+              "type": "data_view_spec",
+              "index_pattern": "logs-ids.alert-formation",
+              "time_field": "@timestamp"
+            },
+            "x": {
+              "operation": "date_histogram",
+              "field": "@timestamp"
+            },
+            "y": [
+              {
+                "operation": "count"
+              }
+            ],
+            "breakdown_by": {
+              "operation": "terms",
+              "fields": [
+                "event.severity"
+              ],
+              "limit": 5
+            }
+          }
+        ]
+      }
+    },
+    {
+      "grid": {
+        "x": 0,
+        "y": 18,
+        "w": 24,
+        "h": 12
+      },
+      "type": "vis",
+      "config": {
         "type": "data_table",
         "title": "Quelles signatures se déclenchent le plus ?",
         "data_source": {
@@ -154,7 +193,7 @@
     {
       "grid": {
         "x": 0,
-        "y": 18,
+        "y": 30,
         "w": 24,
         "h": 12
       },
