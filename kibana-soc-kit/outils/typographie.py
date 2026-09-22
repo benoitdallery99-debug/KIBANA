@@ -19,6 +19,10 @@ import re
 INSECABLE = " "       # avant « : », et dans les guillemets
 FINE_INSECABLE = " "  # avant « ; ! ? », usage typographique courant
 
+# Unités qui restent collées à leur nombre (charte §9). Le « % » est traité à
+# part : il ne se termine pas sur une limite de mot.
+UNITES = ("min", "h", "j", "s", "ms", "Go", "Mo", "Ko", "To", "€")
+
 # Éléments dont le contenu ne doit jamais être touché.
 INTOUCHABLES = ("pre", "code", "script", "style", "textarea")
 
@@ -47,6 +51,22 @@ def corriger_texte(texte: str) -> str:
     # Guillemets français : insécable à l'intérieur.
     texte = re.sub(r"«[ \t]*", "«" + INSECABLE, texte)
     texte = re.sub(r"[ \t]*»", INSECABLE + "»", texte)
+
+    # Une unité ne se sépare pas de son nombre : « 8 min » coupé en fin de ligne
+    # donne un « 8 » orphelin au-dessus de « min ». La charte §9 le demande
+    # nommément (« 15 min », « 4 Go ») et le gabarit du guide l'écrivait pourtant
+    # avec une espace ordinaire, sur les six en-têtes de module.
+    texte = re.sub(
+        rf"(\d)[ \t]+({'|'.join(UNITES)})\b", r"\1" + INSECABLE + r"\2", texte
+    )
+    # Le pour-cent suit la même règle. Il n'est pas dans UNITES parce qu'il n'est
+    # pas suivi d'une limite de mot : « 50 % » finit sur un signe.
+    texte = re.sub(r"(\d)[ \t]+%", r"\1" + INSECABLE + "%", texte)
+
+    # Séparateur de milliers : espace FINE insécable (charte §9, « 384 592 »).
+    # On ne touche qu'aux groupes de trois chiffres précédés d'un chiffre, ce
+    # qui laisse intacts une date, une version ou un numéro de port.
+    texte = re.sub(r"(?<=\d)[ \t](?=\d{3}\b)", FINE_INSECABLE, texte)
     return texte
 
 
@@ -86,6 +106,9 @@ def defauts(texte: str) -> list[str]:
         (r"[a-zA-Zé0-9»] [;!?]", "espace ordinaire avant « ; ! ? »"),
         (r"« [A-Za-zÀ-ÿ0-9]", "espace ordinaire après « « »"),
         (r"[A-Za-zÀ-ÿ0-9.] »", "espace ordinaire avant « » »"),
+        (r"\d [ ]?%", "espace ordinaire avant « % »"),
+        (rf"\d (?:{'|'.join(UNITES)})\b", "espace ordinaire entre un nombre et son unité"),
+        (r"(?<=\d) (?=\d{3}\b)", "espace ordinaire comme séparateur de milliers"),
     ):
         for m in re.finditer(motif, texte):
             trouves.append(f"{libelle} : …{texte[max(0, m.start() - 30):m.end() + 10]}…")

@@ -39,11 +39,13 @@
 - terme: cardinality
   definition: >-
     L'agrégation qui compte les valeurs distinctes. Elle est APPROXIMATIVE
-    au-delà de son seuil de précision, fixé à 3000 par défaut.
-- terme: bucket
+    au-delà de son seuil de précision, fixé à 3 000 par défaut.
+- terme: groupe
   definition: >-
-    Un groupe formé par une agrégation : une tranche de temps, une valeur de
-    champ. Une source qui n'envoie rien ne produit aucun bucket — elle disparaît.
+    Le résultat d'une agrégation : une tranche de temps, une valeur de champ.
+    La documentation d'Elastic l'appelle « bucket », et le parcours emploie
+    « groupe » d'un bout à l'autre. Une source qui n'envoie rien ne produit
+    aucun groupe — elle ne s'affiche pas à zéro, elle disparaît.
 - terme: ECS
   definition: >-
     Elastic Common Schema : la convention de nommage des champs, qui permet de

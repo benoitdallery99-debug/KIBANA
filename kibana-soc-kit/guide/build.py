@@ -97,12 +97,50 @@ def captures_par_module() -> dict[str, list[dict]]:
     return par_module
 
 
-def markdown_vers_html(texte: str) -> str:
+# Les langages que le corps d'un module écrit en bloc clôturé, et le nom sous
+# lequel le guide les affiche. Tout autre langage reste un bloc de code nu.
+LANGAGES_COPIABLES = {"kql": "KQL", "esql": "ES|QL", "json": "JSON", "bash": "Shell"}
+
+_BLOC_DE_CODE = re.compile(
+    r'<pre><code class="language-(?P<langage>[a-z|]+)">(?P<corps>.*?)</code></pre>',
+    re.S,
+)
+
+
+def markdown_vers_html(texte: str, prefixe: str = "c") -> str:
     html = md.markdown(
         texte,
         extensions=["tables", "fenced_code", "sane_lists", "attr_list", "def_list"],
         output_format="html",
     )
+
+    # Les requêtes du frontmatter reçoivent un bouton « Copier » ; celles que le
+    # corps du module écrit en bloc clôturé n'en avaient pas. Cinq requêtes que
+    # le texte demande de TAPER DANS KIBANA étaient donc à recopier à la main,
+    # dont deux ES|QL de plusieurs lignes : la faute de frappe était garantie, et
+    # elle tombait au pire endroit — le stagiaire croit avoir mal compris la
+    # leçon alors qu'il a oublié une barre verticale. Même habillage, même
+    # bouton, même code de copie.
+    compteur = [0]
+
+    def habiller(m: re.Match) -> str:
+        langage = LANGAGES_COPIABLES.get(m.group("langage").lower())
+        if not langage:
+            return m.group(0)
+        compteur[0] += 1
+        identifiant = f"{prefixe}-{compteur[0]}"
+        return (
+            '<div class="requete">'
+            '<div class="requete__entete">'
+            f"<span>{langage}</span>"
+            f'<button class="bouton" type="button" data-copier="{identifiant}">Copier</button>'
+            "</div>"
+            f'<pre id="{identifiant}" tabindex="0"><code>{m.group("corps")}</code></pre>'
+            "</div>"
+        )
+
+    html = _BLOC_DE_CODE.sub(habiller, html)
+
     # Un bloc de code long défile horizontalement dans son cadre. Une zone qui
     # défile doit être atteignable au clavier, sans quoi son contenu est
     # inaccessible à qui n'emploie pas la souris — axe-core le signale en
@@ -219,7 +257,7 @@ def charger_modules() -> tuple[dict, list[dict], list[dict]]:
             "duree_minutes": entete.get("duree_minutes", 0),
             "objectifs": entete.get("objectifs") or [],
             "rappel_actif": entete.get("rappel_actif") or [],
-            "corps_html": markdown_vers_html(corps),
+            "corps_html": markdown_vers_html(corps, prefixe=f"c-{entete['id'].lower()}"),
             "exercices": [
                 exercice_public(e, reponses, pieges, entete["id"])
                 for e in (entete.get("exercices") or [])
