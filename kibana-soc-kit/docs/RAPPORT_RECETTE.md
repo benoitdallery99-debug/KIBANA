@@ -15,12 +15,12 @@ comme **non exécuté**, avec sa raison — jamais comme réussi.
 |---|---|---|---|
 | `verif-lab` | 17 | ✅ 17 passés | licence, santé, version, locale, vue de solution, isolation réseau, cloisonnement des quatre Spaces |
 | `verif-donnees` | 14 | ✅ 14 passés | volumes, mapping effectif, S1→S7, déterminisme, jeu d'épreuve distinct |
-| `verif-parcours` | 20 | ✅ 20 passés | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes, réemplois annoncés, corrigé du quiz complet |
+| `verif-parcours` | 21 | ✅ 21 passés | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes, réemplois annoncés, corrigé du quiz complet, positions du quiz réparties |
 | `verif-corriges` | 8 | ✅ 8 passés | import en Space vierge, rendu sans erreur, valeurs conformes |
-| `verif-guide` | 14 | ✅ 14 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement, entités HTML intactes |
+| `verif-guide` | 16 | ✅ 16 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement, entités HTML intactes, aucune capture prise sur un corrigé |
 | `verif-pdf` | 10 | ✅ 10 passés | polices embarquées, sommaire paginé, signets, solutions en annexe, aucune réponse dans un document du stagiaire |
 | `verif-package` | 8 | ✅ 8 passés | empreintes, complétude, installation sans réseau |
-| **Total** | **91** | **✅ zéro échec** | |
+| **Total** | **94** | **✅ zéro échec** | |
 
 Exécution complète après `make lab-reset`, donc sur un lab reconstruit depuis un
 volume vide : c'est la seule façon de ne pas confondre « le kit fonctionne » et
@@ -255,18 +255,21 @@ défauts ne se montrent que dans ces conditions.
   ouvrées. Un stagiaire comptant juste se serait vu répondre « faux ». Remplacées
   par des faits de structure.
 
-### Les deux relectures
+### Les relectures
 
-`stagiaire-candide` et `relecteur-expert` ont été lancés sur le kit complet. Le
-second a rendu **16/20** au premier passage, sous le seuil de 18, avec un écart
-bloquant. Les sept écarts ont été corrigés, chacun assorti du contrôle qui
-l'aurait vu — c'est ce dernier point qui compte, et qui explique que la suite
-soit passée de 78 à 91 contrôles pendant cette revue.
+`stagiaire-candide` et `relecteur-expert` ont été lancés sur le kit complet.
+Le premier a buté **neuf fois** ; le second a rendu **16/20** au premier
+passage, sous le seuil de 18, avec un écart bloquant, puis **16,5/20** au
+second, toujours sous le seuil, avec un autre bloquant. Les seize écarts du
+premier tour — sept de l'expert, neuf du candide — ont été corrigés, chacun
+assorti du contrôle qui l'aurait vu ; c'est ce dernier point qui compte, et qui
+explique que la suite soit passée de 78 à 91 contrôles pendant cette revue,
+puis à 94 au tour suivant.
 
-Le bloquant mérite d'être cité, parce qu'il illustre ce que vaut un garde dont
-personne ne vérifie la portée. `outils/fuites.py` exemptait les vingt et un
-hôtes de la fiche de contexte, au motif qu'une valeur publiée « se perd parmi
-ses semblables ». Or le guide n'affiche que les neuf serveurs critiques : les
+Le bloquant du premier tour mérite d'être cité, parce qu'il illustre ce que
+vaut un garde dont personne ne vérifie la portée. `outils/fuites.py` exemptait
+les vingt et un hôtes de la fiche de contexte, au motif qu'une valeur publiée
+« se perd parmi ses semblables ». Or le guide n'affiche que les neuf serveurs critiques : les
 douze postes de travail étaient exemptés d'un contrôle que CLAUDE.md érige en
 définition de « fini », sans figurer nulle part sous les yeux du stagiaire.
 Trois réponses de scénario sur sept s'en trouvaient dégardées — et l'une était
@@ -312,6 +315,56 @@ passe typographique disloquait **1132 entités HTML**, si bien que le sommaire
 annonçait « Pourquoi l' ;écran est-il vide ». Le contrôle de typographie
 passait, et il avait raison : il examine le texte extrait, où l'entité est déjà
 résolue. Il ne regardait pas là.
+
+### Le second passage de l'expert, et le bloquant qu'il a trouvé
+
+Le kit corrigé est repassé devant `relecteur-expert`, qui a rendu **16,5/20** —
+au-dessus du premier tour, toujours sous le seuil de 18, et avec un nouvel écart
+bloquant. Il mérite d'être cité entier, parce qu'il montre la limite exacte des
+gardes écrits jusque-là.
+
+Les captures **M3-C1** et **M4-C1** étaient prises dans le Space `corriges`, sur
+les tableaux de bord du corrigé, à leur plage de temps enregistrée. Les
+indicateurs y affichaient donc les nombres attendus, et les titres de panneaux
+sont, mot pour mot, les questions posées aux exercices. Douze exercices se
+résolvaient en regardant le guide, sans ouvrir Kibana. `outils/fuites.py` lit du
+texte : une image ne passe sous aucun de ses filtres, et il n'a rien signalé —
+il n'avait rien à signaler.
+
+Les deux captures restent dans le guide, parce que la STRUCTURE d'un tableau de
+bord — la place de l'indicateur, l'ordre des panneaux, la formulation des titres
+en questions — s'enseigne mal sans image. Elles sont désormais prises sur une
+plage réglée dix ans en arrière : les panneaux sont vides, et c'est dit dans la
+légende comme dans le texte alternatif. Le contrôle qui l'aurait vu existe :
+`test_aucune_capture_du_guide_ne_montre_les_donnees_d_un_space_a_reponses`
+refuse toute capture visant `corriges` ou `epreuve` dont le chemin n'épingle pas
+une plage entièrement antérieure au jeu de données, et un second contrôle exige
+que les images du guide et le plan de capture se recouvrent exactement — sans
+quoi le premier se contournerait en publiant une image hors plan.
+
+Deux écarts majeurs du même tour ont été corrigés avec la même méthode :
+
+- **M1-E5** ouvrait sur « établissez le nombre de machines distinctes », geste
+  qu'aucun objectif de M1 n'enseigne, qui n'est pas la réponse notée et que la
+  solution ne débriefait pas : un orphelin. La consigne demande maintenant la
+  base de travail réellement enseignée — la présence du champ — et renvoie
+  explicitement le décompte à **M2-E4**, qui l'enseigne avec ses limites.
+- Le **quiz** plaçait la bonne réponse au rang 2 pour treize questions sur
+  dix-sept et au rang 3 pour les quatre autres : jamais la première ni la
+  dernière position. Cocher systématiquement la deuxième proposition rapportait
+  13/17, soit 76 %, sans rien savoir. Les positions ont été permutées — 4, 4, 4
+  et 5 — sans toucher aux textes, et
+  `test_les_bonnes_reponses_du_quiz_ne_sont_pas_toujours_au_meme_rang` refuse
+  qu'un rang ne soit jamais correct ou qu'il dépasse le tiers des questions.
+
+Enfin, en corrigeant, deux défauts de la même famille sont apparus. La fiche de
+contexte affichait le nombre d'hôtes de l'inventaire — vingt et un, qui EST la
+réponse attendue de trois exercices, et qui n'était devenu cette réponse qu'à
+la faveur d'une correction du tour précédent. Et `outils/fuites.py` ignorait les
+petits entiers, par construction : « 21 » seul se rencontre partout. Il les
+cherche désormais quand le nom qu'ils qualifient les suit — « 21 machines » est
+attrapé, « 21 » nu reste ignoré — avec une table de synonymes, puisque le guide
+écrit « machines » là où le manifeste dit « hôtes ».
 
 ---
 

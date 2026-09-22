@@ -347,6 +347,43 @@ distinctes, et les rares répétitions qui restent sont des contrôles de cohér
 comme tels dans la démarche. M0 a par ailleurs gagné ce qui lui manquait pour être praticable : la
 connexion, la vérification du Space, et le chemin réel dans le menu.
 
+### Second passage de `relecteur-expert` — 16,5/20, un nouveau bloquant
+
+Le kit corrigé est repassé devant la grille. La note monte de 16 à **16,5/20**, toujours sous le seuil
+de 18, et la relecture trouve un écart bloquant que le premier tour n'avait pas vu : **les captures
+M3-C1 et M4-C1 publiaient les réponses en image**. Prises dans le Space `corriges`, sur les tableaux
+de bord du corrigé, à leur plage enregistrée, elles montraient les indicateurs renseignés et des
+titres de panneaux qui SONT les questions des exercices. Douze exercices se résolvaient en regardant
+le guide. `outils/fuites.py` lit du texte : il n'a rien vu, et n'avait rien à voir.
+
+Vérifié avant de corriger (`captures/plan.yaml` déclarait bien `espace: corriges` ; le ndjson des
+corrigés porte des titres comme « Quand chaque source a-t-elle émis pour la dernière fois ? »), puis
+corrigé en épinglant les deux captures sur `from:now-10y,to:now-9y` — une plage prouvablement hors
+des données — et en réécrivant légende et texte alternatif pour dire que les panneaux sont vides à
+dessein et que ce sont les titres qui comptent. `make captures` régénéré, puis **l'image relue
+directement** : les cinq titres sont là, chaque valeur affiche `0` ou « Résultat introuvable », et le
+sélecteur de plage lit « il y a 10 ans → il y a 9 ans ». Le garde qui manquait est ajouté
+(`test_aucune_capture_du_guide_ne_montre_les_donnees_d_un_space_a_reponses`), doublé d'un contrôle
+d'exhaustivité : sans lui, une image publiée hors plan contournerait le premier.
+
+Deux écarts majeurs du même tour, corrigés de même :
+- **M1-E5** ouvrait sur un décompte de valeurs distinctes qu'aucun objectif de M1 n'enseigne, qui
+  n'est pas la réponse notée et que la solution ne débriefait pas. La consigne demande désormais la
+  base de travail réellement enseignée — la présence du champ, joker seul, vue à M1-E4 — et renvoie
+  explicitement le décompte à M2-E4.
+- **Le quiz** plaçait la bonne réponse au rang 2 pour 13 questions sur 17 et au rang 3 pour les 4
+  autres. Cocher toujours la deuxième proposition rapportait 76 % sans rien savoir. Positions
+  permutées (4/4/4/5) sans toucher aux textes — vérifié question par question que la proposition
+  correcte reste la même — et contrôle ajouté.
+
+Deux défauts de la même famille sont apparus en corrigeant : la fiche de contexte affichait le nombre
+d'hôtes de l'inventaire, vingt et un, qui EST la réponse de trois exercices et ne l'était devenu qu'à
+cause d'une correction du tour précédent ; et `outils/fuites.py` ignorait les petits entiers par
+construction. Il les cherche maintenant quand le nom qu'ils qualifient les suit, avec une table de
+synonymes, parce que le guide écrit « machines » là où le manifeste dit « hôtes ».
+
+La suite passe de 91 à **94 contrôles**.
+
 ### Écart de livraison, non résolu à ce stade
 **Le push vers `YamTeam9/picturegallery` est refusé** : `403`, côté API GitHub
 `Resource not accessible by integration`. La lecture fonctionne, l'écriture non : l'app est installée
