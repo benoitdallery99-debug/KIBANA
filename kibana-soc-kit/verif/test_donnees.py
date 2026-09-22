@@ -275,10 +275,23 @@ def test_aucune_reponse_par_unique_count_au_dela_de_3000(manifeste):
                 )
 
 
+def _source_du_scenario(manifeste: dict, identifiant: str) -> str:
+    """La source que le GÉNÉRATEUR a choisie pour ce scénario.
+
+    Elle était écrite en dur dans les contrôles. Le jour où le générateur l'a
+    déplacée — pour lever une collision d'empreinte avec un repère —, deux
+    contrôles ont continué d'interroger l'ancienne source et ont échoué en
+    annonçant « silence de 0 min » : ils regardaient une source qui parle.
+    Le manifeste dit où regarder ; on le lui demande.
+    """
+    bloc = next(s for s in manifeste["scenarios"] if s["id"] == identifiant)
+    return str(next(r["valeur"] for r in bloc["reponses"] if r["cle"] == "source"))
+
+
 def test_le_trou_de_collecte_est_effectif(es, manifeste, lab_demarre):
     s5 = next(s for s in manifeste["scenarios"] if s["id"] == "S5")
     fenetre = s5["_fenetre"]
-    index = f"logs-ids.alert-{manifeste['namespace']}"
+    index = f"logs-{_source_du_scenario(manifeste, 'S5')}-{manifeste['namespace']}"
     r = _chercher(es, index, {
         "size": 0, "track_total_hits": True,
         "query": {"range": {"@timestamp": {"gte": fenetre["debut"], "lt": fenetre["fin"]}}},
@@ -301,7 +314,8 @@ def test_la_source_muette_l_est_vraiment(es, manifeste, lab_demarre):
     """Une source muette ne produit AUCUN bucket : elle disparaît d'un décompte
     par source au lieu d'y figurer à zéro. C'est tout l'objet du scénario S6."""
     namespace = manifeste["namespace"]
-    r = _chercher(es, f"logs-firewall.traffic-{namespace}", {
+    muette = _source_du_scenario(manifeste, "S6")
+    r = _chercher(es, f"logs-{muette}-{namespace}", {
         "size": 0, "aggs": {"dernier": {"max": {"field": "@timestamp"}}},
     })
     dernier = datetime.fromtimestamp(
@@ -322,7 +336,7 @@ def test_la_source_muette_l_est_vraiment(es, manifeste, lab_demarre):
         "aggs": {"par_source": {"terms": {"field": "event.dataset", "size": 20}}},
     })
     presentes = {b["key"] for b in recent["aggregations"]["par_source"]["buckets"]}
-    assert "firewall.traffic" not in presentes, (
+    assert muette not in presentes, (
         "la source muette apparaît encore dans le décompte de la dernière heure"
     )
     assert len(presentes) >= 4, (
@@ -416,6 +430,33 @@ def test_determinisme_meme_graine_memes_reponses(config, manifeste):
     )
 
 
+# Les deux repères que le générateur TIRE, et qui doivent donc différer d'un jeu
+# à l'autre. Les dix autres décrivent la structure du parc — six sources, vingt
+# et un hôtes, la source la plus volumineuse — que SPEC §5.1 veut identique :
+# « les mêmes structures et des réponses différentes ». Un stagiaire doit
+# retrouver le même terrain, avec d'autres faits dessus.
+REPERES_QUI_DOIVENT_DIFFERER = ("port_destination_max", "signature_ids_la_plus_frequente")
+
+# Réponses de scénario identiques PAR CONSTRUCTION, et non par recopie.
+#
+# S7.verdict est un choix parmi trois ; S7.preuve_ip est l'adresse du scanner,
+# constante de la fiche de contexte ; S5.duree vaut deux heures des deux côtés,
+# c'est la définition du scénario.
+#
+# Pour S5.source et S6.source, la contrainte est arithmétique et mérite d'être
+# écrite : le parc compte six sources ; network.dns, ids.alert et
+# firewall.traffic portent chacune une réponse de repère, et windows.security
+# porte les événements de S1 comme de S7. Il ne reste qu'un choix possible de
+# chaque côté, donc la même valeur dans les deux jeux. Le document remis au
+# stagiaire le lui DIT (formateur/epreuve-pratique.md) au lieu de prétendre que
+# rien ne se répète, et la première question de l'épreuve demande en plus
+# l'heure de reprise de la collecte, que le générateur tire à neuf
+# (S5.heure_de_reprise, qui n'est PAS dispensée ci-dessous).
+SCENARIOS_IDENTIQUES_PAR_CONSTRUCTION = (
+    "S7.verdict", "S7.preuve_ip", "S5.duree", "S5.source", "S6.source",
+)
+
+
 def test_jeu_epreuve_distinct(config, manifeste):
     """L'épreuve a les mêmes structures et des réponses DIFFÉRENTES (SPEC §5.1)."""
     chemin = config.RACINE / "data" / "manifest-epreuve.json"
@@ -429,38 +470,28 @@ def test_jeu_epreuve_distinct(config, manifeste):
     assert [s["id"] for s in epreuve["scenarios"]] == [s["id"] for s in manifeste["scenarios"]]
 
     formation_r, epreuve_r = _reponses(manifeste), _reponses(epreuve)
+
+    # 1. Côté scénarios : tout doit différer, sauf ce qui est nommé ci-dessus.
     communes = {
         c for c in formation_r
-        if formation_r[c] == epreuve_r.get(c)
-        # Sont identiques PAR CONSTRUCTION, et non par recopie : le verdict de
-        # S7, l'adresse du scanner (constante de la fiche de contexte), la source
-        # et la durée du trou, la source muette.
-        #
-        # Pour S5.source et S6.source, la contrainte est arithmétique et mérite
-        # d'être écrite : le parc compte six sources ; network.dns, ids.alert et
-        # firewall.traffic portent chacune une réponse de repère, et
-        # windows.security porte les événements de S1 comme de S7. Il reste
-        # linux.auth pour le trou et proxy.web pour le silence — un seul choix
-        # possible de chaque côté, donc la même valeur dans les deux jeux. Le
-        # document remis au stagiaire le lui DIT (formateur/epreuve-pratique.md)
-        # au lieu de prétendre que rien ne se répète, et la première question de
-        # l'épreuve demande en plus le début daté de l'interruption, que le
-        # générateur tire à neuf.
-        #
-        # Côté repères, la structure du parc et des sources est la même d'un jeu
-        # à l'autre — c'est voulu : le stagiaire doit retrouver le même terrain.
-        # Ce qui DOIT différer, ce sont les volumes et les classements, et ceux-là
-        # ne sont pas exclus : R.nb_docs_auth, R.nb_docs_ports_hauts,
-        # R.nb_docs_source_dominante, R.port_destination_max et
-        # R.signature_ids_la_plus_frequente restent comparés.
-        and not c.startswith((
-            "S7.verdict", "S7.preuve_ip", "S5.duree", "S5.source", "S6.source",
-            "R.nb_sources", "R.nb_hotes", "R.heure_la_plus_chargee",
-            "R.nb_signatures_distinctes", "R.hote_le_plus_actif",
-            "R.source_la_plus_volumineuse", "R.source_la_moins_volumineuse",
-        ))
+        if not c.startswith("R.")
+        and formation_r[c] == epreuve_r.get(c)
+        and not c.startswith(SCENARIOS_IDENTIQUES_PAR_CONSTRUCTION)
     }
-    assert not communes, f"réponses identiques entre les deux jeux : {sorted(communes)}"
+    assert not communes, f"réponses de scénario identiques entre les deux jeux : {sorted(communes)}"
+
+    # 2. Côté repères : la structure est la même des deux côtés, et c'est voulu.
+    #    Mais les deux repères que le générateur TIRE doivent différer — sans
+    #    quoi les deux jeux ne seraient qu'une copie, et le contrôle ne verrait
+    #    rien puisqu'il ne compare plus le reste.
+    figes = [
+        f"R.{cle}" for cle in REPERES_QUI_DOIVENT_DIFFERER
+        if formation_r.get(f"R.{cle}") == epreuve_r.get(f"R.{cle}")
+    ]
+    assert not figes, (
+        "des repères tirés au sort sont identiques dans les deux jeux, ce qui "
+        f"signale une graine ou un générateur partagé : {figes}"
+    )
 
 
 def test_epreuve_sans_empreinte_de_reponse(config):
