@@ -54,6 +54,27 @@ sans étiquette, et le pré-vol — qui les cherche par nom — les déclarerait
 absentes alors qu'elles sont là. `make lab-images` fait les deux choses dans le
 bon ordre.
 
+### Une friction connue : `data/manifest.json`
+
+Le manifeste des réponses est **versionné et régénéré**. Versionné, parce que
+c'est lui qui permet de construire le guide sans lab ; régénéré à chaque
+`make data`, parce que les réponses descendent des données. Conséquence : après
+une séance, un `git pull` se heurte à vos modifications locales sur
+`data/manifest.json` et `corriges/tableaux-de-bord.ndjson`.
+
+Ce n'est pas un défaut, c'est le coût de cette conception. La sortie de secours
+tient en deux temps — abandonner les deux fichiers engendrés, puis les
+reconstruire depuis VOTRE lab :
+
+```bash
+git checkout -- data/manifest.json corriges/tableaux-de-bord.ndjson
+git pull
+make data && make corriges && make guide
+```
+
+N'allez pas garder un manifeste venu d'ailleurs : il porterait les réponses
+d'un autre jeu de données, et le guide refuserait les bonnes.
+
 ### Vous avez l'archive hors ligne (1,4 Go)
 
 Elle embarque les images, les roues Python et le générateur, pour une machine
