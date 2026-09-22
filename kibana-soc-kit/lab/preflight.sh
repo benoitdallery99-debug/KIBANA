@@ -15,6 +15,9 @@ PORT_KIBANA="${KIT_PORT_KIBANA:-5601}"
 MIN_MAX_MAP_COUNT=262144
 MIN_RAM_GO=6
 MIN_DISQUE_GO=10
+# Sous macOS et Windows, l'hôte ne porte que le dépôt et l'environnement
+# Python : les images et les index vivent dans la machine virtuelle podman.
+MIN_DISQUE_HOTE_GO=3
 MIN_PODMAN="4.4"
 
 bloquants=0
@@ -102,12 +105,43 @@ titre "4. Espace disque"
 # est POSIX : une seule ligne garantie, des blocs de 1 Kio, sur GNU comme sur
 # BSD. Le kit annonce macOS et Windows dans INSTALLATION.md : il doit y savoir
 # lire un disque.
+#
+# SECOND PIÈGE, relevé au même essai : le disque QUI COMPTE n'est pas le même
+# selon la plateforme. Sous Linux, le magasin d'images et le volume de données
+# vivent sur le disque de l'hôte — il lui faut les 10 Go. Sous macOS et Windows,
+# ils vivent dans la machine virtuelle podman, et l'hôte ne porte plus que le
+# dépôt et l'environnement Python : exiger 10 Go de l'hôte y bloquait un poste
+# parfaitement capable, dont la VM avait quarante gigaoctets.
 dispo_go="$(df -Pk "$RACINE" 2>/dev/null | awk 'NR==2 {print int($4 / 1048576)}')"
-if [ -n "$dispo_go" ] && [ "$dispo_go" -ge "$MIN_DISQUE_GO" ]; then
-  ok "${dispo_go} Go libres (minimum ${MIN_DISQUE_GO} Go)"
+if [ -r /proc/meminfo ]; then
+  besoin_hote_go="$MIN_DISQUE_GO"
+  ou_hote="le lab y range ses images et ses données"
 else
-  echec "${dispo_go:-0} Go libres, minimum ${MIN_DISQUE_GO} Go."
+  besoin_hote_go="$MIN_DISQUE_HOTE_GO"
+  ou_hote="dépôt et environnement Python seulement ; les données vivent dans la VM"
+fi
+if [ -n "$dispo_go" ] && [ "$dispo_go" -ge "$besoin_hote_go" ]; then
+  ok "${dispo_go} Go libres sur l'hôte (minimum ${besoin_hote_go} Go — ${ou_hote})"
+else
+  echec "${dispo_go:-0} Go libres sur l'hôte, minimum ${besoin_hote_go} Go."
   faire "Libérez de l'espace, ou déplacez le kit sur un volume plus grand."
+fi
+# Hors Linux, on contrôle EN PLUS le disque de la machine podman, qui est celui
+# où Elasticsearch écrira réellement.
+if [ ! -r /proc/meminfo ]; then
+  vm_disque_go="$(podman machine inspect --format '{{.Resources.DiskSize}}' 2>/dev/null \
+                  | tr -dc '0-9' | head -c 6)"
+  if [ -n "$vm_disque_go" ] && [ "$vm_disque_go" -gt 0 ] 2>/dev/null; then
+    if [ "$vm_disque_go" -ge "$MIN_DISQUE_GO" ]; then
+      ok "${vm_disque_go} Go sur la machine podman (minimum ${MIN_DISQUE_GO} Go)"
+    else
+      echec "la machine podman n'a que ${vm_disque_go} Go de disque."
+      faire "podman machine stop && podman machine set --disk-size 40 && podman machine start"
+    fi
+  else
+    alerte "Disque de la machine podman non mesurable."
+    faire "Assurez-vous qu'elle dispose d'au moins ${MIN_DISQUE_GO} Go."
+  fi
 fi
 # Elasticsearch refuse d'allouer un shard au-delà de ses seuils d'occupation.
 # Le lab les exprime en valeur absolue (voir lab/pod.yaml.tmpl) : il suffit donc
