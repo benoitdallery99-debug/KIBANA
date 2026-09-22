@@ -12,6 +12,7 @@ import re
 from pathlib import Path
 
 import pytest
+import yaml
 from playwright.sync_api import sync_playwright
 
 from outils.fuites import chercher as chercher_fuites
@@ -314,4 +315,118 @@ def test_aucune_entite_html_cassee(html):
     assert not cassees, (
         f"{len(cassees)} entité(s) HTML disloquée(s) par la typographie, "
         f"par exemple {cassees[:3]}"
+    )
+
+
+# --------------------------------------------------------------------------
+# Les captures : une image ne passe sous aucun garde de fuite
+# --------------------------------------------------------------------------
+
+# Les Spaces où vivent les réponses : les corrigés (titres et valeurs des
+# tableaux de bord de M3 et M4) et le jeu de l'épreuve.
+ESPACES_A_REPONSES = ("corriges", "epreuve")
+
+# Unités de plage relative de Kibana, converties en jours.
+_JOURS = {"s": 1 / 86400, "m": 1 / 1440, "h": 1 / 24, "d": 1, "w": 7, "M": 30, "y": 365}
+_RELATIF = re.compile(r"^now(?:-(\d+)([smhdwMy]))?(?:/[smhdwMy])?$")
+
+
+def _jours_avant_maintenant(expression: str) -> float | None:
+    """« now-9y » → 3285 jours. None si l'expression n'est pas relative à « now »."""
+    m = _RELATIF.match(expression.strip())
+    if not m:
+        return None
+    if m.group(1) is None:
+        return 0.0
+    return int(m.group(1)) * _JOURS[m.group(2)]
+
+
+@pytest.fixture(scope="module")
+def plan_de_capture(config):
+    chemin = config.RACINE / "captures" / "plan.yaml"
+    if not chemin.exists():
+        pytest.skip("NON EXÉCUTÉ : captures/plan.yaml absent.")
+    return yaml.safe_load(chemin.read_text(encoding="utf-8")) or []
+
+
+def test_aucune_capture_du_guide_ne_montre_les_donnees_d_un_space_a_reponses(
+    plan_de_capture, config
+):
+    """Une capture prise sur un corrigé publie des réponses en image.
+
+    C'est par là qu'elles sont sorties. M3-C1 et M4-C1 étaient prises dans le
+    Space « corriges », sur les tableaux de bord du corrigé, à la plage par
+    défaut : les indicateurs affichaient les nombres attendus et les titres de
+    panneaux étaient les questions elles-mêmes. Douze exercices se résolvaient
+    en regardant le guide. Le garde de fuite de « outils/fuites.py » lit du
+    texte ; il ne voit rien d'une image, et n'a rien signalé.
+
+    Ces captures restent utiles — la STRUCTURE d'un tableau de bord s'enseigne
+    mal sans image — mais elles doivent être prises sur une plage de temps
+    prouvablement hors des données, de sorte que chaque panneau soit vide.
+    D'où ce contrôle : toute capture visant un Space à réponses doit épingler
+    dans son chemin une plage entièrement antérieure au jeu de données.
+    """
+    fenetre = float(config.valeur("donnees.fenetre_jours"))
+    defauts = []
+
+    for capture in plan_de_capture:
+        espace = capture.get("espace")
+        if espace not in ESPACES_A_REPONSES:
+            continue
+        identifiant = capture.get("id", "?")
+        chemin = capture.get("chemin", "")
+
+        m = re.search(r"time:\(from:([^,)]+),to:([^,)]+)\)", chemin)
+        if not m:
+            defauts.append(
+                f"{identifiant} : vise le Space « {espace} » sans épingler de "
+                "plage de temps — les panneaux afficheront les valeurs du corrigé"
+            )
+            continue
+
+        debut, fin = (_jours_avant_maintenant(v.strip("'\"")) for v in m.groups())
+        if debut is None or fin is None:
+            defauts.append(
+                f"{identifiant} : plage « {m.group(1)} → {m.group(2)} » non "
+                "relative à « now » — impossible de prouver qu'elle est vide"
+            )
+            continue
+
+        # « fin » est l'âge, en jours, de la BORNE HAUTE de la plage capturée :
+        # elle doit être plus ancienne que le début du jeu de données.
+        if fin <= fenetre:
+            defauts.append(
+                f"{identifiant} : la plage capturée remonte jusqu'à il y a "
+                f"{fin:g} jour(s), alors que le jeu couvre les {fenetre:g} "
+                "derniers jours — les panneaux ne seront pas vides"
+            )
+        elif debut < fin:
+            defauts.append(
+                f"{identifiant} : plage inversée ({debut:g} < {fin:g} jours)"
+            )
+
+    assert not defauts, (
+        "captures susceptibles de publier des réponses en image :\n  "
+        + "\n  ".join(defauts)
+    )
+
+
+def test_toutes_les_captures_du_plan_sont_dans_le_guide(plan_de_capture, html):
+    """Le garde précédent ne vaut que s'il couvre bien les images publiées.
+
+    Si une capture entrait dans le guide sans passer par le plan, elle
+    échapperait au contrôle de plage ci-dessus. Les deux listes doivent donc
+    coïncider.
+    """
+    attendues = [c["id"] for c in plan_de_capture]
+    manquantes = [i for i in attendues if f"data-capture=\"{i}\"" not in html]
+    assert not manquantes, (
+        f"captures du plan absentes du guide : {manquantes} — lancez « make guide »"
+    )
+
+    publiees = set(re.findall(r'data-capture="([^"]+)"', html))
+    hors_plan = sorted(publiees - set(attendues))
+    assert not hors_plan, (
+        f"images publiées sans passer par le plan de capture : {hors_plan}"
     )

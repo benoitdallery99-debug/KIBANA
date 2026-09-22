@@ -95,17 +95,26 @@
 - id: M3-C1
   module: M3
   titre: Un tableau de bord répond à une question
-  chemin: "/app/dashboards#/view/kit-soc-sante-collecte"
+  # PLAGE VOLONTAIREMENT VIDE (il y a dix ans). La capture doit montrer la
+  # STRUCTURE d'un tableau de bord — disposition, titres formulés en questions,
+  # place de l'indicateur — et surtout PAS ses valeurs : ce sont celles du
+  # corrigé, donc les réponses de douze exercices. Une image ne passe sous
+  # aucun garde de fuite : c'est au plan de capture de ne pas les montrer.
+  chemin: "/app/dashboards#/view/kit-soc-sante-collecte?_g=(time:(from:now-10y,to:now-9y))"
   espace: corriges
   attendre: embeddablePanel
   legende: >-
-    Un tableau de bord assemblé : l'indicateur qui décide si l'on continue à
-    lire est en haut à gauche, et la plage de temps porte sur la semaine.
+    La structure d'un tableau de bord de santé : l'indicateur qui décide si
+    l'on continue à lire en haut à gauche, puis la série temporelle, puis le
+    tableau. Les panneaux sont vides à dessein — la plage de temps est réglée
+    hors des données. Ce sont les titres qu'il faut lire.
   alt: >-
-    Un tableau de bord intitulé « Santé de la collecte ». Il porte cinq
-    panneaux : un indicateur de volume en haut à gauche, une série temporelle
-    répartie par source, et un tableau du dernier événement vu par source.
-    Le sélecteur de plage de temps, en haut à droite, couvre sept jours.
+    Un tableau de bord intitulé « Santé de la collecte », affiché sur une plage
+    de temps qui ne contient aucune donnée : les cinq panneaux sont vides. On y
+    lit leur disposition et leurs titres, tous formulés en questions — combien
+    d'événements sur la période, combien de sources ont émis récemment, le
+    volume de chaque source dans le temps, et quand chaque source a émis pour
+    la dernière fois.
   reperes:
     - cible: dashboardPanelTitle
       note: Le titre d'un panneau énonce la question
@@ -115,15 +124,20 @@
 - id: M4-C1
   module: M4
   titre: L'écran de l'analyste de permanence
-  chemin: "/app/dashboards#/view/kit-soc-vue-ids"
+  # Même raison : plage vide. Les valeurs de cet écran sont les réponses de
+  # M2-E2, M3-E5, M4-E2 et M4-E4.
+  chemin: "/app/dashboards#/view/kit-soc-vue-ids?_g=(time:(from:now-10y,to:now-9y))"
   espace: corriges
   attendre: embeddablePanel
   legende: >-
-    Le second écran du corrigé : ce que signale la sonde, et par où commencer.
+    L'écran de l'analyste de permanence, montré vide : on ne retient ici que
+    l'ordre des panneaux et la façon dont chaque titre pose une question.
   alt: >-
-    Un tableau de bord intitulé « Vue IDS », qui rassemble les alertes de la
-    sonde de détection : un indicateur du nombre d'alertes, un classement des
-    signatures les plus fréquentes, et un tableau des machines concernées.
+    Un tableau de bord intitulé « Vue IDS », affiché sur une plage de temps
+    sans données : les panneaux sont vides. On y lit leur agencement et leurs
+    titres — combien d'alertes sur la période, combien de signatures
+    distinctes, leur répartition par gravité, et lesquelles se déclenchent le
+    plus.
   reperes:
     - cible: dashboardPanelTitle
       note: Chaque panneau répond à une question

@@ -170,7 +170,7 @@
       {{ m.corps_html | safe }}
 
       {% for c in m.captures %}
-      <figure id="fig-{{ c.id }}">
+      <figure id="fig-{{ c.id }}" data-capture="{{ c.id }}">
         <img src="{{ c.source }}" alt="{{ c.alt }}" loading="lazy">
         <figcaption>
           <strong>{{ c.id }}</strong> — {{ c.titre }}. {{ c.legende }}
