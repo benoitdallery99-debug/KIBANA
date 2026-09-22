@@ -7,6 +7,7 @@ et fonctionnement sur un réseau podman « --internal » sans accès extérieur 
 
 from __future__ import annotations
 
+import re
 import subprocess
 import time
 
@@ -516,4 +517,42 @@ def test_le_prevol_n_emploie_aucune_option_propre_a_gnu(config):
     assert not trouvees, (
         "options propres à GNU dans un script que macOS doit exécuter :\n  "
         + "\n  ".join(trouvees)
+    )
+
+
+def test_tout_prerequis_annonce_est_verifie_par_le_prevol(config):
+    """Un prérequis non contrôlé n'est pas un prérequis, c'est un piège.
+
+    RELEVÉ À LA PREMIÈRE INSTALLATION PAR UN HUMAIN. INSTALLATION.md annonçait
+    « Python 3.11 » dans son tableau de prérequis, et « make venv » construisait
+    l'environnement avec le premier « python3 » venu — un 3.9 sur un Mac où
+    conda est actif. Rien n'échouait. L'erreur tombait cinq commandes plus loin,
+    au chargement des données, sur « cannot import name UTC from datetime » :
+    un message qu'aucun formateur ne relie à la version de son interpréteur.
+
+    Le pré-vol existe précisément pour que ce genre de chose se dise AVANT, et
+    avec le remède. Ce contrôle exige donc que chaque ligne du tableau des
+    prérequis ait sa section dans le pré-vol.
+    """
+    prevol = config.RACINE / "lab" / "preflight.sh"
+    if not prevol.exists():
+        pytest.skip("NON EXÉCUTÉ : lab/preflight.sh absent.")
+    source = prevol.read_text(encoding="utf-8")
+
+    # Ce que le pré-vol doit savoir contrôler, et le motif qui le prouve.
+    PREREQUIS = {
+        "podman": r"podman\s+--version|version_podman|podman 4\.4|MIN_PODMAN",
+        "mémoire": r"MIN_RAM_GO",
+        "espace disque": r"MIN_DISQUE_GO",
+        "vm.max_map_count": r"MIN_MAX_MAP_COUNT|max_map_count",
+        "Python": r"MIN_PYTHON",
+        "ports": r"9200|5601",
+        "images": r"podman image exists",
+    }
+    manquants = [
+        nom for nom, motif in PREREQUIS.items()
+        if not re.search(motif, source)
+    ]
+    assert not manquants, (
+        "prérequis annoncés que le pré-vol ne contrôle pas : " + ", ".join(manquants)
     )

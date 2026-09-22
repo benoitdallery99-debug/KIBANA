@@ -42,8 +42,36 @@ aide:
 	@echo "    make verif-guide verif-pdf verif-package"
 	@echo "    make lint           shellcheck + ruff"
 
+# PIÈGE RELEVÉ À LA PREMIÈRE INSTALLATION PAR UN HUMAIN. « python3 » n'est pas
+# le même interpréteur pour tout le monde : sur un Mac avec conda actif, c'est
+# un 3.9, et l'environnement se créait sans broncher. L'échec tombait cinq
+# commandes plus loin, au chargement des données, sur « cannot import name UTC
+# from datetime » — un message que rien ne relie à « votre Python est trop
+# vieux ». INSTALLATION.md annonçait 3.11 en prérequis ; il n'était vérifié
+# nulle part. On le vérifie ici, avant de créer quoi que ce soit, et on dit
+# quoi faire.
+PY_MIN := 3.11
+
 venv:
-	@test -x $(PY) || python3 -m venv .venv
+	@if [ ! -x $(PY) ]; then \
+	  interp="$$(command -v python3 || true)"; \
+	  if [ -z "$$interp" ]; then \
+	    echo "python3 introuvable. Installez Python $(PY_MIN) ou plus récent."; exit 1; \
+	  fi; \
+	  ver="$$($$interp -c 'import sys; print("%d.%d" % sys.version_info[:2])')"; \
+	  if ! $$interp -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)'; then \
+	    echo "Python $$ver trouvé ($$interp), or le kit exige $(PY_MIN) ou plus récent."; \
+	    echo "  Le générateur emploie datetime.UTC, qui n'existe pas avant 3.11."; \
+	    echo "  macOS      : brew install python@3.12 && rm -rf .venv \\"; \
+	    echo "               && /opt/homebrew/bin/python3.12 -m venv .venv && make venv"; \
+	    echo "  conda      : conda create -n kibana-soc python=3.12 && conda activate kibana-soc"; \
+	    echo "  Debian     : sudo apt install python3.12-venv"; \
+	    exit 1; \
+	  fi; \
+	  "$$interp" -m venv .venv; \
+	fi
+	@$(PY) -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' \
+	  || { echo ".venv porte un Python trop ancien. Supprimez-le : rm -rf .venv, puis make venv"; exit 1; }
 	@$(PY) -m pip install -q --upgrade pip
 	@$(PY) -m pip install -q -r exigences.txt
 

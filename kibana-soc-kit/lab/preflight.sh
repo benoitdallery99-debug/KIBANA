@@ -18,6 +18,7 @@ MIN_DISQUE_GO=10
 # Sous macOS et Windows, l'hôte ne porte que le dépôt et l'environnement
 # Python : les images et les index vivent dans la machine virtuelle podman.
 MIN_DISQUE_HOTE_GO=3
+MIN_PYTHON=3.11
 MIN_PODMAN="4.4"
 
 bloquants=0
@@ -153,7 +154,31 @@ if [ -n "$pct" ] && [ "$pct" -ge 90 ]; then
   faire "Le lab fixe des seuils absolus (5/3/2 Go) : ce n'est donc pas bloquant ici."
 fi
 
-titre "5. Réseau interne (isolation)"
+titre "5. Python"
+# PIÈGE RELEVÉ À LA PREMIÈRE INSTALLATION PAR UN HUMAIN. « python3 » n'est pas
+# le même interpréteur pour tout le monde : sur un Mac avec conda actif, c'est
+# un 3.9. L'environnement se créait sans broncher, et l'échec tombait cinq
+# commandes plus loin, au chargement des données, sur « cannot import name UTC
+# from datetime ». INSTALLATION.md annonçait 3.11 en prérequis ; rien ne le
+# vérifiait. Un prérequis non contrôlé n'est pas un prérequis.
+py_kit="$RACINE/.venv/bin/python"
+[ -x "$py_kit" ] || py_kit="$(command -v python3 || true)"
+if [ -z "$py_kit" ]; then
+  echec "python3 introuvable."
+  faire "Installez Python $MIN_PYTHON ou plus récent."
+else
+  py_ver="$("$py_kit" -c 'import sys; print("%d.%d.%d" % sys.version_info[:3])' 2>/dev/null)"
+  if "$py_kit" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' 2>/dev/null; then
+    ok "Python $py_ver (minimum $MIN_PYTHON)"
+  else
+    echec "Python ${py_ver:-inconnu} — le kit exige $MIN_PYTHON ou plus récent."
+    faire "Le générateur emploie datetime.UTC, qui n'existe pas avant 3.11."
+    faire "macOS : brew install python@3.12"
+    faire "        rm -rf .venv && /opt/homebrew/bin/python3.12 -m venv .venv && make venv"
+  fi
+fi
+
+titre "6. Réseau interne (isolation)"
 # Sur un réseau podman « --internal », le trafic entre conteneurs passe par le
 # pont. Si br_netfilter renvoie ce trafic vers iptables (bridge-nf-call-iptables
 # à 1, ce que fait l'installation de Docker), la règle de blocage posée par
@@ -173,7 +198,7 @@ else
   ok "br_netfilter non chargé : rien ne gêne les réseaux podman « --internal »"
 fi
 
-titre "6. Ports"
+titre "7. Ports"
 port_occupe() {
   if command -v ss >/dev/null 2>&1; then ss -ltn 2>/dev/null | grep -qE "[:.]$1[[:space:]]"
   elif command -v lsof >/dev/null 2>&1; then lsof -iTCP:"$1" -sTCP:LISTEN >/dev/null 2>&1
@@ -193,7 +218,7 @@ for p in "$PORT_ES" "$PORT_KIBANA"; do
   fi
 done
 
-titre "7. Images (le lab ne télécharge jamais rien)"
+titre "8. Images (le lab ne télécharge jamais rien)"
 version_stack="$(sed -n 's/^  version:[[:space:]]*"\{0,1\}\([0-9.]*\)"\{0,1\}.*/\1/p' "$RACINE/kit.config.yaml" | head -1)"
 if [ -z "$version_stack" ]; then
   echec "Impossible de lire stack.version dans kit.config.yaml."

@@ -13,14 +13,14 @@ comme **non exécuté**, avec sa raison — jamais comme réussi.
 
 | Suite | Contrôles | Résultat | Ce qui est prouvé |
 |---|---|---|---|
-| `verif-lab` | 19 | ✅ 19 passés | licence, santé, version, locale, vue de solution, isolation réseau, cloisonnement des quatre Spaces, fuseau d'affichage posé dans chacun, pré-vol portable hors GNU |
+| `verif-lab` | 20 | ✅ 20 passés | licence, santé, version, locale, vue de solution, isolation réseau, cloisonnement des quatre Spaces, fuseau d'affichage posé dans chacun, pré-vol portable hors GNU, tout prérequis annoncé est contrôlé |
 | `verif-donnees` | 14 | ✅ 14 passés | volumes, mapping effectif, S1→S7, déterminisme, jeu d'épreuve distinct |
 | `verif-parcours` | 33 | ✅ 33 passés | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes, réemplois annoncés, corrigé du quiz complet, positions du quiz réparties, aucune empreinte validée deux fois, tableau des types adossé au lab, requêtes ES|QL du corps rejouées, aucune requête écrite en ligne, contraste de cardinalité réellement présent, un seul mot pour la fenêtre de temps, déroulé minuté recalculé, aucun évaluateur unique proposé au sacrifice, versions citées liées à la configuration, indices à deux niveaux |
 | `verif-corriges` | 9 | ✅ 9 passés | import en Space vierge, rendu sans erreur, valeurs conformes, décomptes de panneaux publiés recomptés |
 | `verif-guide` | 25 | ✅ 25 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement, entités HTML intactes, toute capture visant un Space à réponses est épinglée sur une plage antérieure au jeu — donc sur des panneaux vides —, sommaire atteignable après défilement, recherche qui surligne, position courante au niveau de l'exercice, capture agrandie à sa taille réelle, filet à 3:1 sur les quatre fonds, contrat de docs/DESIGN.md relu |
 | `verif-pdf` | 10 | ✅ 10 passés | polices embarquées, sommaire paginé, signets, solutions en annexe, aucune réponse dans un document du stagiaire |
 | `verif-package` | 9 | ✅ 9 passés | empreintes, complétude, installation sans réseau, chiffres de ce rapport recomptés |
-| **Total** | **119** | **✅ zéro échec** | |
+| **Total** | **120** | **✅ zéro échec** | |
 
 Exécution complète après `make lab-reset`, donc sur un lab reconstruit depuis un
 volume vide : c'est la seule façon de ne pas confondre « le kit fonctionne » et
@@ -69,7 +69,7 @@ Les deux connecteurs disponibles confirment exactement l'attendu de SPEC §4.5.
 
 ```
 $ make verif-lab
-19 passed in 43.80s
+20 passed in 43.80s
 ```
 
 Prouve : licence `basic`, santé `green`, Elasticsearch et Kibana en 9.5.3,
@@ -236,7 +236,7 @@ $ make lab-reset --oui
 Lab remis à neuf.  Données réancrées sur 2026-09-21 22:05.
 DUREE_SECONDES=109
 $ make verif
-19 passed · 14 passed · 33 passed · 9 passed · 25 passed · 10 passed · 9 passed
+20 passed · 14 passed · 33 passed · 9 passed · 25 passed · 10 passed · 9 passed
 ```
 
 Cette transcription est celle du PREMIER tour de revue, et elle totalise 91.
@@ -254,7 +254,7 @@ $ make captures
 $ make guide
 dist/guide.html — 2.88 Mo, 6 modules, 35 exercices, 17 questions de quiz
 $ make verif
-19 passed in 43.80s       (verif-lab)
+20 passed in 43.80s       (verif-lab)
 14 passed in 18.01s       (verif-donnees)
 33 passed in 277.34s      (verif-parcours)
 9 passed in 54.69s        (verif-corriges)
