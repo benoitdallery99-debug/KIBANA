@@ -17,10 +17,10 @@ comme **non exécuté**, avec sa raison — jamais comme réussi.
 | `verif-donnees` | 14 | ✅ 14 passés | volumes, mapping effectif, S1→S7, déterminisme, jeu d'épreuve distinct |
 | `verif-parcours` | 20 | ✅ 20 passés | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes, réemplois annoncés, corrigé du quiz complet |
 | `verif-corriges` | 8 | ✅ 8 passés | import en Space vierge, rendu sans erreur, valeurs conformes |
-| `verif-guide` | 13 | ✅ 13 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement |
+| `verif-guide` | 14 | ✅ 14 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement, entités HTML intactes |
 | `verif-pdf` | 10 | ✅ 10 passés | polices embarquées, sommaire paginé, signets, solutions en annexe, aucune réponse dans un document du stagiaire |
 | `verif-package` | 8 | ✅ 8 passés | empreintes, complétude, installation sans réseau |
-| **Total** | **90** | **✅ zéro échec** | |
+| **Total** | **91** | **✅ zéro échec** | |
 
 Exécution complète après `make lab-reset`, donc sur un lab reconstruit depuis un
 volume vide : c'est la seule façon de ne pas confondre « le kit fonctionne » et
@@ -230,7 +230,7 @@ $ make lab-reset --oui
 Lab remis à neuf.  Données réancrées sur 2026-09-21 22:05.
 DUREE_SECONDES=109
 $ make verif
-17 passed · 14 passed · 20 passed · 8 passed · 13 passed · 10 passed · 8 passed
+17 passed · 14 passed · 20 passed · 8 passed · 14 passed · 10 passed · 8 passed
 ```
 
 **`make lab-reset` mesuré : 1 min 49 s.** Le critère de sortie P1 exigeait que
@@ -261,7 +261,7 @@ défauts ne se montrent que dans ces conditions.
 second a rendu **16/20** au premier passage, sous le seuil de 18, avec un écart
 bloquant. Les sept écarts ont été corrigés, chacun assorti du contrôle qui
 l'aurait vu — c'est ce dernier point qui compte, et qui explique que la suite
-soit passée de 78 à 90 contrôles pendant cette revue.
+soit passée de 78 à 91 contrôles pendant cette revue.
 
 Le bloquant mérite d'être cité, parce qu'il illustre ce que vaut un garde dont
 personne ne vérifie la portée. `outils/fuites.py` exemptait les vingt et un
@@ -281,6 +281,37 @@ construction a été refusée sur une réponse qui n'avait fui nulle part. Un ga
 qui se joue aux octets d'une image peut aussi bien taire une vraie fuite dans
 son bruit. Les charges utiles base64 sont désormais retirées avant la recherche,
 et le contrôle a été vérifié dans les deux sens.
+
+### Le parcours suivi par un stagiaire qui ne sait rien
+
+`stagiaire-candide` a suivi les six modules au compte du stagiaire, sans rien
+savoir de plus que ce que le guide enseigne, dans l'ordre où il l'enseigne. Il a
+buté **neuf fois**, et c'est la relecture qui a le plus rapporté : elle a trouvé
+une catégorie de défaut qu'aucun contrôle ne sait formuler — **la consigne
+exacte et inapplicable**.
+
+Trois exemples, tous vrais et tous inutilisables tels quels :
+
+- « lisez son type : keyword » — le type EST keyword, et l'interface n'écrit
+  jamais ce mot : elle affiche « Mot-clé », en infobulle de l'icône, et rien
+  dans le panneau qui s'ouvre au clic ;
+- « `PUT /api/dashboards/{id}` » — c'est bien la route, et sans le préfixe
+  `kbn:` la console l'envoie à Elasticsearch, qui répond « no handler found » ;
+- « une source domine largement » — elle domine de six contre un, et la barre
+  latérale affiche 50 % / 50 %, parce qu'avec deux valeurs l'échantillon se
+  partage à parts égales.
+
+Deux des neuf venaient des corrections faites pendant cette même phase, et de la
+même erreur : avoir choisi une réponse ou un geste sans vérifier que l'écran, à
+ce point du parcours, sait le produire. CLAUDE.md le dit pour l'existence — « une
+fonctionnalité absente du lab n'existe pas pour le parcours » — ; cela vaut
+aussi pour l'ordre.
+
+Enfin, le défaut le plus visible du kit n'avait jamais été vu par personne : la
+passe typographique disloquait **1132 entités HTML**, si bien que le sommaire
+annonçait « Pourquoi l' ;écran est-il vide ». Le contrôle de typographie
+passait, et il avait raison : il examine le texte extrait, où l'entité est déjà
+résolue. Il ne regardait pas là.
 
 ---
 
