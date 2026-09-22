@@ -1180,3 +1180,40 @@ def test_aucune_requete_en_ligne_dans_le_corps_d_un_module(modules):
     assert not fautes, (
         "requêtes écrites en ligne dans un corps de module :\n  " + "\n  ".join(fautes)
     )
+
+
+def test_explorer_dans_discover_n_est_jamais_annonce_dans_le_menu(modules, config):
+    """Sondé en lab : cette action n'est PAS dans le menu « … » d'un panneau.
+
+    Elle est dans la rangée de boutons qui apparaît au survol, en haut à droite
+    — ni en lecture ni en modification le menu ne la propose
+    (outils/sonde_explorer_discover.py, constat reporté au point Q de
+    docs/capacites.md). Le parcours l'annonçait « dans le menu du panneau » à
+    quatre endroits, et un stagiaire qui cherche au mauvais endroit conclut que
+    la fonction n'existe pas — ou que son écran est cassé.
+    """
+    fautes = []
+    fichiers = [m["chemin"] for m in modules]
+    for nom in ("guide-formateur.md", "quiz.yaml", "epreuve-pratique.md"):
+        chemin = config.RACINE / "formateur" / nom
+        if chemin.exists():
+            fichiers.append(chemin)
+
+    for chemin in fichiers:
+        deplie = re.sub(r"\s+", " ", chemin.read_text(encoding="utf-8"))
+        for trouve in re.finditer(r"Explorer dans Discover", deplie):
+            fenetre = deplie[max(0, trouve.start() - 160):trouve.end() + 160]
+            if "menu du panneau" in fenetre or "menu « … »" in fenetre:
+                # Dire « elle n'est PAS dans le menu » est l'énoncé juste : la
+                # négation blanchit la phrase, où qu'elle tombe autour.
+                if re.search(r"n'y est pas|jamais dans le menu|il n'y est jamais"
+                             r"|ne le cherchez pas dans le menu"
+                             r"|n'est \*\*pas dans le menu"
+                             r"|PAS dans le menu", fenetre):
+                    continue
+                fautes.append(f"{chemin.name} : …{fenetre[100:260]}…")
+
+    assert not fautes, (
+        "« Explorer dans Discover » annoncée dans le menu du panneau :\n  "
+        + "\n  ".join(fautes)
+    )

@@ -15,12 +15,12 @@ comme **non exécuté**, avec sa raison — jamais comme réussi.
 |---|---|---|---|
 | `verif-lab` | 18 | ✅ 18 passés | licence, santé, version, locale, vue de solution, isolation réseau, cloisonnement des quatre Spaces, fuseau d'affichage posé dans chacun |
 | `verif-donnees` | 14 | ✅ 14 passés | volumes, mapping effectif, S1→S7, déterminisme, jeu d'épreuve distinct |
-| `verif-parcours` | 32 | ✅ 32 passés | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes, réemplois annoncés, corrigé du quiz complet, positions du quiz réparties, aucune empreinte validée deux fois, tableau des types adossé au lab, requêtes ES|QL du corps rejouées, aucune requête écrite en ligne, contraste de cardinalité réellement présent, un seul mot pour la fenêtre de temps, déroulé minuté recalculé, aucun évaluateur unique proposé au sacrifice, versions citées liées à la configuration, indices à deux niveaux |
+| `verif-parcours` | 33 | ✅ 33 passés | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes, réemplois annoncés, corrigé du quiz complet, positions du quiz réparties, aucune empreinte validée deux fois, tableau des types adossé au lab, requêtes ES|QL du corps rejouées, aucune requête écrite en ligne, contraste de cardinalité réellement présent, un seul mot pour la fenêtre de temps, déroulé minuté recalculé, aucun évaluateur unique proposé au sacrifice, versions citées liées à la configuration, indices à deux niveaux |
 | `verif-corriges` | 9 | ✅ 9 passés | import en Space vierge, rendu sans erreur, valeurs conformes, décomptes de panneaux publiés recomptés |
 | `verif-guide` | 25 | ✅ 25 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement, entités HTML intactes, toute capture visant un Space à réponses est épinglée sur une plage antérieure au jeu — donc sur des panneaux vides —, sommaire atteignable après défilement, recherche qui surligne, position courante au niveau de l'exercice, capture agrandie à sa taille réelle, filet à 3:1 sur les quatre fonds, contrat de docs/DESIGN.md relu |
 | `verif-pdf` | 10 | ✅ 10 passés | polices embarquées, sommaire paginé, signets, solutions en annexe, aucune réponse dans un document du stagiaire |
 | `verif-package` | 9 | ✅ 9 passés | empreintes, complétude, installation sans réseau, chiffres de ce rapport recomptés |
-| **Total** | **117** | **✅ zéro échec** | |
+| **Total** | **118** | **✅ zéro échec** | |
 
 Exécution complète après `make lab-reset`, donc sur un lab reconstruit depuis un
 volume vide : c'est la seule façon de ne pas confondre « le kit fonctionne » et
