@@ -69,7 +69,7 @@ Les deux connecteurs disponibles confirment exactement l'attendu de SPEC §4.5.
 
 ```
 $ make verif-lab
-20 passed in 43.80s
+20 passed in 49.00s
 ```
 
 Prouve : licence `basic`, santé `green`, Elasticsearch et Kibana en 9.5.3,
@@ -95,7 +95,7 @@ de 2 min sur 4 cœurs. La cible « moins de cinq minutes » de SPEC §4.4 est te
 $ make data
 Total : 386 496 documents
 $ make verif-donnees
-14 passed in 18.01s
+14 passed in 18.03s
 ```
 
 Six sources, fenêtre glissante de 7 jours, rythme ouvré vérifié (≈ 4 400 à
@@ -120,7 +120,7 @@ Prouve notamment :
 
 ```
 $ make verif-parcours
-33 passed in 277.34s
+33 passed in 279.09s
 ```
 
 Six modules, **407 minutes**, **35 exercices**, **27 objectifs**. La durée d'un
@@ -149,7 +149,7 @@ chaque objectif est évalué par au moins un exercice.
 
 ```
 $ make verif-corriges
-9 passed in 54.69s
+9 passed in 51.52s
 ```
 
 « Santé de la collecte » (5 panneaux) et « Vue IDS » (8 panneaux), définis en
@@ -170,9 +170,9 @@ arrive en tête du tableau du dernier événement vu.
 $ make guide
 dist/guide.html — 2.88 Mo, 6 modules, 35 exercices, 17 questions de quiz
 $ make verif-guide
-25 passed in 28.46s
+25 passed in 28.02s
 $ make verif-pdf
-10 passed in 285.63s
+10 passed in 281.15s
 ```
 
 Prouve : **zéro requête réseau** à l'ouverture en `file://` ; axe-core injecté
@@ -214,7 +214,7 @@ la couverture est donc prouvée, pas affirmée.
 
 ```
 $ make verif-package
-10 passed in 45.01s
+10 passed in 145.98s
 ```
 
 Prouve : empreinte de l'archive conforme ; **toutes** les lignes de `SHA256SUMS`
@@ -254,13 +254,13 @@ $ make captures
 $ make guide
 dist/guide.html — 2.88 Mo, 6 modules, 35 exercices, 17 questions de quiz
 $ make verif
-20 passed in 43.80s       (verif-lab)
-14 passed in 18.01s       (verif-donnees)
-33 passed in 277.34s      (verif-parcours)
-9 passed in 54.69s        (verif-corriges)
-25 passed in 28.46s       (verif-guide)
-10 passed in 285.63s      (verif-pdf)
-10 passed in 45.01s        (verif-package)
+20 passed in 49.00s       (verif-lab)
+14 passed in 18.03s       (verif-donnees)
+33 passed in 279.09s      (verif-parcours)
+9 passed in 51.52s        (verif-corriges)
+25 passed in 28.02s       (verif-guide)
+10 passed in 281.15s      (verif-pdf)
+10 passed in 145.98s      (verif-package)
 $ echo $?
 0
 $ make package && make verif-package

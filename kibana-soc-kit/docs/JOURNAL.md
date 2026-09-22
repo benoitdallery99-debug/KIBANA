@@ -503,6 +503,50 @@ niveaux, aucune requête en ligne, sommaire atteignable, recherche qui surligne,
 position à l'exercice, capture à sa taille réelle, filet à 3:1 sur les quatre
 fonds, contrat de `docs/DESIGN.md` relu, chiffres de ce rapport recomptés.
 
+### Première installation par un humain — cinq défauts en cinq commandes
+
+Le kit a été installé pour la première fois ailleurs que là où il a été
+construit : un MacBook Air, podman dans une VM de 8 Go, conda actif. Cinq
+défauts sont tombés avant qu'une seule ligne du parcours ne soit lue. Aucun des
+118 contrôles ne pouvait les voir : **ils tournent tous sur la machine de
+fabrication**, sous Linux, avec un Python 3.11 et les dépendances installées à
+la main depuis des jours.
+
+1. **`df -BG --output=avail`** — deux options GNU que le `df` de BSD ignore. La
+   commande échouait en silence, la valeur retombait à zéro, et le pré-vol
+   annonçait « 0 Go libres » sur un disque qui en avait sept. `df -Pk` est
+   POSIX.
+2. **Le disque mesuré n'était pas le bon.** Sous Linux, images et index vivent
+   sur le disque de l'hôte ; sous macOS, dans la VM podman. Exiger 10 Go de
+   l'hôte y bloquait un poste dont la VM avait quarante gigaoctets.
+3. **Python 3.11 annoncé en prérequis, vérifié nulle part.** `make venv`
+   construisait sur le premier `python3` venu — un 3.9 sous conda. L'échec
+   tombait cinq commandes plus loin, sur `cannot import name 'UTC' from
+   datetime` : un message qu'aucun formateur ne relie à son interpréteur.
+4. **`exigences.txt` déclarait cinq dépendances sur douze.** playwright,
+   pytest-playwright, weasyprint, pillow, jinja2, markdown et pypdf étaient
+   installés à la main ici, et nulle part consignés. Sur un poste neuf,
+   `make verif` et `make guide` s'arrêtaient sur un ModuleNotFoundError.
+5. **Vérifier le lab demande le double de mémoire que le faire tourner.** Le
+   contrôle du réseau isolé monte un second pod complet pendant que le premier
+   tourne. Sur 8 Go, la suite s'enlisait sans rien dire.
+
+Trois contrôles ajoutés pour que ça ne revienne pas : aucune option propre à
+GNU dans le pré-vol, tout prérequis annoncé a sa section dans le pré-vol, toute
+dépendance importée est déclarée. 118 → **121 contrôles**.
+
+**La leçon, et elle vaut au-delà de ce kit.** Cinq tours de relecture experte
+n'ont trouvé aucun des cinq. Ils ne le pouvaient pas : une relecture lit le
+code, elle ne l'installe pas. Le seul instrument qui les révèle est une machine
+qui n'est pas celle de fabrication — et vingt minutes d'un humain qui tape les
+commandes. Le kit affirmait supporter macOS dans `INSTALLATION.md` sans y avoir
+jamais tourné. C'est la définition d'un statut non honnête au sens de
+`CLAUDE.md`, et il a fallu un poste réel pour le dire.
+
+Passage complet après reconstruction du lab depuis un volume vide : lab 20,
+donnees 14, parcours 33, corriges 9, guide 25, pdf 10, package 10 — **121
+contrôles, zéro échec**.
+
 ### Écart de livraison — RÉSOLU par l'humain, hors session
 **Le push vers `YamTeam9/picturegallery` est refusé** : `403`, côté API GitHub
 `Resource not accessible by integration`. La lecture fonctionne, l'écriture non : l'app est installée
