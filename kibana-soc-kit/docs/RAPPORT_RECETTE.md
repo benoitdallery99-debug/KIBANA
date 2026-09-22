@@ -168,15 +168,15 @@ arrive en tête du tableau du dernier événement vu.
 
 ```
 $ make guide
-dist/guide.html — 2.88 Mo, 6 modules, 35 exercices, 17 questions de quiz
+dist/guide.html — 4.43 Mo, 6 modules, 35 exercices, 17 questions de quiz
 $ make verif-guide
-25 passed in 28.02s
+25 passed in 30.23s
 $ make verif-pdf
-10 passed in 281.15s
+10 passed in 289.49s
 ```
 
 Prouve : **zéro requête réseau** à l'ouverture en `file://` ; axe-core injecté
-sans violation `serious` ni `critical` ; 2,88 Mo pour une limite de 20 Mo ;
+sans violation `serious` ni `critical` ; 4,43 Mo pour une limite de 20 Mo ;
 liens internes valides ; texte alternatif sur toutes les images ; empreintes
 conformes au manifeste ; **aucune réponse attendue publiée** ; le manifeste
 n'est pas embarqué ; et, de bout en bout, **une bonne réponse est acceptée et
@@ -267,6 +267,17 @@ $ make package && make verif-package
 Archive prête : dist/kit-formation-kibana-9.5.3-20260922.tar.gz (1409 Mo)
 10 passed in 45.01s
 ```
+
+**Ce bloc date de la recette complète, AVANT la refonte visuelle du guide.**
+Celle-ci ne touche que `guide/styles/guide.css`, `guide/gabarits/guide.html.j2`,
+`guide/build.py` et les polices embarquées : elle ne peut pas déplacer un
+chiffre de `verif-lab`, `verif-donnees`, `verif-parcours` ni `verif-corriges`,
+et ces quatre-là n'ont donc pas été rejoués — le lab n'était plus monté sur la
+machine de construction. Les trois phases qu'elle touche, elles, l'ont été, et
+ce sont leurs chiffres que publie la section P5 ci-dessus : `verif-guide`
+25/25 en 30,23 s, `verif-pdf` 10/10 en 289,49 s, `verif-package` 10/10 en
+58,86 s. Le guide passe de 2,88 à 4,43 Mo : c'est le poids de Source Serif 4,
+embarquée telle que distribuée comme l'exige CLAUDE.md. La limite est de 20 Mo.
 
 L'empreinte de l'archive n'est pas recopiée ici, et c'est volontaire : ce
 document EST dans l'archive, donc toute empreinte qu'il citerait serait celle

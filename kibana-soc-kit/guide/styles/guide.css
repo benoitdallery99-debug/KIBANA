@@ -24,13 +24,24 @@
   font-style: normal;
   font-display: swap;
 }
+/* Titraille. Source Serif 4, variable sur deux axes — la graisse ET la taille
+   optique : un titre de module à 34 px et une étiquette à 12 px ne veulent pas
+   le même dessin, et « opsz » le donne sans changer de fichier. Embarquée
+   telle que google/fonts la distribue, avec sa licence (CLAUDE.md). */
+@font-face {
+  font-family: "Source Serif 4";
+  src: url("__POLICE_TITRE__") format("truetype-variations");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* --- Couleurs ------------------------------------------------------------ */
 :root {
-  --encre: #101720;
-  --encre-douce: #44515f;
-  --papier: #f3f5f8;
-  --papier-appui: #e8edf2;
+  --encre: #1b1a17;
+  --encre-douce: #55514a;
+  --papier: #faf8f4;
+  --papier-appui: #f1ede4;
   --action: #5b21b6;
   --action-fond: #f1ebfd;
   --alerte: #9c2a1a;
@@ -38,15 +49,34 @@
   /* WCAG 1.4.11 : 3:1 minimum pour un trait qui délimite un composant — et
      les encadrés « piège » de ce guide ne sont distingués que par leur trait.
      Le gris précédent (#c3ccd6) tombait à 1,49:1. Mesuré sur les QUATRE fonds
-     du thème clair, et non sur le seul papier : 3,34 sur --papier, 3,09 sur
+     du thème clair, et non sur le seul papier : 3,43 sur --papier, 3,12 sur
      --papier-appui, 3,22 sur --alerte-fond, 3,13 sur --action-fond.
      « verif-guide » recalcule ces quatre rapports. */
   --filet: #7d8794;
 
+  /* UNE TEINTE PAR MODULE. Ce n'est pas de l'ornement : la couleur dit OÙ on
+     est. Le rail du sommaire, le filet du titre de module et la pastille du
+     numéro d'exercice la portent, et rien d'autre. Mesurées sur --papier :
+     6,89 · 6,25 · 5,84 · 7,77 · 7,10 · 5,90 — toutes au-dessus de 4,5:1, donc
+     utilisables pour du TEXTE et pas seulement pour un trait. */
+  --m0: #1a5a8a;
+  --m1: #27684a;
+  --m2: #8a5510;
+  --m3: #39479b;
+  --m4: #8f2f6b;
+  --m5: #136b6e;
+
   --texte: "Atkinson Hyperlegible Next", system-ui, sans-serif;
+  --titre: "Source Serif 4", Georgia, "Times New Roman", serif;
   --mono: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
 
   --colonne: 68ch;
+  /* Le même empan, mais exprimé en rem. PIÈGE : « ch » se résout sur la taille
+     de police de L'ÉLÉMENT. Un « max-width: 68ch » posé sur le conteneur borne
+     bien les paragraphes, mais un titre à 2 rem posé à côté s'y autorise
+     1 266 px pour 1 104 px de place — il déborde, et son filet avec lui.
+     Partout où la taille de police varie, c'est cette valeur-ci qu'on emploie. */
+  --colonne-fixe: 46.5rem;
   /* Facteur d'échelle auquel les captures sont prises (verif/e2e/kibana.py,
      ECHELLE_DES_CAPTURES). La valeur réelle est injectée à la construction. */
   --capture-echelle: __ECHELLE_DES_CAPTURES__;
@@ -55,10 +85,17 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="clair"]) {
-    --encre: #e6ebf2;
-    --encre-douce: #a7b3c1;
-    --papier: #12161c;
-    --papier-appui: #1b212a;
+    --encre: #eceaf2;
+    --encre-douce: #a9a6b2;
+    --papier: #16151a;
+    --papier-appui: #201e25;
+    /* Mesurées sur le papier sombre : 8,56 · 9,11 · 8,07 · 8,65 · 7,75 · 9,07 */
+    --m0: #7fb8e6;
+    --m1: #71c99b;
+    --m2: #d9a441;
+    --m3: #9fb0f5;
+    --m4: #e58ec0;
+    --m5: #5cc7cb;
     --action: #c4a8ff;
     --action-fond: #241a3a;
     --alerte: #ff9b8a;
@@ -66,16 +103,23 @@
     /* MESURÉ : #616e7e tenait 3,49:1 sur --papier mais tombait à 2,95:1 sur
        --alerte-fond — sous les 3:1 de WCAG 1.4.11, et précisément sur les
        encadrés « piège », que seul leur trait distingue. #6e7b8c passe les
-       quatre fonds : 4,21 sur --papier, 3,76 sur --papier-appui, 3,56 sur
+       quatre fonds : 4,22 sur --papier, 3,83 sur --papier-appui, 3,56 sur
        --alerte-fond, 3,80 sur --action-fond. */
     --filet: #6e7b8c;
   }
 }
 :root[data-theme="sombre"] {
-  --encre: #e6ebf2;
-  --encre-douce: #a7b3c1;
-  --papier: #12161c;
-  --papier-appui: #1b212a;
+  --encre: #eceaf2;
+  --encre-douce: #a9a6b2;
+  --papier: #16151a;
+  --papier-appui: #201e25;
+  /* Mesurées sur le papier sombre : 8,56 · 9,11 · 8,07 · 8,65 · 7,75 · 9,07 */
+  --m0: #7fb8e6;
+  --m1: #71c99b;
+  --m2: #d9a441;
+  --m3: #9fb0f5;
+  --m4: #e58ec0;
+  --m5: #5cc7cb;
   --action: #c4a8ff;
   --action-fond: #241a3a;
   --alerte: #ff9b8a;
@@ -725,4 +769,284 @@ mark.recherche__trouve {
     padding: 0 0 0 0.25em; }
   .glossaire-lien__bulle::before { content: "( "; }
   .glossaire-lien__bulle::after { content: " )"; }
+}
+
+/* ==========================================================================
+   DIRECTION « MANUEL TECHNIQUE » — refonte de la forme, à contenu constant.
+   Retour d'un lecteur : « je trouve la forme du html moche », et le grief
+   nommé était les COULEURS — du gris partout, un seul violet pâle. Trois
+   réponses : une titraille en serif qui donne une hiérarchie visible, une
+   teinte par module qui dit où l'on est, et des filets plutôt que des cadres.
+   ========================================================================== */
+
+/* --- La teinte du module courant ------------------------------------------
+   Une seule variable, posée par « data-module » : tout ce qui suit s'y
+   raccroche, et aucune règle ne connaît les six couleurs. */
+[data-module="M0"] { --teinte: var(--m0); }
+[data-module="M1"] { --teinte: var(--m1); }
+[data-module="M2"] { --teinte: var(--m2); }
+[data-module="M3"] { --teinte: var(--m3); }
+[data-module="M4"] { --teinte: var(--m4); }
+[data-module="M5"] { --teinte: var(--m5); }
+:root { --teinte: var(--encre-douce); }
+
+/* --- Titraille ------------------------------------------------------------
+   « opsz » suit la taille réelle : un titre de module à 2,1 rem et une
+   étiquette à 0,75 rem ne demandent pas le même dessin. */
+h1, h2, h3, h4,
+.exercice__titraille h3,
+.module__numero,
+.titre-page__nom {
+  font-family: var(--titre);
+  font-optical-sizing: auto;
+  text-wrap: balance;
+}
+
+/* --- L'en-tête de page : il n'en avait aucun ------------------------------ */
+.titre-page {
+  border-bottom: 3px solid var(--encre);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+.titre-page h1 {
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.6rem;
+}
+.titre-page .module__resume {
+  font-size: 1.12rem;
+  max-width: 54ch;
+  margin-bottom: 1.1rem;
+}
+.titre-page .module__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.4rem;
+  border-top: 1px solid var(--filet);
+  padding-top: 0.7rem;
+  margin: 0;
+}
+
+/* --- Le numéro de module, et son titre ------------------------------------ */
+.module__numero {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--teinte);
+  margin: 0 0 0.15rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+.module__numero span {
+  font-family: var(--texte);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: var(--encre-douce);
+}
+section[data-module] > .colonne:not(.colonne--figures) > h2 {
+  font-size: clamp(1.7rem, 3.2vw, 2.3rem);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.012em;
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 2px solid var(--teinte);
+}
+
+/* Les titres du CORPS d'un module sont des sections de lecture, pas le module.
+   Filet fin et neutre : la teinte reste au titre de module, qui la mérite. */
+.colonne--figures > h2,
+.colonne--figures > h3,
+.colonne--figures > h4 { max-width: var(--colonne-fixe); }
+.colonne--figures > h2 {
+  font-size: 1.55rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.008em;
+  margin: 2.4rem 0 0.7rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--filet);
+}
+.colonne--figures > h3 {
+  font-size: 1.18rem;
+  font-weight: 600;
+  margin: 1.8rem 0 0.5rem;
+}
+
+/* --- L'en-tête d'un exercice ---------------------------------------------- */
+.exercice {
+  border-top: 1px solid var(--filet);
+  padding-top: 1.6rem;
+}
+.exercice__entete {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0 0.85rem;
+  align-items: start;
+  margin-bottom: 0.9rem;
+}
+/* Un chiffre, pas une pastille. L'aplat plein est le marqueur des actions
+   Kibana (DESIGN principe 1) : aucun autre élément ne doit l'employer, sous
+   peine de faire passer un numéro d'exercice pour une action à faire. */
+.exercice__rang {
+  font-family: var(--titre);
+  font-size: 1.85rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--teinte);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 1.7rem;
+  margin-top: -0.12rem;
+}
+.exercice__titraille h3 {
+  font-size: 1.32rem;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+  letter-spacing: -0.008em;
+}
+.exercice__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.7rem;
+  margin: 0.3rem 0 0;
+}
+.exercice__meta .exercice__id {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--teinte);
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.exercice__meta .exercice__guidage {
+  font-family: var(--texte);
+  font-size: 0.76rem;
+  color: var(--encre-douce);
+  border: 0;
+  background: none;
+  padding: 0;
+}
+.exercice__meta .exercice__guidage::before {
+  content: "· ";
+  color: var(--encre-douce);
+}
+
+/* --- Le sommaire : c'est lui qui était le plus à l'étroit ----------------- */
+.sommaire { padding-inline: 1.35rem; }
+.sommaire__titre {
+  font-family: var(--titre);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--encre);
+  border-bottom: 1px solid var(--filet);
+  padding-bottom: 0.4rem;
+}
+.sommaire__module { margin-bottom: 0.35rem; }
+.sommaire__module > a {
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.15rem 0.4rem;
+  padding: 0.42rem 0.4rem;
+  border-radius: 3px;
+  border-left: 3px solid transparent;
+}
+.sommaire__module-id {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--teinte);
+}
+.sommaire__module-titre {
+  font-size: 0.93rem;
+  line-height: 1.3;
+}
+.sommaire__module[data-module] > a { border-left-color: var(--teinte); }
+.sommaire__module > a[aria-current="true"],
+li.sommaire__module[data-courant="oui"] > a {
+  background: var(--papier-appui);
+}
+.sommaire__jauge {
+  font-size: 0.7rem;
+  color: var(--encre-douce);
+  font-variant-numeric: tabular-nums;
+}
+.sommaire__exercices {
+  margin: 0.1rem 0 0.7rem 0;
+  padding-left: 0.4rem;
+  border-left: 1px solid var(--filet);
+}
+.sommaire__exercices a {
+  display: grid;
+  grid-template-columns: 1.3rem minmax(0, 1fr);
+  gap: 0.3rem;
+  align-items: baseline;
+  padding: 0.28rem 0.35rem;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  border-left: 0;
+}
+/* --filet (3,43:1) suffit à un TRAIT, pas à du texte : axe-core a relevé la
+   violation sur « 10 ». Le rang est un chiffre, donc --encre-douce (7,44:1). */
+.sommaire__rang {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  color: var(--encre-douce);
+  text-align: right;
+}
+.sommaire__exercices a[aria-current="true"] .sommaire__rang { color: var(--teinte); }
+.sommaire__exercices a[aria-current="true"] {
+  border-left: 0;
+  background: var(--papier-appui);
+  border-radius: 3px;
+}
+
+/* --- Les boutons avaient l'air de boutons par défaut ---------------------- */
+.bouton {
+  font-family: var(--texte);
+  font-weight: 600;
+  font-size: 0.86rem;
+  border: 1px solid var(--encre);
+  background: var(--encre);
+  color: var(--papier);
+  padding: 0.42rem 0.85rem;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.bouton:hover { background: var(--encre-douce); border-color: var(--encre-douce); }
+.bouton[data-etat="fait"] {
+  background: none;
+  color: var(--action);
+  border-color: var(--action);
+}
+.requete__entete .bouton {
+  background: none;
+  color: var(--encre-douce);
+  border-color: var(--filet);
+  font-weight: 500;
+}
+.requete__entete .bouton:hover { background: var(--papier-appui); color: var(--encre); }
+
+/* --- La barre d'outils flottait sans structure ---------------------------- */
+.outils {
+  align-items: center;
+  gap: 0.6rem;
+  padding-bottom: 0.85rem;
+  margin-bottom: 2rem;
+}
+.recherche input {
+  border-radius: 3px;
+  padding: 0.42rem 0.7rem;
+  min-width: 17rem;
 }

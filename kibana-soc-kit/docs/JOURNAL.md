@@ -585,6 +585,72 @@ seule** : trois envois sont restés sans effet parce que rien ne disait qu'il
 fallait cliquer la carte du fichier. Un fichier de 131 octets envoyé en sonde a
 tranché la question plus vite que trois hypothèses.
 
+### Le premier lecteur trouve la forme moche — et il a raison
+
+Le kit passait 121 contrôles, dont l'accessibilité, les contrastes, le poids et
+le hors-ligne. Le premier humain à ouvrir `dist/guide.html` a écrit : « je
+trouve la forme du html moche ». Interrogé sur le grief précis, il a répondu :
+**« les couleurs (ou leur absence) — du gris partout, un seul violet pâle, rien
+qui accroche l'œil »**, et a choisi la direction « manuel technique soigné ».
+
+Aucun des 121 contrôles ne pouvait relever ça. Ils mesurent des rapports de
+contraste, pas une hiérarchie visible ; ils comptent les ombres, pas l'ennui.
+C'est le même enseignement que l'installation sur le MacBook, et il vaut d'être
+écrit deux fois : **une suite verte dit que rien n'est faux, jamais que quelque
+chose est bon.**
+
+Ce qui a été changé, à contenu strictement constant :
+
+1. **Papier chaud.** `#f3f5f8` (gris-bleu) → `#faf8f4`, encre `#101720` →
+   `#1b1a17`. Le grief ne visait pas l'accent, il visait le fond.
+2. **Titraille en serif.** Source Serif 4, police variable à axe optique,
+   récupérée chez Google Fonts et embarquée telle que distribuée (OFL, aucun
+   sous-ensemble — CLAUDE.md). Les titres ne se distinguaient plus que par la
+   taille ; ils se distinguent maintenant par la famille.
+3. **Six teintes de module**, posées par un attribut `data-module` et lues par
+   une seule variable `--teinte`. Rail du sommaire, filet sous le titre de
+   module, numéro d'exercice, identifiant : rien d'autre.
+4. **Titraille d'exercice restructurée** : un chiffre, un titre, une ligne de
+   méta — au lieu de trois étiquettes encadrées alignées.
+5. **En-tête de page**, qui n'existait pas, et boutons pleins.
+
+Quatre défauts relevés en regardant le rendu, qu'aucun test n'aurait vus :
+
+- **Le M3 était violet** (`#5b3f9e`). `--action` est réservé aux actions Kibana
+  (DESIGN principe n° 1) : un module entier teinté de la couleur de l'action.
+  Passé en indigo `#39479b`.
+- **Le numéro d'exercice était une pastille pleine.** L'aplat plein EST le
+  marqueur du bloc d'action ; un numéro d'exercice ne doit pas le porter. C'est
+  un chiffre nu depuis.
+- **Les titres du corps d'un module débordaient de la colonne**, filet compris.
+  Cause mesurée : `max-width: 68ch` se résout sur la taille de police de
+  l'élément, donc 1 266 px pour un titre à 2 rem dans un conteneur de 1 104 px.
+  Défaut antérieur à la refonte, rendu visible par elle. Là où la taille varie,
+  c'est `--colonne-fixe: 46.5rem` qui borne.
+- **Le titre de module s'affichait deux fois** : une fois par le gabarit, une
+  fois par le `#` de tête du corps markdown — lequel a sa raison d'être dans
+  `parcours/M2.md`, qui se lit seul. Le guide le retire à la construction ; le
+  fichier n'est pas touché.
+
+Un cinquième défaut a été relevé par un test, et il mérite d'être noté parce
+qu'il contredit l'intuition : axe-core a refusé `.sommaire__rang` en `--filet`.
+`--filet` tient 3,43:1, ce qui suffit à un TRAIT (WCAG 1.4.11) et pas à du
+texte (1.4.3, 4,5:1). Un jeton passe un seuil pour l'emploi auquel il est
+destiné, pas pour tous.
+
+`docs/DESIGN.md` a été rendu à ce que le code fait : palette, teintes de
+module, rôles typographiques, et la confrontation au cliché « fond crème et
+accent terre cuite » refaite honnêtement, puisque le papier s'est réchauffé.
+`make verif-guide` 25/25, `verif-pdf` 10/10, `verif-package` 10/10. Les quatre
+phases qui dépendent du lab n'ont pas été rejouées — le lab n'est plus monté
+sur la machine de construction, et une refonte CSS ne peut pas en déplacer un
+chiffre. C'est écrit tel quel dans `docs/RAPPORT_RECETTE.md`.
+
+Le guide passe de 2,88 à 4,43 Mo, pour une limite de 20 Mo : Source Serif 4
+pèse 1,2 Mo et ne peut pas être sous-ensemblée.
+
+---
+
 ---
 
 ## P3 — Parcours — ARCHIVE DE L'ENTRÉE PRÉCÉDENTE

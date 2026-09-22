@@ -30,14 +30,18 @@
         <a href="#contexte"><span>Contexte</span></a>
       </li>
       {% for m in modules %}
-      <li class="sommaire__module">
+      <li class="sommaire__module" data-module="{{ m.id }}">
         <a href="#{{ m.ancre }}">
-          <span>{{ m.id }} — {{ m.titre }}</span>
+          <span class="sommaire__module-id">{{ m.id }}</span>
+          <span class="sommaire__module-titre">{{ m.titre }}</span>
           <span class="sommaire__jauge" data-jauge-module="{{ m.id }}" aria-live="off">—</span>
         </a>
         <div class="sommaire__exercices">
           {% for e in m.exercices %}
-          <a href="#{{ e.ancre }}">{{ e.id }} · {{ e.titre }}</a>
+          <a href="#{{ e.ancre }}">
+            <span class="sommaire__rang">{{ loop.index }}</span>
+            <span>{{ e.titre }}</span>
+          </a>
           {% endfor %}
         </div>
       </li>
@@ -76,7 +80,7 @@
     <button class="bouton" id="bascule-theme" type="button">Thème sombre</button>
   </div>
 
-  <header class="colonne">
+  <header class="colonne titre-page">
     <h1>{{ titre }}</h1>
     <p class="module__resume">{{ sous_titre }}</p>
     <p class="module__meta">Elastic Stack {{ version }} · licence {{ licence }} ·
@@ -147,9 +151,10 @@
   </section>
 
   {% for m in modules %}
-  <section id="{{ m.ancre }}" data-ancre data-cherchable>
+  <section id="{{ m.ancre }}" data-ancre data-cherchable data-module="{{ m.id }}">
     <div class="colonne">
-      <h2>{{ m.id }} — {{ m.titre }}</h2>
+      <p class="module__numero"><span>Module</span> {{ loop.index0 }}</p>
+      <h2>{{ m.titre }}</h2>
       <p class="module__resume">{{ m.resume }}</p>
       <p class="module__meta">{{ m.duree_minutes }} minutes ·
         {{ m.exercices | length }} exercice{{ "s" if m.exercices | length > 1 }}</p>
@@ -200,13 +205,19 @@
     {% endfor %}
 
     {% for e in m.exercices %}
-    <article class="exercice" id="{{ e.ancre }}" data-ancre data-cherchable>
+    <article class="exercice" id="{{ e.ancre }}" data-ancre data-cherchable
+             data-module="{{ m.id }}">
       <div class="colonne">
         <div class="exercice__entete">
-          <span class="exercice__id">{{ e.id }}</span>
-          <h3 style="margin:0">{{ e.titre }}</h3>
-          <span class="exercice__guidage">{{ e.guidage_libelle }}</span>
-          <span class="exercice__guidage">{{ e.duree_minutes }} min</span>
+          <span class="exercice__rang" aria-hidden="true">{{ loop.index }}</span>
+          <div class="exercice__titraille">
+            <h3>{{ e.titre }}</h3>
+            <p class="exercice__meta">
+              <span class="exercice__id">{{ e.id }}</span>
+              <span class="exercice__guidage">{{ e.guidage_libelle }}</span>
+              <span class="exercice__guidage">{{ e.duree_minutes }} min</span>
+            </p>
+          </div>
         </div>
 
         <p class="exercice__contexte">{{ e.contexte | safe }}</p>

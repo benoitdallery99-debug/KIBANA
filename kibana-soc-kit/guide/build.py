@@ -38,6 +38,22 @@ GUIDAGES = {
 }
 
 
+def retirer_le_titre_redondant(corps: str, identifiant: str, titre: str) -> str:
+    """Retire le « # » de tête d'un corps de module s'il redit le titre.
+
+    Comparaison volontairement stricte : le titre doit contenir l'identifiant
+    ET l'intitulé du frontmatter. Un module qui ouvrirait sur un vrai titre
+    différent le garde.
+    """
+    lignes = corps.lstrip("\n").split("\n")
+    if not lignes or not lignes[0].startswith("# "):
+        return corps
+    tete = lignes[0][2:].strip()
+    if identifiant in tete and titre in tete:
+        return "\n".join(lignes[1:]).lstrip("\n")
+    return corps
+
+
 def frontmatter(texte: str) -> tuple[dict, str]:
     if not texte.startswith("---"):
         raise SystemExit("frontmatter YAML absent")
@@ -56,6 +72,7 @@ def css_avec_polices() -> str:
         "__POLICE_TEXTE__": "AtkinsonHyperlegibleNext[wght].ttf",
         "__POLICE_ITALIQUE__": "AtkinsonHyperlegibleNext-Italic[wght].ttf",
         "__POLICE_MONO__": "AtkinsonHyperlegibleMono[wght].ttf",
+        "__POLICE_TITRE__": "SourceSerif4[opsz,wght].ttf",
     }
     for marque, nom in polices.items():
         chemin = GUIDE / "polices" / nom
@@ -342,6 +359,12 @@ def charger_modules() -> tuple[dict, list[dict], list[dict]]:
     modules = []
     for chemin in sorted((conf.RACINE / "parcours").glob("M*.md")):
         entete, corps = frontmatter(chemin.read_text(encoding="utf-8"))
+        # Le corps d'un module s'ouvre sur « # M2 — Visualiser avec Lens »,
+        # parce qu'il se lit aussi seul, dans « parcours/M2.md ». Le guide,
+        # lui, a déjà posé ce titre au-dessus : gardé, il affichait deux fois
+        # le même intitulé, à deux niveaux différents. Le fichier n'est pas
+        # touché ; seul le guide s'en passe.
+        corps = retirer_le_titre_redondant(corps, entete["id"], entete["titre"])
         captures_du_module = captures.get(entete["id"], [])
         appelees: set[str] = set()
         corps_html = markdown_vers_html(
