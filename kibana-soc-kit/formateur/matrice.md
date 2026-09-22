@@ -50,7 +50,7 @@ au moins un exercice **et** une question du quiz (SPEC §2).
 - **M2-O1** — À l'issue du module, le stagiaire est capable de choisir la forme de visualisation qu'appelle une question — comparer, suivre une évolution, répartir, distribuer — et de la construire dans Lens.
 - **M2-O2** — À l'issue du module, le stagiaire est capable de construire un classement avec « Valeurs les plus élevées », d'en régler le nombre de valeurs et le sens, et de dire pourquoi un classement peut être approché.
 - **M2-O3** — À l'issue du module, le stagiaire est capable de construire un histogramme des dates, de choisir son intervalle et de reconnaître un intervalle partiel en bord de fenêtre.
-- **M2-O4** — À l'issue du module, le stagiaire est capable de dire à quelle condition un décompte de valeurs distinctes est exact, et de refuser d'en publier un qui ne l'est pas.
+- **M2-O4** — À l'issue du module, le stagiaire est capable de dire à quelle condition un décompte de valeurs distinctes est publiable, et de refuser d'en publier un qui ne l'est pas.
 - **M2-O5** — À l'issue du module, le stagiaire est capable d'écrire une formule, de poser une ligne de référence et de colorer une visualisation par valeur.
 - **M3-O1** — À l'issue du module, le stagiaire est capable de composer une grille de panneaux, d'en régler le titre, la taille et la place, et de justifier cette place par une règle de conception.
 - **M3-O2** — À l'issue du module, le stagiaire est capable d'ajouter des contrôles à un tableau de bord, de choisir leur type selon le type du champ, et de décider de leur portée par l'épinglage.

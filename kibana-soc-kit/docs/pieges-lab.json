@@ -23,7 +23,7 @@
     },
     {
       "id": "exists-lucene-en-kql",
-      "titre": "« _exists_ » est du Lucene ; en KQL l'existence s'écrit « champ:* »",
+      "titre": "« _exists_ » est du Lucene ; en KQL l'existence s'écrit « champ : * »",
       "lecon": "Celui-ci est le vrai piège muet : aucune erreur, aucun résultat. Zéro résultat n'est pas une réponse, c'est une question.",
       "type": "requete",
       "ce_qui_echoue": {

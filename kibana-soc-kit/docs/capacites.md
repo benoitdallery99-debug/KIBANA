@@ -577,7 +577,7 @@ disposant de `>=`, `<=`, `>` et `<`
 ([explore-analyze/query-filter/languages/kql.md](https://www.elastic.co/docs/explore-analyze/query-filter/languages/kql)).
 Le constat d'échec silencieux vient du lab et est inscrit dans `docs/SPEC.md` §6.3 et `CLAUDE.md` ;
 il **n'est pas couvert par `docs/capacites-lab.json`** et doit donc être reproduit et **capturé** avant
-d'entrer dans le guide. Corollaires à enseigner dans le même exercice : l'existence s'écrit `champ:*` en
+d'entrer dans le guide. Corollaires à enseigner dans le même exercice : l'existence s'écrit `champ : *` en
 KQL et `_exists_:champ` en Lucene.
 
 **22. La route de l'API Dashboards est `/api/dashboards/{id}`, pas `/api/dashboards/dashboard/{id}`.**

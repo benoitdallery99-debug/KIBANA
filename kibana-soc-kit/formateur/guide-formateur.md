@@ -105,14 +105,18 @@ seule, et un quiz passé à froid mesure mieux.
 
 **Si vous prenez du retard**, sacrifiez dans cet ordre : un scénario de M4 parmi
 S2, S3 et S5 (ils exercent le même geste sur trois pistes différentes), puis un
-deuxième, puis la construction du second écran de M4-E2 — le corrigé le fournit.
+deuxième, puis la mise en forme du second écran de M4 — titres, couleurs,
+disposition — en gardant ses panneaux : le corrigé fournit la version soignée,
+et c'est elle que la correction collective projette.
 
-Ne sacrifiez ni M2-E5 ni M5-E3, quelle que soit l'heure : chacun est le SEUL
-exercice qui évalue son objectif (M2-O5, les formules et les lignes de
-référence ; M5-O3, le transport vers un autre Space). Les couper, c'est rendre
-un objectif non mesuré. Ne sacrifiez jamais non plus M4-E10 (la synthèse) ni le
-scénario S7 : ce sont les deux seuls moments où l'on travaille le jugement
-plutôt que l'outil.
+**Quatorze exercices ne se sacrifient à aucune heure**, parce que chacun est le
+SEUL à évaluer un objectif : M0-E2, M1-E5, M2-E2, M2-E4, M2-E5, M3-E2, M3-E4,
+M4-E2, M4-E9, M4-E10, M5-E1, M5-E2, M5-E3, M5-E4. Les couper, c'est rendre un
+objectif non mesuré — et une version de ce guide proposait justement de couper
+M4-E2, seul évaluateur de M4-O2. Le tableau du § 4 donne la correspondance
+complète ; `make verif-parcours` refuse désormais toute liste qui s'en écarte.
+Ne sacrifiez jamais non plus le scénario S7 : avec M4-E10, ce sont les deux
+seuls moments où l'on travaille le jugement plutôt que l'outil.
 
 ## 3. Pourquoi le parcours est construit ainsi
 
@@ -269,7 +273,7 @@ make epreuve-fermer   # les lui retire, une fois l'épreuve rendue
 
 Les deux commandes relisent les rôles du compte et affichent ce qu'elles ont
 obtenu : vous voyez l'état réel, pas une promesse. Le Space s'appelle
-« Épreuve pratique » et sa vue de données porte le motif `logs-*-epreuve`.
+« Épreuve pratique » et sa data view porte le motif `logs-*-epreuve`.
 
 **Ce qui se répète d'un jeu à l'autre, et ce qu'il faut en faire.** Avec six
 sources, trois portent déjà une réponse de repère et deux portent les événements

@@ -530,3 +530,193 @@ def test_toutes_les_captures_du_plan_sont_dans_le_guide(plan_de_capture, html):
     assert not hors_plan, (
         f"images publiées sans passer par le plan de capture : {hors_plan}"
     )
+
+
+# --------------------------------------------------------------------------
+# Contraste des traits (WCAG 1.4.11)
+# --------------------------------------------------------------------------
+
+# Un trait qui délimite un composant doit atteindre 3:1 sur CE QU'IL BORDE.
+# Le thème sombre tenait 3,49:1 sur le papier et passait pour conforme ; sur
+# « --alerte-fond », il tombait à 2,95:1 — c'est-à-dire précisément sur les
+# encadrés « piège », que seul leur trait distingue du texte courant.
+FONDS_A_BORDER = ("--papier", "--papier-appui", "--alerte-fond", "--action-fond")
+CONTRASTE_MINIMAL = 3.0
+
+
+def _luminance(couleur: str) -> float:
+    couleur = couleur.lstrip("#")
+    if len(couleur) == 3:
+        couleur = "".join(c * 2 for c in couleur)
+    canaux = []
+    for i in (0, 2, 4):
+        c = int(couleur[i:i + 2], 16) / 255
+        canaux.append(c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4)
+    return 0.2126 * canaux[0] + 0.7152 * canaux[1] + 0.0722 * canaux[2]
+
+
+def _contraste(a: str, b: str) -> float:
+    la, lb = _luminance(a), _luminance(b)
+    haut, bas = max(la, lb), min(la, lb)
+    return (haut + 0.05) / (bas + 0.05)
+
+
+def _themes(css: str) -> dict[str, dict[str, str]]:
+    """Les jeux de variables du CSS : le clair (:root) et chaque thème sombre."""
+    jeux: dict[str, dict[str, str]] = {}
+    for nom, motif in (
+        ("clair", r":root\s*\{(.*?)\}"),
+        ("sombre (préférence système)",
+         r"@media \(prefers-color-scheme: dark\)\s*\{\s*:root[^{]*\{(.*?)\}"),
+        ("sombre (choisi)", r':root\[data-theme="sombre"\]\s*\{(.*?)\}'),
+    ):
+        m = re.search(motif, css, re.S)
+        if not m:
+            continue
+        jeux[nom] = dict(re.findall(r"(--[\w-]+)\s*:\s*(#[0-9a-fA-F]{3,6})\s*;",
+                                    m.group(1)))
+    return jeux
+
+
+def test_le_filet_atteint_trois_pour_un_sur_chaque_fond(config):
+    """WCAG 1.4.11, mesuré sur tous les fonds — pas sur le seul papier."""
+    css = (config.RACINE / "guide" / "styles" / "guide.css").read_text(encoding="utf-8")
+    jeux = _themes(css)
+    assert jeux, "aucun jeu de couleurs reconnu dans guide.css"
+
+    defauts = []
+    for nom, variables in jeux.items():
+        filet = variables.get("--filet")
+        if not filet:
+            continue
+        for fond in FONDS_A_BORDER:
+            valeur = variables.get(fond)
+            if not valeur:
+                continue
+            rapport = _contraste(filet, valeur)
+            if rapport < CONTRASTE_MINIMAL:
+                defauts.append(
+                    f"thème {nom} : --filet {filet} sur {fond} {valeur} = "
+                    f"{rapport:.2f}:1, sous {CONTRASTE_MINIMAL}:1"
+                )
+
+    assert not defauts, "traits sous le seuil de WCAG 1.4.11 :\n  " + "\n  ".join(defauts)
+
+
+def test_le_sommaire_reste_atteignable_apres_avoir_defile(page_ouverte):
+    """Un sommaire en tête d'un document de 107 000 px n'est pas un sommaire.
+
+    MESURÉ : sous 62 rem, « .sommaire » était « position: static ». Arrivé au
+    module M4, le stagiaire avait la barre de commande — sommaire, recherche,
+    bascule de thème — à 29 230 px au-dessus de lui. Le seul moyen d'y revenir
+    était de remonter tout le guide.
+
+    Trois choses sont vérifiées, aux deux largeurs de téléphone usuelles : la
+    bascule reste dans l'écran après un long défilement ; repliée, la barre ne
+    mange pas la lecture ; et suivre un lien la replie, faute de quoi elle
+    recouvrirait la section qu'on vient d'atteindre.
+    """
+    page, _ = page_ouverte
+    defauts = []
+    for largeur in (390, 320):
+        page.set_viewport_size({"width": largeur, "height": 800})
+        page.wait_for_timeout(600)
+        page.evaluate("window.scrollTo(0, document.body.scrollHeight * 0.75)")
+        page.wait_for_timeout(800)
+
+        mesure = page.evaluate("""() => {
+            const s = document.querySelector('.sommaire');
+            const b = document.getElementById('bascule-sommaire');
+            const rs = s.getBoundingClientRect();
+            const rb = b.getBoundingClientRect();
+            return {
+              hauteur: Math.round(rs.height),
+              bascule_dans_l_ecran: rb.top >= -1 && rb.bottom <= window.innerHeight + 1,
+              defile: Math.round(window.scrollY),
+            };
+        }""")
+        if not mesure["bascule_dans_l_ecran"]:
+            defauts.append(
+                f"{largeur} px : après {mesure['defile']} px de défilement, la "
+                f"bascule du sommaire est hors de l'écran"
+            )
+        if mesure["hauteur"] > 0.4 * 800:
+            defauts.append(
+                f"{largeur} px : la barre repliée occupe {mesure['hauteur']} px "
+                f"de haut et mange la lecture"
+            )
+
+        page.click("#bascule-sommaire")
+        page.wait_for_timeout(500)
+        if page.get_attribute(".sommaire", "data-ouvert") != "oui":
+            defauts.append(f"{largeur} px : la bascule n'ouvre pas le sommaire")
+        page.locator(".sommaire__module > a").first.click()
+        page.wait_for_timeout(600)
+        if page.get_attribute(".sommaire", "data-ouvert") != "non":
+            defauts.append(
+                f"{largeur} px : suivre un lien laisse le sommaire ouvert, donc "
+                f"posé par-dessus la section atteinte"
+            )
+
+    page.set_viewport_size({"width": 1440, "height": 900})
+    page.evaluate("window.scrollTo(0, 0)")
+    assert not defauts, "sommaire sur téléphone :\n  " + "\n  ".join(defauts)
+
+
+def test_la_recherche_surligne_ce_qu_elle_a_trouve(page_ouverte):
+    """« 7 sections trouvées » laissait chercher le mot à l'œil dans sept sections.
+
+    Le filtre masquait ce qui ne correspond pas, et s'arrêtait là. On exige
+    donc un surlignage, et surtout qu'il s'EFFACE : un surlignage qui survit à
+    l'effacement du champ salirait le guide jusqu'au rechargement.
+    """
+    page, _ = page_ouverte
+    champ = page.locator("#recherche")
+    champ.fill("cardinality")
+    page.wait_for_timeout(900)
+    poses = page.locator("mark.recherche__trouve").count()
+    sections = page.locator("[data-cherchable]:not([hidden])").count()
+    champ.fill("")
+    page.wait_for_timeout(700)
+    restants = page.locator("mark.recherche__trouve").count()
+    rendues = page.locator("[data-cherchable]:not([hidden])").count()
+
+    assert poses > 0, (
+        f"« cardinality » retient {sections} section(s) mais n'est surligné nulle part"
+    )
+    assert restants == 0, f"{restants} surlignage(s) survivent à l'effacement du champ"
+    assert rendues > sections, "effacer le champ ne rend pas les sections masquées"
+
+
+def test_la_position_courante_descend_au_niveau_de_l_exercice(page_ouverte):
+    """Le sommaire marquait toujours le module, jamais l'exercice lu.
+
+    La section d'un module intersecte dès qu'un de ses exercices intersecte :
+    en retenant la PREMIÈRE cible visible dans l'ordre du DOM, le module
+    l'emportait toujours. Les trente-cinq entrées d'exercice du sommaire ne
+    recevaient donc jamais « aria-current », et le repère s'arrêtait à « vous
+    êtes quelque part dans M1 » — sur un module de 87 minutes.
+    """
+    page, _ = page_ouverte
+    page.set_viewport_size({"width": 1440, "height": 900})
+    exercices = page.locator("article.exercice[data-ancre]")
+    assert exercices.count() > 6, "pas assez d'exercices pour mesurer"
+    exercices.nth(6).scroll_into_view_if_needed()
+    page.wait_for_timeout(1500)
+
+    releve = page.evaluate("""() => {
+        const a = document.querySelector('.sommaire a[aria-current="true"]');
+        const m = document.querySelector('li.sommaire__module[data-courant="oui"] > a');
+        return {courant: a ? a.getAttribute('href') : null,
+                module: m ? m.getAttribute('href') : null};
+    }""")
+    page.evaluate("window.scrollTo(0, 0)")
+
+    assert releve["courant"], "aucune entrée du sommaire n'est marquée courante"
+    assert releve["courant"].startswith("#ex-"), (
+        f"la position s'arrête au module : « {releve['courant']} »"
+    )
+    assert releve["module"], (
+        "l'exercice est marqué mais son module ne l'est plus : le lecteur perd "
+        "tout repère de module"
+    )

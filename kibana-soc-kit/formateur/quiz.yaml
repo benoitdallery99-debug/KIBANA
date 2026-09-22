@@ -209,8 +209,10 @@
   reponse: 3
   explication: >-
     Le décompte de valeurs distinctes repose sur une estimation
-    (HyperLogLog++), exacte en deçà de son seuil de précision — 3 000 par
-    défaut — et approximative au-delà. Sur le jeu du parcours, l'écart se
+    (HyperLogLog++). La documentation d'Elasticsearch la dit « proche du
+    juste » en deçà de son seuil de précision — 3 000 par défaut — et ne
+    promet rien au-delà. Elle ne dit nulle part « exacte » : la nuance est
+    celle qui autorise, ou non, à publier le chiffre. Sur le jeu du parcours, l'écart se
     mesure : le chiffre affiché et celui obtenu en portant le seuil à 40 000
     diffèrent de quelques dizaines, et ils changent d'une réinitialisation du
     lab à l'autre. Faites-le faire au stagiaire plutôt que de citer un nombre,
@@ -412,7 +414,7 @@
   explication: >-
     La recherche globale et la barre de requête se ressemblent et ne font pas du
     tout le même travail. La première est un navigateur : elle vous emmène vers
-    une application, un tableau de bord, une vue de données. La seconde
+    une application, un tableau de bord, une data view. La seconde
     interroge les documents. Confondre les deux conduit à déclarer absente une
     machine qui émet des milliers d'événements — et c'est une erreur qui se
     commet surtout sous pression, quand on cherche vite.

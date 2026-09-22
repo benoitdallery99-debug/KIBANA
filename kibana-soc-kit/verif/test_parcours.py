@@ -1023,3 +1023,104 @@ def test_le_deroule_minute_tient_debout(modules, config):
             )
 
     assert not defauts, "déroulé minuté faux :\n  " + "\n  ".join(defauts)
+
+
+def test_le_formateur_ne_propose_jamais_de_couper_un_evaluateur_unique(modules, config):
+    """Couper un exercice unique évaluateur, c'est rendre un objectif non mesuré.
+
+    Le guide du formateur disait les deux choses à trois lignes d'écart : « ne
+    sacrifiez ni M2-E5 ni M5-E3, chacun est le SEUL à évaluer son objectif »,
+    et, juste avant, « sacrifiez … la construction du second écran de M4-E2 » —
+    or M4-E2 est le seul évaluateur de M4-O2. Le formateur pressé suivait la
+    première phrase.
+
+    On recalcule la couverture depuis le parcours : la liste protégée du guide
+    doit être EXACTEMENT celle des exercices à évaluateur unique, et aucun
+    d'eux ne doit figurer dans la phrase qui dit quoi sacrifier.
+    """
+    chemin = config.RACINE / "formateur" / "guide-formateur.md"
+    if not chemin.exists():
+        pytest.skip("NON EXÉCUTÉ : formateur/guide-formateur.md absent.")
+    texte = chemin.read_text(encoding="utf-8")
+
+    couverture = collections.defaultdict(list)
+    for m in modules:
+        for exercice in m["entete"]["exercices"]:
+            for objectif in exercice.get("objectifs", []):
+                couverture[objectif].append(exercice["id"])
+    uniques = {v[0] for v in couverture.values() if len(v) == 1}
+
+    deplie = re.sub(r"\s+", " ", texte)
+
+    defauts = []
+    phrase = re.search(r"Si vous prenez du retard.*?\.", deplie)
+    if phrase:
+        for identifiant in sorted(uniques):
+            if identifiant in phrase.group(0):
+                defauts.append(
+                    f"{identifiant} est proposé au sacrifice alors qu'il est le "
+                    f"seul à évaluer son objectif"
+                )
+
+    annonce = re.search(r"ne se sacrifient à aucune heure.*?:\s*(.+?)\.", deplie)
+    if not annonce:
+        defauts.append("la liste des exercices à ne jamais sacrifier a disparu du guide")
+    else:
+        cites = set(re.findall(r"M\d-E\d+", annonce.group(1)))
+        if cites != uniques:
+            manquants = sorted(uniques - cites)
+            en_trop = sorted(cites - uniques)
+            if manquants:
+                defauts.append(f"absents de la liste protégée : {', '.join(manquants)}")
+            if en_trop:
+                defauts.append(
+                    f"protégés à tort (ils ne sont pas seuls évaluateurs) : "
+                    f"{', '.join(en_trop)}"
+                )
+
+    assert not defauts, (
+        "le guide du formateur se contredit sur ce qui peut être coupé :\n  "
+        + "\n  ".join(defauts)
+    )
+
+
+# Les fichiers que le stagiaire et le formateur LISENT, par opposition aux
+# documents de fabrication (journal, rapport de recette, relevé de capacités),
+# qui datent volontairement leurs constats.
+LUS_EN_SALLE = (
+    "parcours/M0.md", "parcours/M1.md", "parcours/M2.md",
+    "parcours/M3.md", "parcours/M4.md", "parcours/M5.md",
+    "formateur/guide-formateur.md", "formateur/quiz.yaml",
+    "formateur/matrice.md", "formateur/epreuve-pratique.md",
+    "guide/fiche-memo.yaml", "guide/glossaire.yaml",
+)
+
+
+def test_aucune_version_en_dur_ne_diverge_de_la_configuration(config):
+    """CLAUDE.md : « jamais de version, locale ou graine en dur ».
+
+    Deux textes citent la version en toutes lettres — M0, qui explique que le
+    panneau de navigation reste en anglais « en version 9.5.3 », et l'en-tête du
+    guide du formateur. Le chiffre y a sa place : on parle d'un comportement
+    propre à CETTE version. Ce qui manquait, c'est le lien : une montée de
+    version aurait laissé les deux phrases parler d'une version que le kit ne
+    livre plus, sans que rien n'échoue. Le contrôle exige donc que toute version
+    citée soit celle de kit.config.yaml.
+    """
+    attendue = str(config.valeur("stack.version"))
+    fautes = []
+    for nom in LUS_EN_SALLE:
+        chemin = config.RACINE / nom
+        if not chemin.exists():
+            continue
+        texte = chemin.read_text(encoding="utf-8")
+        for numero, ligne in enumerate(texte.split("\n"), 1):
+            # Les lookarounds écartent les adresses IP : « 10.0.0.0/8 » porte
+            # « 10.0.0 », qui n'est pas une version.
+            for trouvee in re.findall(r"(?<![\d.])\d+\.\d+\.\d+(?![\d.])", ligne):
+                if trouvee != attendue:
+                    fautes.append(f"{nom}:{numero} cite {trouvee} — kit.config.yaml "
+                                  f"dit {attendue}")
+    assert not fautes, (
+        "version citée hors configuration :\n  " + "\n  ".join(fautes)
+    )

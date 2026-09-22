@@ -312,14 +312,42 @@
     var visibles = {};
     var observateur = new IntersectionObserver(function (entrees) {
       entrees.forEach(function (e) { visibles[e.target.id] = e.isIntersecting; });
+      /* La section d'un module INTERSECTE des qu'un de ses exercices
+         intersecte : en prenant la premiere cible visible dans l'ordre du DOM,
+         le module l'emportait toujours et le lien d'un exercice n'etait jamais
+         marque courant. On prend donc la DERNIERE, c'est-a-dire la plus
+         profonde et la plus recente. */
       var courant = null;
       Array.prototype.forEach.call(cibles, function (c) {
-        if (visibles[c.id] && !courant) courant = c.id;
+        if (visibles[c.id]) courant = c.id;
       });
       Object.keys(liens).forEach(function (id) {
         if (id === courant) liens[id].setAttribute("aria-current", "true");
         else liens[id].removeAttribute("aria-current");
       });
+      /* Le module qui contient la position garde sa marque : sans elle, la
+         lecture d'un exercice efface tout repere de module dans le sommaire. */
+      var lien = courant ? liens[courant] : null;
+      var moduleCourant = lien && lien.closest
+        ? lien.closest("li.sommaire__module") : null;
+      Array.prototype.forEach.call(
+        document.querySelectorAll("li.sommaire__module"),
+        function (li) {
+          if (li === moduleCourant) li.setAttribute("data-courant", "oui");
+          else li.removeAttribute("data-courant");
+        }
+      );
+      /* Un sommaire de 44 entrees defile : marquer la position sans l'amener
+         sous les yeux ne sert a rien. On ne bouge que si elle est hors du
+         cadre, pour ne pas sauter a chaque pixel de defilement. */
+      var sommaire = document.querySelector(".sommaire");
+      if (lien && sommaire && sommaire.scrollHeight > sommaire.clientHeight + 1) {
+        var cadre = sommaire.getBoundingClientRect();
+        var boite = lien.getBoundingClientRect();
+        if (boite.top < cadre.top || boite.bottom > cadre.bottom) {
+          sommaire.scrollTop += boite.top - cadre.top - cadre.height / 3;
+        }
+      }
     }, { rootMargin: "-10% 0px -75% 0px" });
     Array.prototype.forEach.call(cibles, function (c) { observateur.observe(c); });
   }
@@ -364,14 +392,73 @@
       );
     }
 
+    /* Le filtre disait « 7 sections trouvees » et laissait le stagiaire
+       chercher le mot a l'oeil dans sept sections entieres. On le surligne.
+       On ne touche qu'aux NOEUDS DE TEXTE : les boutons du quiz, leurs
+       ecouteurs et les blocs de code gardent leur structure. */
+    var SANS_SURLIGNAGE = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, MARK: 1 };
+
+    function effacerSurlignage(racine) {
+      Array.prototype.forEach.call(
+        racine.querySelectorAll("mark.recherche__trouve"),
+        function (m) {
+          var parent = m.parentNode;
+          parent.replaceChild(document.createTextNode(m.textContent), m);
+          parent.normalize();
+        }
+      );
+    }
+
+    function surligner(racine, q) {
+      var promeneur = document.createTreeWalker(
+        racine, NodeFilter.SHOW_TEXT, {
+          acceptNode: function (noeud) {
+            if (!noeud.nodeValue || !noeud.nodeValue.trim()) {
+              return NodeFilter.FILTER_REJECT;
+            }
+            for (var n = noeud.parentNode; n && n !== racine; n = n.parentNode) {
+              if (SANS_SURLIGNAGE[n.nodeName]) return NodeFilter.FILTER_REJECT;
+            }
+            return noeud.nodeValue.toLowerCase().indexOf(q) === -1
+              ? NodeFilter.FILTER_REJECT
+              : NodeFilter.FILTER_ACCEPT;
+          }
+        }
+      );
+      var trouves = [];
+      while (promeneur.nextNode()) trouves.push(promeneur.currentNode);
+      trouves.forEach(function (noeud) {
+        var texte = noeud.nodeValue;
+        var bas = texte.toLowerCase();
+        var morceaux = document.createDocumentFragment();
+        var i = 0;
+        var j;
+        while ((j = bas.indexOf(q, i)) !== -1) {
+          if (j > i) {
+            morceaux.appendChild(document.createTextNode(texte.slice(i, j)));
+          }
+          var m = document.createElement("mark");
+          m.className = "recherche__trouve";
+          m.textContent = texte.slice(j, j + q.length);
+          morceaux.appendChild(m);
+          i = j + q.length;
+        }
+        if (i < texte.length) {
+          morceaux.appendChild(document.createTextNode(texte.slice(i)));
+        }
+        noeud.parentNode.replaceChild(morceaux, noeud);
+      });
+    }
+
     champ.addEventListener("input", function () {
       var q = champ.value.trim().toLowerCase();
       var trouves = 0;
       Array.prototype.forEach.call(sections, function (s) {
+        effacerSurlignage(s);
         if (!q) { s.hidden = false; return; }
         var dedans = s.textContent.toLowerCase().indexOf(q) !== -1;
         s.hidden = !dedans;
-        if (dedans) trouves++;
+        if (dedans) { trouves++; surligner(s, q); }
       });
       accorderSommaire();
       if (compteur) {
@@ -395,7 +482,16 @@
       sommaire.setAttribute("data-ouvert", ouvert ? "oui" : "non");
       bascule.setAttribute("aria-expanded", ouvert ? "true" : "false");
     }
-    poser(window.matchMedia("(min-width: 62rem)").matches);
+    var grandEcran = window.matchMedia("(min-width: 62rem)");
+    poser(grandEcran.matches);
+    /* L'etat n'etait pose qu'au chargement : une rotation de telephone, ou un
+       navigateur de bureau qu'on retrecit, laissait le sommaire deplie en mode
+       barre — c'est-a-dire l'ecran entier recouvert par la liste. On suit donc
+       le changement de mode. « addListener » est le repli des navigateurs qui
+       ne connaissent pas « addEventListener » sur un MediaQueryList. */
+    function suivre() { poser(grandEcran.matches); }
+    if (grandEcran.addEventListener) grandEcran.addEventListener("change", suivre);
+    else if (grandEcran.addListener) grandEcran.addListener(suivre);
     bascule.addEventListener("click", function () {
       poser(sommaire.getAttribute("data-ouvert") !== "oui");
     });

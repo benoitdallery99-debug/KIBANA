@@ -227,7 +227,7 @@ Chaque piège est provoqué volontairement dans un exercice, puis repris dans la
 - `[1025 TO *]` relève de Lucene, pas de KQL (échec silencieux constaté en lab) ; en KQL :
   `destination.port >= 1025`. Le guide montre le comportement réel de la version (capture).
 - CIDR directement sur un champ ip : `destination.ip : "10.0.0.0/8"`.
-- Existence : `champ:*` en KQL, `_exists_:champ` en Lucene.
+- Existence : `champ : *` en KQL, `_exists_:champ` en Lucene.
 - Ne jamais deviner une valeur : lire les valeurs principales du champ dans la barre latérale.
 - « 0 champ disponible » : un filtre de type de champ actif masque la liste.
 - La recherche globale de Kibana n'est pas la barre de requête de Discover.

@@ -30,7 +30,7 @@ traduit de tête. Les libellés cités sont vérifiés par `make verif-parcours`
 
 | À écrire | À ne pas écrire | Pourquoi |
 |---|---|---|
-| **Session Discover** | recherche enregistrée, saved search | Libellé de 9.5.3 en fr-FR, relevé dans le lab |
+| **Session Discover** | recherche enregistrée, saved search | Libellé de 9.5.3 en fr-FR, relevé dans le lab (`discover.savedSearch.savedObjectName`). La majuscule est celle du libellé, employé seul : « enregistrer une Session Discover ». Kibana lui-même repasse en minuscule quand le mot est pris dans une phrase — « Gérer les sessions Discover », « Aucune session Discover correspondante » — et le kit fait de même |
 | **Tableaux de bord** | dashboards (en corps de texte) | Libellé de l'interface |
 | **Section pliable** | section repliable, collapsible section | Libellé de l'interface |
 | **data view** | index pattern | « index pattern » est l'ancien nom ; il n'apparaît plus |

@@ -17,7 +17,7 @@ comme **non exécuté**, avec sa raison — jamais comme réussi.
 | `verif-donnees` | 14 | ✅ 14 passés | volumes, mapping effectif, S1→S7, déterminisme, jeu d'épreuve distinct |
 | `verif-parcours` | 24 | ✅ 24 passés | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes, réemplois annoncés, corrigé du quiz complet, positions du quiz réparties, aucune empreinte validée deux fois, tableau des types adossé au lab |
 | `verif-corriges` | 8 | ✅ 8 passés | import en Space vierge, rendu sans erreur, valeurs conformes |
-| `verif-guide` | 18 | ✅ 18 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement, entités HTML intactes, aucune capture prise sur un corrigé |
+| `verif-guide` | 18 | ✅ 18 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement, entités HTML intactes, toute capture visant un Space à réponses est épinglée sur une plage antérieure au jeu, donc sur des panneaux vides |
 | `verif-pdf` | 10 | ✅ 10 passés | polices embarquées, sommaire paginé, signets, solutions en annexe, aucune réponse dans un document du stagiaire |
 | `verif-package` | 8 | ✅ 8 passés | empreintes, complétude, installation sans réseau |
 | **Total** | **99** | **✅ zéro échec** | |

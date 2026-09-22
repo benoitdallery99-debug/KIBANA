@@ -35,10 +35,12 @@
   --action-fond: #f1ebfd;
   --alerte: #9c2a1a;
   --alerte-fond: #fbeeec;
-  /* 3,34:1 sur --papier et 3,09:1 sur --papier-appui. Le gris précédent
-     (#c3ccd6) tombait à 1,49:1 : sous les 3:1 qu'exige WCAG 1.4.11 pour un
-     trait qui délimite un composant — et les encadrés « piège » de ce guide
-     ne sont distingués que par leur trait. */
+  /* WCAG 1.4.11 : 3:1 minimum pour un trait qui délimite un composant — et
+     les encadrés « piège » de ce guide ne sont distingués que par leur trait.
+     Le gris précédent (#c3ccd6) tombait à 1,49:1. Mesuré sur les QUATRE fonds
+     du thème clair, et non sur le seul papier : 3,34 sur --papier, 3,09 sur
+     --papier-appui, 3,22 sur --alerte-fond, 3,13 sur --action-fond.
+     « verif-guide » recalcule ces quatre rapports. */
   --filet: #7d8794;
 
   --texte: "Atkinson Hyperlegible Next", system-ui, sans-serif;
@@ -58,7 +60,12 @@
     --action-fond: #241a3a;
     --alerte: #ff9b8a;
     --alerte-fond: #34201c;
-    --filet: #616e7e;
+    /* MESURÉ : #616e7e tenait 3,49:1 sur --papier mais tombait à 2,95:1 sur
+       --alerte-fond — sous les 3:1 de WCAG 1.4.11, et précisément sur les
+       encadrés « piège », que seul leur trait distingue. #6e7b8c passe les
+       quatre fonds : 4,21 sur --papier, 3,76 sur --papier-appui, 3,56 sur
+       --alerte-fond, 3,80 sur --action-fond. */
+    --filet: #6e7b8c;
   }
 }
 :root[data-theme="sombre"] {
@@ -70,7 +77,8 @@
   --action-fond: #241a3a;
   --alerte: #ff9b8a;
   --alerte-fond: #34201c;
-  --filet: #616e7e;
+  /* Même valeur que sous « prefers-color-scheme », même raison. */
+  --filet: #6e7b8c;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -176,6 +184,12 @@ a { color: var(--action); text-underline-offset: 2px; }
   color: var(--encre);
   border-left-color: var(--action);
   font-weight: 600;
+}
+/* Quand la position est descendue au niveau d'un exercice, le module qui le
+   contient garde une marque plus discrète : sinon, lire un exercice efface du
+   sommaire tout repère de module. */
+li.sommaire__module[data-courant="oui"] > a {
+  background: var(--papier-appui);
 }
 
 /* Rangée d'enquête S1 → S7 : la progression est une donnée, pas un ornement. */
@@ -467,6 +481,13 @@ figure[data-agrandi="oui"] .figure__cadre img {
   color: var(--encre-douce);
 }
 mark { background: var(--action-fond); color: var(--encre); padding: 0 0.1em; }
+/* Le surlignage de recherche doit se voir SANS la couleur seule (WCAG 1.4.1) :
+   le trait souligné le porte aussi pour qui ne distingue pas les teintes. */
+mark.recherche__trouve {
+  background: var(--action-fond);
+  box-shadow: inset 0 -2px 0 var(--action);
+  border-radius: 2px;
+}
 
 /* --- Téléphone ----------------------------------------------------------- */
 .sommaire__bascule { display: none; }
@@ -484,6 +505,10 @@ mark { background: var(--action-fond); color: var(--encre); padding: 0 0.1em; }
     position: sticky;
     top: 0;
     z-index: 20;
+    /* « height: 100vh » vient du grand écran, où le sommaire EST la colonne de
+       gauche. Sur téléphone, il recouvrirait tout l'écran, replié comme
+       déplié : la barre ne doit valoir que ce qu'elle montre. */
+    height: auto;
     max-height: 100vh;
     overflow-y: auto;
     border-right: 0;
