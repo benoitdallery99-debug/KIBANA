@@ -493,6 +493,11 @@ def main() -> int:
         ajoutes = sum(len(v) for v in resultat["ajouts"].values())
         print(f"  {m['id']} {m['titre'][:52]:52s} +{ajoutes}")
 
+    # Les scénarios ne sont plus appliqués dans l'ordre de leurs identifiants —
+    # celui qui creuse un trou doit passer après celui qui dépose des événements
+    # dans la même source. Le manifeste, lui, se lit : on le remet dans l'ordre.
+    manifeste_scenarios.sort(key=lambda m: m["id"])
+
     for dataset in base:
         base[dataset].sort(key=lambda d: d["@timestamp"])
     total = sum(len(v) for v in base.values())

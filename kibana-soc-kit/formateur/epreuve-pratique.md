@@ -3,8 +3,16 @@
 **À remettre au stagiaire. Ce document ne contient aucune réponse.**
 
 Jeu de données : `epreuve-logs` (motif `logs-*-epreuve`). Ce n'est **pas** celui
-du parcours : les structures sont les mêmes, les réponses sont différentes. Rien
-de ce que vous avez noté pendant la journée ne s'y applique.
+du parcours : les structures sont les mêmes, les valeurs sont tirées à neuf.
+
+Une précision d'honnêteté, parce qu'elle change votre façon de travailler : le
+parc compte les six mêmes sources des deux côtés, et deux faits de structure s'y
+répètent — la source qui s'est tue et celle qui a connu un trou sont les mêmes
+qu'au parcours. **Tout le reste diffère** : les adresses, les comptes, les
+volumes, les horaires, les classements. Recopier une note de la journée vous
+donnera donc une réponse juste sur un point et fausse sur les autres, sans que
+rien vous prévienne. Vérifiez chaque chiffre sur CE jeu ; c'est d'ailleurs ce
+qu'on évalue.
 
 ---
 
@@ -22,8 +30,10 @@ Vous avez trente minutes.
 Construisez **un seul tableau de bord**, nommé `Épreuve — <votre nom>`, qui
 répond à ces trois questions :
 
-1. **La collecte est-elle complète ?** Une source a cessé d'émettre. Le tableau
-   doit permettre de le voir sans lire une requête, et de dire laquelle.
+1. **La collecte est-elle complète ?** Une source a cessé d'émettre, et une
+   autre s'est interrompue un moment au milieu de la période. Le tableau doit
+   permettre de le voir sans lire une requête, de dire lesquelles, et de donner
+   **le jour et l'heure** où l'interruption a commencé.
 2. **Sommes-nous attaqués depuis l'extérieur ?** Une adresse extérieure s'est
    acharnée sur un compte. Le tableau doit montrer laquelle, et sur quel compte.
 3. **Quelque chose sort-il de l'organisation ?** Un poste a envoyé un volume

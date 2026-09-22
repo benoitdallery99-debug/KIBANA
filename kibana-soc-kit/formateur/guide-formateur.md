@@ -250,9 +250,20 @@ Les deux commandes relisent les rôles du compte et affichent ce qu'elles ont
 obtenu : vous voyez l'état réel, pas une promesse. Le Space s'appelle
 « Épreuve pratique » et sa vue de données porte le motif `logs-*-epreuve`.
 
+**Ce qui se répète d'un jeu à l'autre, et ce qu'il faut en faire.** Avec six
+sources, trois portent déjà une réponse de repère et deux portent les événements
+d'autres scénarios : il ne reste qu'un choix possible pour la source muette et
+un pour celle du trou. Ces deux-là sont donc les MÊMES au parcours et à
+l'épreuve, et le document du stagiaire le lui dit plutôt que de prétendre le
+contraire. Tout le reste — adresses, comptes, volumes, horaires, classements —
+est tiré à neuf. C'est pourquoi la première question demande aussi **le jour et
+l'heure** du début de l'interruption : cette valeur-là, elle, diffère, et elle
+départage le stagiaire qui a lu son écran de celui qui a recopié sa feuille du
+matin.
+
 | Critère | 0 | 1 | 2 |
 |---|---|---|---|
-| Collecte incomplète | Non traitée | Visible en cherchant | Saute aux yeux, la source est nommée |
+| Collecte incomplète | Non traitée | Les deux sources nommées | Les deux sources nommées ET le début de l'interruption daté à l'heure |
 | Attaque extérieure | Non traitée | Adresse OU compte | Adresse ET compte |
 | Sortie anormale | Non traitée | Volume visible | Poste et destination identifiés |
 | Titres en questions | Aucun | Quelques-uns | Tous |

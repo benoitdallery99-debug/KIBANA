@@ -407,8 +407,24 @@ def s4_exfiltration(rng: random.Random, t0: datetime, jours: int, fuseau: str) -
 # S5 — Trou de collecte de 2 h, S6 — source muette depuis 2 h
 # ---------------------------------------------------------------------------
 
+# Quelle source porte le trou, et quelle source se tait. Le choix n'est pas
+# libre, et la relecture du troisième tour a montré pourquoi : avec six sources,
+# trois portent déjà une réponse de repère — network.dns est la plus
+# volumineuse, ids.alert la moins volumineuse, firewall.traffic celle des ports
+# hauts —, et windows.security porte les événements de S1 comme de S7. Choisir
+# l'une des trois premières donnait à S5 ou S6 la MÊME EMPREINTE qu'un repère :
+# le stagiaire validait M4-E7 et M4-E8 avec une valeur relevée le matin, au
+# module M1 ou M2. Choisir windows.security aurait fait disparaître des
+# événements dont S1 a déjà figé les décomptes.
+# Il reste linux.auth pour le trou et proxy.web pour le silence. S4 place son
+# exfiltration quatre nuits en arrière, à une heure du matin : les deux
+# dernières heures de proxy.web, que S6 retire, ne la touchent pas.
+SOURCE_DU_TROU = "linux.auth"
+SOURCE_MUETTE = "proxy.web"
+
+
 def s5_trou(rng: random.Random, t0: datetime, jours: int, fuseau: str) -> dict:
-    dataset = "ids.alert"
+    dataset = SOURCE_DU_TROU
     debut = t0 - timedelta(days=rng.randrange(3, 5), hours=rng.randrange(0, 6))
     fin = debut + timedelta(hours=2)
     return {
@@ -421,7 +437,7 @@ def s5_trou(rng: random.Random, t0: datetime, jours: int, fuseau: str) -> dict:
             "_fenetre": {"debut": T.iso(debut), "fin": T.iso(fin)},
             "reponses": [
                 {
-                    "cle": "source", "libelle": "Source concernée", "valeur": "ids.alert",
+                    "cle": "source", "libelle": "Source concernée", "valeur": SOURCE_DU_TROU,
                     "type": "texte", "normalisation": "minuscules, espaces retirés",
                     "controle": {
                         "dataset": dataset,
@@ -443,7 +459,7 @@ def s5_trou(rng: random.Random, t0: datetime, jours: int, fuseau: str) -> dict:
 
 
 def s6_muette(rng: random.Random, t0: datetime, jours: int, fuseau: str) -> dict:
-    dataset = "firewall.traffic"
+    dataset = SOURCE_MUETTE
     depuis = t0 - timedelta(hours=2)
     return {
         "ajouts": {},
@@ -457,7 +473,7 @@ def s6_muette(rng: random.Random, t0: datetime, jours: int, fuseau: str) -> dict
             ),
             "reponses": [
                 {
-                    "cle": "source", "libelle": "Source muette", "valeur": "firewall.traffic",
+                    "cle": "source", "libelle": "Source muette", "valeur": SOURCE_MUETTE,
                     "type": "texte", "normalisation": "minuscules, espaces retirés",
                     "controle": {
                         "dataset": dataset,
@@ -562,4 +578,8 @@ def s7_leurre(rng: random.Random, t0: datetime, jours: int, fuseau: str) -> dict
     }
 
 
-TOUS = [s1_force_brute, s2_balayage, s3_balise, s4_exfiltration, s5_trou, s6_muette, s7_leurre]
+# L'ORDRE COMPTE. Les retraits sont appliqués au fur et à mesure : un scénario
+# qui creuse un trou doit donc passer APRÈS ceux qui déposent des événements
+# dans la même source, sans quoi le trou se rebouche derrière lui. S7 dépose son
+# leurre sur linux.auth, où S5 creuse : il passe avant.
+TOUS = [s1_force_brute, s2_balayage, s3_balise, s4_exfiltration, s7_leurre, s5_trou, s6_muette]

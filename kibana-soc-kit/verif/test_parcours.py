@@ -609,6 +609,53 @@ def test_les_bonnes_reponses_du_quiz_ne_sont_pas_toujours_au_meme_rang(config):
     )
 
 
+def test_aucun_exercice_ne_valide_l_empreinte_d_un_autre(modules, manifeste):
+    """Deux clés différentes peuvent porter la MÊME valeur — donc la même empreinte.
+
+    Le contrôle voisin compare les clés, et c'est par là que le capstone a fui.
+    R.source_la_moins_volumineuse valait « ids.alert » et S5.source aussi ;
+    R.source_ports_hauts valait « firewall.traffic » et S6.source aussi. Deux
+    clés distinctes, deux exercices distincts, une seule empreinte : le
+    stagiaire validait M4-E7 avec ce qu'il avait relevé à M2-E5, et M4-E8 avec
+    ce qu'il avait relevé à M1-E5. Le capstone n'évaluait plus rien.
+
+    On compare donc les EMPREINTES, qui sont ce que le guide vérifie
+    réellement. Un réemploi assumé de la même clé reste permis — le contrôle
+    voisin exige alors qu'il soit annoncé. Ce qui est refusé ici, c'est la
+    collision entre deux clés différentes.
+    """
+    par_cle = {}
+    for bloc in [manifeste.get("reperes"), *manifeste["scenarios"]]:
+        if not bloc:
+            continue
+        for reponse in bloc["reponses"]:
+            par_cle[f"{bloc['id']}.{reponse['cle']}"] = tuple(reponse.get("empreintes") or ())
+
+    empreinte_vers_cles = {}
+    for cle, empreintes in par_cle.items():
+        for e in empreintes:
+            empreinte_vers_cles.setdefault(e, set()).add(cle)
+
+    employees = {}
+    for _module, exercice in _exercices(modules):
+        renvoi = exercice.get("reponse")
+        if not renvoi:
+            continue
+        employees.setdefault(f"{renvoi['scenario']}.{renvoi['cle']}", []).append(exercice["id"])
+
+    collisions = []
+    for empreinte, cles in empreinte_vers_cles.items():
+        notees = sorted(c for c in cles if c in employees)
+        if len(notees) > 1:
+            detail = " ; ".join(f"{c} ({', '.join(employees[c])})" for c in notees)
+            collisions.append(f"empreinte {empreinte[:16]}… partagée par {detail}")
+
+    assert not collisions, (
+        "des exercices se valident avec la même empreinte sous des clés "
+        "différentes :\n  " + "\n  ".join(collisions)
+    )
+
+
 def test_tout_reemploi_de_reponse_est_annonce(modules):
     """Une réponse déjà rendue doit être présentée comme un contrôle, pas comme
     une découverte.

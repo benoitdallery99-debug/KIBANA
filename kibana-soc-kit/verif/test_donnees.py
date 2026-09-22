@@ -427,6 +427,17 @@ def test_jeu_epreuve_distinct(config, manifeste):
         # S7, l'adresse du scanner (constante de la fiche de contexte), la source
         # et la durée du trou, la source muette.
         #
+        # Pour S5.source et S6.source, la contrainte est arithmétique et mérite
+        # d'être écrite : le parc compte six sources ; network.dns, ids.alert et
+        # firewall.traffic portent chacune une réponse de repère, et
+        # windows.security porte les événements de S1 comme de S7. Il reste
+        # linux.auth pour le trou et proxy.web pour le silence — un seul choix
+        # possible de chaque côté, donc la même valeur dans les deux jeux. Le
+        # document remis au stagiaire le lui DIT (formateur/epreuve-pratique.md)
+        # au lieu de prétendre que rien ne se répète, et la première question de
+        # l'épreuve demande en plus le début daté de l'interruption, que le
+        # générateur tire à neuf.
+        #
         # Côté repères, la structure du parc et des sources est la même d'un jeu
         # à l'autre — c'est voulu : le stagiaire doit retrouver le même terrain.
         # Ce qui DOIT différer, ce sont les volumes et les classements, et ceux-là
