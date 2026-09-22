@@ -1,5 +1,5 @@
 {
-  "engendre_le": "2026-09-22T09:09:08.000Z",
+  "engendre_le": "2026-09-22T12:39:46.000Z",
   "jeu": "epreuve",
   "graine": 7310,
   "namespace": "epreuve",
@@ -9,14 +9,14 @@
   "index_mode": "standard",
   "avertissement": "Données entièrement synthétiques. Adresses réservées à la documentation (RFC 5737, RFC 1918), domaines réservés (RFC 2606), personnes inventées. Aucune donnée réelle (SPEC §5.1, CLAUDE.md).",
   "volumes": {
-    "logs-windows.security-epreuve": 89247,
-    "logs-linux.auth-epreuve": 35221,
-    "logs-ids.alert-epreuve": 14252,
-    "logs-network.dns-epreuve": 98708,
-    "logs-proxy.web-epreuve": 71084,
-    "logs-firewall.traffic-epreuve": 69644
+    "logs-windows.security-epreuve": 89232,
+    "logs-linux.auth-epreuve": 35175,
+    "logs-ids.alert-epreuve": 14224,
+    "logs-network.dns-epreuve": 98722,
+    "logs-proxy.web-epreuve": 71410,
+    "logs-firewall.traffic-epreuve": 69641
   },
-  "total_documents": 378156,
+  "total_documents": 378404,
   "contexte": {
     "organisation": "Groupe Méridien",
     "domaine_ad": "MERIDIEN",

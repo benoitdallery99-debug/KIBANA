@@ -746,10 +746,38 @@ ne contient aucune occurrence de « formula », mais nulle part la documentati
 explicitement. *Test* : basculer un panneau en ES|QL et regarder si l'option *Formula* est présente,
 absente ou grisée. Ne rien affirmer avant.
 
-**Q. Conditions non documentées du passage vers Discover.** Le code 9.5 refuse l'action sur un panneau à
-plusieurs calques ou avec un décalage temporel, et exige le privilège `discover_v2.show` : **aucun de
-ces trois points n'est documenté**. *Test* : construire les trois cas et relever les infobulles. C'est
-une contrainte de conception directe pour le capstone M4.
+**Q. Conditions non documentées du passage vers Discover. — SONDÉ, et le parcours avait tort.**
+`outils/sonde_explorer_discover.py` construit quatre panneaux dans le Space « corriges », relève la
+rangée d'actions de survol et les deux menus « … » (lecture et modification), puis clique l'action pour
+voir si elle aboutit. Relevé sur 9.5.3 fr-FR :
+
+| Panneau | Action offerte | Elle aboutit |
+|---|---|---|
+| un calque, aucun décalage | oui, au survol | oui — Discover s'ouvre, 378 364 documents |
+| deux calques | **non** | — |
+| un calque + décalage temporel `1d` | **non** | — |
+| requête ES\|QL | oui, au survol | oui — Discover s'ouvre, 6 lignes |
+
+Trois constats, dont deux démentent ce que le parcours enseignait :
+
+1. **L'action n'est jamais dans le menu « … »**, ni en lecture ni en modification. C'est un bouton de la
+   rangée qui apparaît au survol, `embeddablePanelAction-ACTION_OPEN_IN_DISCOVER`, libellé
+   « Explorer dans Discover ». Le parcours disait « dans le menu du panneau » : c'était faux.
+2. **Elle s'ouvre dans un nouvel onglet** — ce qui n'était dit nulle part, et qui change la consigne :
+   « revenez » suppose de changer d'onglet, pas de cliquer « Précédent ».
+3. Les deux refus annoncés — deux calques, décalage temporel — **sont confirmés**, et silencieux : ni
+   bouton grisé, ni infobulle. La troisième condition annoncée, « une seule data view », n'a pas de cas
+   propre : dans Lens une data view s'attache à un calque, donc deux data views supposent deux calques,
+   et le cas est déjà couvert par le premier refus. Le parcours ne l'énonce plus séparément.
+
+Reste non sondé : le privilège `discover_v2.show`. La sonde tourne avec le compte de fabrication ; le
+vérifier demanderait un rôle taillé exprès, et aucun exercice n'en dépend. **NON EXÉCUTÉ**, pour cette
+raison.
+
+Effet de bord utile : le menu « … » d'un panneau en LECTURE ne compte que « Paramètres »,
+« Télécharger CSV », « Copier dans le tableau de bord », « Ajouter au cas » (plus « Créer une règle
+d'alerte » sur un panneau ES|QL). « Créer une exploration » n'apparaît qu'en MODIFICATION — le parcours
+l'annonçait en lecture, sous un intitulé « Explorations » qui n'existe pas dans ce menu.
 
 **R. `Enable accuracy mode`** (option sans badge, version minimale inconnue) et **S. les réglages
 cluster `esql.query.result_truncation_*`** (snippet sans badge). *Tests* : présence de l'option dans

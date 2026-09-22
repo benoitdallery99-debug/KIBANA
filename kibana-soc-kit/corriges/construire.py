@@ -83,7 +83,7 @@ def sante_de_la_collecte() -> dict:
                 "type": "vis",
                 "config": {
                     "type": "metric",
-                    "title": "Combien d'événements sur la période ?",
+                    "title": "Combien d'événements sur la plage de temps ?",
                     "data_source": source_donnees(),
                     "metrics": [{
                         "type": "primary", "operation": "count",
@@ -99,7 +99,7 @@ def sante_de_la_collecte() -> dict:
                 "config": {
                     "type": "metric",
                     "title": "Combien de sources ont émis dans la dernière heure ?",
-                    # Compté sur la DERNIÈRE HEURE, et non sur toute la période :
+                    # Compté sur la DERNIÈRE HEURE, et non sur toute la plage :
                     # sur sept jours, une source tue depuis deux heures compte
                     # encore, et l'indicateur resterait au vert. C'est tout
                     # l'objet du scénario S6.
@@ -146,10 +146,16 @@ def sante_de_la_collecte() -> dict:
                     "layers": [{
                         "type": "bar",
                         "data_source": source_donnees(),
+                        # « suggested_interval », et non « interval » : relevé en
+                        # lab, l'API Dashboards refuse « interval » en 400
+                        # (« Additional properties are not allowed »). Les six
+                        # autres noms essayés — minimum_interval, granularity,
+                        # interval_size, bucket_interval, date_interval — sont
+                        # refusés de même.
                         "x": {
                             "operation": "date_histogram",
                             "field": "@timestamp",
-                            "interval": "1h",
+                            "suggested_interval": "1h",
                         },
                         "y": [{"operation": "count"}],
                         "breakdown_by": {
@@ -193,7 +199,7 @@ def sante_de_la_collecte() -> dict:
                         "x": {
                             "operation": "date_histogram",
                             "field": "@timestamp",
-                            "interval": "1h",
+                            "suggested_interval": "1h",
                         },
                         "y": [{"operation": "count"}],
                     }],
@@ -224,7 +230,7 @@ def vue_ids() -> dict:
                 "type": "vis",
                 "config": {
                     "type": "metric",
-                    "title": "Combien d'alertes sur la période ?",
+                    "title": "Combien d'alertes sur la plage de temps ?",
                     "data_source": source_donnees(alertes),
                     "metrics": [{
                         "type": "primary", "operation": "count",

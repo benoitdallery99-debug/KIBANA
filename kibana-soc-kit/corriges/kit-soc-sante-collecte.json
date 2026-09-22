@@ -91,7 +91,7 @@
         "title": "Le volume de chaque source tient-il dans le temps ?",
         "layers": [
           {
-            "type": "bar_stacked",
+            "type": "bar",
             "data_source": {
               "type": "data_view_spec",
               "index_pattern": "logs-*-formation",
@@ -99,7 +99,8 @@
             },
             "x": {
               "operation": "date_histogram",
-              "field": "@timestamp"
+              "field": "@timestamp",
+              "suggested_interval": "1h"
             },
             "y": [
               {
@@ -168,7 +169,8 @@
             },
             "x": {
               "operation": "date_histogram",
-              "field": "@timestamp"
+              "field": "@timestamp",
+              "suggested_interval": "1h"
             },
             "y": [
               {

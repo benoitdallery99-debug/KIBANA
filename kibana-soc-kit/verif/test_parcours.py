@@ -184,14 +184,13 @@ MOTS_PAR_MINUTE = 180
 # Une question de rappel actif, posée et répondue à l'oral, prend une minute.
 MINUTES_PAR_RAPPEL = 1
 
-# SPEC §1 annonce « 6 h de parcours ». La borne haute la dépasse volontairement,
-# et l'écart est consigné (docs/JOURNAL.md, E10) : SPEC §1 ne budgète ni la
-# lecture des corps de module ni le rappel actif, que docs/CHARTE_REDACTION.md
-# rend pourtant obligatoires. Mesuré, le parcours vaut 6 h 44. Le kit garde son
-# contenu et dit la vraie durée plutôt que de la rogner pour rentrer dans une
-# prémisse ; le déroulé minuté de formateur/guide-formateur.md donne la journée
-# réelle. Ce commentaire est là pour qu'un relecteur voie la borne ET sa raison.
-BORNES_DU_PARCOURS = (300, 420)
+# Les bornes du parcours ne sont plus écrites ici : elles viennent de
+# kit.config.yaml, « seule source de vérité » (CLAUDE.md). Le fichier y portait
+# « duree_cible_heures: 6 », que RIEN ne lisait et qui était faux de trois
+# quarts d'heure — un paramètre décoratif dans le fichier même qui interdit les
+# valeurs en dur. SPEC §1 ne budgétait ni la lecture des corps de module ni le
+# rappel actif, que docs/CHARTE_REDACTION.md impose (écart E10 de
+# docs/JOURNAL.md) ; le kit garde son contenu et dit la durée qu'il tient.
 
 
 def _minutes_de_lecture(corps: str) -> int:
@@ -199,7 +198,7 @@ def _minutes_de_lecture(corps: str) -> int:
     return math.ceil(len(corps.split()) / MOTS_PAR_MINUTE)
 
 
-def test_durees_coherentes(modules):
+def test_durees_coherentes(modules, config):
     """La durée d'un module doit couvrir TOUT ce qu'il demande, pas ses seuls exercices.
 
     Le contrôle ne regardait que la somme des exercices, et la durée annoncée
@@ -229,10 +228,13 @@ def test_durees_coherentes(modules):
         "durées annoncées trop courtes pour ce que le module demande :\n  "
         + "\n  ".join(defauts)
     )
-    bas, haut = BORNES_DU_PARCOURS
+    cible = float(config.valeur("formation.duree_cible_heures")) * 60
+    marge = float(config.valeur("formation.duree_tolerance_minutes"))
+    bas, haut = cible - marge, cible + marge
     assert bas <= total <= haut, (
-        f"parcours de {total} min, hors des bornes {bas}-{haut} (SPEC §1 et "
-        f"l'écart consigné) :\n  " + "\n  ".join(detail)
+        f"parcours de {total} min, hors des bornes {bas:.0f}-{haut:.0f} que "
+        f"kit.config.yaml fixe ({cible:.0f} min ± {marge:.0f}) :\n  "
+        + "\n  ".join(detail)
     )
 
 
@@ -890,3 +892,134 @@ def test_le_contraste_de_cardinalite_promis_par_M2_existe_dans_le_lab(
             )
 
     assert not defauts, "contraste de cardinalité :\n  " + "\n  ".join(defauts)
+
+
+# --------------------------------------------------------------------------
+# Vocabulaire de la charte
+# --------------------------------------------------------------------------
+
+# La fenêtre du sélecteur de temps s'écrit « plage de temps » partout
+# (docs/CHARTE_REDACTION.md §2). L'interface n'offrant aucun libellé unique à
+# citer — relevé dans fr-FR de 9.5.3 : « plage temporelle » 202 fois, « plage
+# horaire » 12, « plage de temps » 11, et le sélecteur n'affiche que sa valeur —
+# le kit en choisit un et s'y tient.
+#
+# Deux synonymes rôdaient. « période » neuf fois, dont deux dans M4 où le mot
+# sert DÉJÀ à l'intervalle d'une balise. « plage temporelle » quatre fois hors
+# citation — le reste des occurrences appartient à des libellés d'interface, qui
+# se citent tels qu'ils s'affichent et ne peuvent donc pas être réécrits.
+SYNONYMES_INTERDITS = {
+    "période": (
+        "période de la balise",   # l'intervalle d'une balise, autre notion
+        "périodique",
+    ),
+    "plage temporelle": (         # fragments de libellés cités, intouchables
+        "appliquer une plage temporelle personnalisée",
+        "enregistrer la plage temporelle avec le tableau de bord",
+        "enregistré la plage temporelle avec le tableau de bord",
+        "enregistrez la plage temporelle avec le tableau de bord",
+        "« plage temporelle »",
+        "- plage temporelle",
+    ),
+}
+
+FICHIERS_DU_STAGIAIRE = (
+    "parcours/M0.md", "parcours/M1.md", "parcours/M2.md",
+    "parcours/M3.md", "parcours/M4.md", "parcours/M5.md",
+    "formateur/quiz.yaml", "formateur/matrice.md",
+    "formateur/epreuve-pratique.md",
+)
+
+
+def test_un_seul_mot_pour_la_fenetre_de_temps(config):
+    """Trois mots pour une même chose, dans un kit qui s'adresse à des débutants.
+
+    Le stagiaire lisait « plage de temps » dans M0, « période » dans M1 et
+    « plage temporelle » dans le quiz, pour le même sélecteur. Pire, M4
+    employait « période » dans ses deux sens à trois exercices d'écart : la
+    fenêtre d'observation, et l'intervalle entre deux requêtes d'une balise.
+    Un lecteur qui doit deviner lequel des deux est en jeu ne lit plus, il
+    interprète.
+
+    Le contrôle porte sur le texte DÉPLIÉ, sans retours à la ligne : un libellé
+    cité coupé en deux par le pliage à 80 colonnes doit rester reconnaissable,
+    sans quoi le test refuserait ce que la charte exige de citer.
+    """
+    fautes = []
+    for nom in FICHIERS_DU_STAGIAIRE:
+        chemin = config.RACINE / nom
+        if not chemin.exists():
+            continue
+        deplie = re.sub(r"\s+", " ", chemin.read_text(encoding="utf-8")).lower()
+        for terme, permis in SYNONYMES_INTERDITS.items():
+            for trouve in re.finditer(re.escape(terme), deplie):
+                fenetre = deplie[max(0, trouve.start() - 90):trouve.end() + 90]
+                if any(p in fenetre for p in permis):
+                    continue
+                extrait = deplie[max(0, trouve.start() - 45):trouve.end() + 45]
+                fautes.append(f"{nom} « {terme} » — …{extrait}…")
+
+    assert not fautes, (
+        f"{len(fautes)} emploi(s) d'un synonyme de « plage de temps » :\n  "
+        + "\n  ".join(fautes)
+    )
+
+
+# --------------------------------------------------------------------------
+# Les horaires publiés au formateur
+# --------------------------------------------------------------------------
+
+def test_le_deroule_minute_tient_debout(modules, config):
+    """Le déroulé du formateur est arithmétique : il doit tomber juste.
+
+    Une minute ajoutée au corps de M3 a décalé tout l'après-midi de la formule
+    B, et rien ne l'a vu : le tableau annonçait encore « 14 h 39 » pour un
+    module qui commence à 14 h 40, et « 2 h 19 » pour deux modules qui en font
+    2 h 20. Un formateur planifie sa journée là-dessus. On recalcule donc la
+    ligne du temps : chaque heure de départ doit valoir la précédente plus sa
+    durée, et la durée annoncée d'un module doit être celle qu'il déclare.
+    """
+    chemin = config.RACINE / "formateur" / "guide-formateur.md"
+    if not chemin.exists():
+        pytest.skip("NON EXÉCUTÉ : formateur/guide-formateur.md absent.")
+    texte = chemin.read_text(encoding="utf-8")
+
+    duree = {m["entete"]["id"]: m["entete"]["duree_minutes"] for m in modules}
+
+    lignes = re.findall(
+        r"^\|\s*(\d{2})\s*h\s*(\d{2})\s*\|\s*(\d+)\s*min\s*\|\s*(.+?)\s*\|$",
+        texte, re.M,
+    )
+    if len(lignes) < 5:
+        pytest.skip("NON EXÉCUTÉ : pas de déroulé horaire reconnaissable.")
+
+    defauts = []
+    attendu = None
+    for heures, minutes, mn, quoi in lignes:
+        debut = int(heures) * 60 + int(minutes)
+        if attendu is not None and debut != attendu:
+            defauts.append(
+                f"« {quoi[:44]} » commence à {heures} h {minutes}, "
+                f"la ligne précédente le pose à {attendu // 60:02d} h {attendu % 60:02d}"
+            )
+        module = re.search(r"\*\*(M\d)\b", quoi)
+        if module and module.group(1) in duree:
+            if int(mn) != duree[module.group(1)]:
+                defauts.append(
+                    f"{module.group(1)} : {mn} min au déroulé, "
+                    f"{duree[module.group(1)]} min déclarées par le module"
+                )
+        attendu = debut + int(mn)
+
+    # Le total annoncé en tête du guide, et la somme des séances de la formule A.
+    total = sum(duree.values())
+    for annonce in re.findall(r"(\d) h (\d{2}) de parcours", texte) + \
+            re.findall(r"vaut \*\*(\d) h (\d{2})\*\*", texte):
+        publie = int(annonce[0]) * 60 + int(annonce[1])
+        if publie != total:
+            defauts.append(
+                f"durée publiée {annonce[0]} h {annonce[1]} ({publie} min), "
+                f"parcours réel {total} min"
+            )
+
+    assert not defauts, "déroulé minuté faux :\n  " + "\n  ".join(defauts)

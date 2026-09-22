@@ -35,7 +35,7 @@ traduit de tête. Les libellés cités sont vérifiés par `make verif-parcours`
 | **Section pliable** | section repliable, collapsible section | Libellé de l'interface |
 | **data view** | index pattern | « index pattern » est l'ancien nom ; il n'apparaît plus |
 | **champ keyword**, **champ text** | champ « mot-clé », champ « texte » | Ce sont des types Elasticsearch : on garde le nom technique |
-| **plage de temps** | time range, période | Terme de l'interface |
+| **plage de temps** | time range, période, plage temporelle (hors citation) | Terme unique du kit pour la fenêtre du sélecteur. L'interface n'en a pas : relevé dans fr-FR de 9.5.3, elle dit « plage temporelle » (202 libellés), « plage horaire » (12) et « plage de temps » (11), et le sélecteur lui-même n'affiche que sa valeur (« 7 derniers jours »). Faute de libellé à citer, le kit en choisit un et s'y tient ; les libellés qui contiennent « plage temporelle » — « Appliquer une plage temporelle personnalisée », « Enregistrer la plage temporelle avec le tableau de bord » — se citent tels quels |
 | **panneau** | widget, tuile | Terme de l'interface |
 
 Règle générale : **le libellé exact d'un élément d'interface se met entre guillemets français et se

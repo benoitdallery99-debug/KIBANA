@@ -55,7 +55,7 @@ au moins un exercice **et** une question du quiz (SPEC §2).
 - **M3-O1** — À l'issue du module, le stagiaire est capable de composer une grille de panneaux, d'en régler le titre, la taille et la place, et de justifier cette place par une règle de conception.
 - **M3-O2** — À l'issue du module, le stagiaire est capable d'ajouter des contrôles à un tableau de bord, de choisir leur type selon le type du champ, et de décider de leur portée par l'épinglage.
 - **M3-O3** — À l'issue du module, le stagiaire est capable d'exploiter les interactions d'un tableau de bord — filtre au clic, passage vers Discover, exploration vers un autre tableau de bord.
-- **M3-O4** — À l'issue du module, le stagiaire est capable de régler la plage temporelle d'un panneau isolé et les paramètres du tableau de bord, et de dire ce que chacun change pour le lecteur.
+- **M3-O4** — À l'issue du module, le stagiaire est capable de régler la plage de temps d'un panneau isolé et les paramètres du tableau de bord, et de dire ce que chacun change pour le lecteur.
 - **M3-O5** — À l'issue du module, le stagiaire est capable d'enregistrer un tableau de bord avec ses balises, de le partager par lien, de le copier vers un autre Space, et de nommer ce que la licence Basic ne permet pas d'en exporter.
 - **M4-O1** — À l'issue du module, le stagiaire est capable de construire un tableau de bord de santé de la collecte qui montre le volume de chaque source dans le temps, le dernier événement vu par source et les interruptions.
 - **M4-O2** — À l'issue du module, le stagiaire est capable de construire une vue des alertes de la sonde qui montre leur gravité dans le temps, les signatures principales, les sources et les destinations les plus vues, et les dernières alertes reçues.

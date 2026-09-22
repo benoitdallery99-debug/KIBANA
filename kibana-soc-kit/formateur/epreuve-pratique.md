@@ -31,7 +31,8 @@ Construisez **un seul tableau de bord**, nommé `Épreuve — <votre nom>`, qui
 répond à ces trois questions :
 
 1. **La collecte est-elle complète ?** Une source a cessé d'émettre, et une
-   autre s'est interrompue un moment au milieu de la période. Le tableau doit
+   autre s'est interrompue un moment au milieu de la plage de temps. Le
+   tableau doit
    permettre de le voir sans lire une requête, de dire lesquelles, et de donner
    **le jour et l'heure** où l'interruption a commencé.
 2. **Sommes-nous attaqués depuis l'extérieur ?** Une adresse extérieure s'est

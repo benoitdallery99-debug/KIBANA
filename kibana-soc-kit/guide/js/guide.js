@@ -399,6 +399,14 @@
     bascule.addEventListener("click", function () {
       poser(sommaire.getAttribute("data-ouvert") !== "oui");
     });
+    /* Le sommaire de telephone recouvre le contenu : suivre un lien sans le
+       replier laisserait le stagiaire devant la liste qu'il vient de quitter. */
+    sommaire.addEventListener("click", function (evenement) {
+      var lien = evenement.target.closest ? evenement.target.closest("a") : null;
+      if (!lien) return;
+      if (window.matchMedia("(min-width: 62rem)").matches) return;
+      poser(false);
+    });
   }
 
   /* ------------------------------------------------------------------ */
@@ -508,6 +516,26 @@
   /* lorsqu'il déborde vraiment : pas d'arrêt de tabulation inutile sur   */
   /* un poste de bureau.                                                  */
   /* ------------------------------------------------------------------ */
+  /* Un nom de region doit etre UNIQUE : trois « Tableau, defilement
+     horizontal » sur la meme page, et axe leve « landmark-unique » — pour le
+     lecteur d'ecran, trois reperes portant le meme nom n'en font aucun. On
+     nomme donc chaque zone par ce qu'elle contient : la legende du tableau si
+     elle existe, sinon le titre qui le precede, sinon son rang. */
+  function nommer(boite, rang, quoi) {
+    var t = boite.querySelector("table");
+    var legende = t && t.querySelector("caption");
+    var titre = null;
+    var noeud = boite.previousElementSibling;
+    while (noeud && !titre) {
+      if (/^H[1-6]$/.test(noeud.tagName)) titre = noeud.textContent;
+      noeud = noeud.previousElementSibling;
+    }
+    var source = (legende && legende.textContent) || titre || "";
+    source = source.replace(/\s+/g, " ").trim();
+    if (source.length > 60) source = source.slice(0, 57) + "…";
+    return source ? quoi + " : " + source : quoi + " n° " + rang;
+  }
+
   function initTableaux() {
     var enveloppes = [];
     Array.prototype.forEach.call(
@@ -532,7 +560,10 @@
         if (boite.scrollWidth > boite.clientWidth + 1) {
           boite.setAttribute("tabindex", "0");
           boite.setAttribute("role", "region");
-          boite.setAttribute("aria-label", "Tableau, défilement horizontal");
+          boite.setAttribute(
+            "aria-label",
+            nommer(boite, enveloppes.indexOf(boite) + 1, "Tableau défilant")
+          );
         } else {
           boite.removeAttribute("tabindex");
           boite.removeAttribute("role");
@@ -585,7 +616,13 @@
           if (defile) {
             cadre.setAttribute("tabindex", "0");
             cadre.setAttribute("role", "region");
-            cadre.setAttribute("aria-label", "Capture agrandie, défilement");
+            /* Même règle que pour les tableaux : le nom de la capture, jamais
+               un libellé générique répété d'une figure à l'autre. */
+            cadre.setAttribute(
+              "aria-label",
+              "Capture agrandie : " +
+                ((image.getAttribute("alt") || "").split(".")[0] || "sans titre")
+            );
           } else {
             cadre.removeAttribute("tabindex");
             cadre.removeAttribute("role");

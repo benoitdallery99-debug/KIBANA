@@ -1,7 +1,7 @@
 # Guide du formateur
 
 Kibana pour analystes SOC — Elastic Stack 9.5.3, licence Basic, interface fr-FR.
-6 h 44 de parcours, 35 exercices, 27 objectifs, plus 1 h 15 d'évaluation —
+6 h 45 de parcours, 35 exercices, 27 objectifs, plus 1 h 15 d'évaluation —
 correction collective des deux écrans, quiz, épreuve pratique, débriefing. SPEC §1
 n'en budgète que 45, pour le quiz et l'épreuve seuls.
 
@@ -58,7 +58,7 @@ une question à poser plutôt qu'une correction à asséner.
 
 La durée annoncée de chaque module couvre **tout** ce qu'il demande : ses
 exercices, la lecture de son corps, et ses questions de rappel actif. C'est la
-durée à poser dans un agenda. Mesurée ainsi, la matière vaut **6 h 44**, et non
+durée à poser dans un agenda. Mesurée ainsi, la matière vaut **6 h 45**, et non
 les 6 h que la spécification visait : la différence est la lecture et le rappel,
 que cette cible ne budgétait pas. Le kit a gardé son contenu et dit la vraie
 durée — mais la conséquence est qu'en une seule journée, la session est dense et
@@ -69,7 +69,7 @@ se termine tard. Lisez les deux formules avant de choisir.
 | Séance | Durée | Contenu |
 |---|---|---|
 | 1 | 2 h 03 | M0 — Prise en main · M1 — Rechercher avec Discover |
-| 2 | 2 h 19 | M2 — Visualiser avec Lens · M3 — Construire un tableau de bord |
+| 2 | 2 h 20 | M2 — Visualiser avec Lens · M3 — Construire un tableau de bord |
 | 3 | 2 h 22 | M4 — Capstone SOC · M5 — Industrialiser |
 | 4 | 1 h 15 | Correction collective des deux écrans, quiz, épreuve pratique, débriefing |
 
@@ -89,9 +89,9 @@ après six heures d'écran.
 | 11 h 18 | 12 min | Pause |
 | 11 h 30 | 70 min | **M2 — Visualiser avec Lens** |
 | 12 h 40 | 50 min | Déjeuner |
-| 13 h 30 | 69 min | **M3 — Construire un tableau de bord** |
-| 14 h 39 | 98 min | **M4 — Capstone SOC** |
-| 16 h 17 | 13 min | Pause |
+| 13 h 30 | 70 min | **M3 — Construire un tableau de bord** |
+| 14 h 40 | 98 min | **M4 — Capstone SOC** |
+| 16 h 18 | 12 min | Pause |
 | 16 h 30 | 44 min | **M5 — Industrialiser** |
 | 17 h 14 | 10 min | **Correction collective** : les deux corrigés du Space « Corrigés (formateur) », comparés aux écrans de la salle |
 | 17 h 24 | 20 min | Quiz, puis correction commentée |

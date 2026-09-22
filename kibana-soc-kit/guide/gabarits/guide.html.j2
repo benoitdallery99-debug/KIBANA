@@ -20,6 +20,10 @@
   <button class="bouton sommaire__bascule" id="bascule-sommaire" aria-expanded="true"
           aria-controls="sommaire-corps">Sommaire</button>
   <div class="sommaire__corps" id="sommaire-corps">
+    {# Sur téléphone, la barre d'outils du contenu est hors d'atteinte dès
+       qu'on a défilé : ce lien y ramène et donne le focus au champ, sans
+       script — un fragment qui vise un élément focalisable le focalise. #}
+    <p class="sommaire__recherche"><a href="#recherche">Rechercher dans le guide</a></p>
     <p class="sommaire__titre">Parcours</p>
     <ol>
       <li class="sommaire__module">

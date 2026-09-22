@@ -470,16 +470,30 @@ mark { background: var(--action-fond); color: var(--encre); padding: 0 0.1em; }
 
 /* --- Téléphone ----------------------------------------------------------- */
 .sommaire__bascule { display: none; }
+.sommaire__recherche { display: none; }
 
 @media (max-width: 62rem) {
   .ossature { grid-template-columns: 1fr; }
+  /* MESURÉ, et c'était un défaut bloquant sur téléphone : « position: static »
+     laissait le sommaire tout en haut d'un document de près de trente mille
+     pixels. Arrivé au module M4, le stagiaire avait le sommaire et la
+     recherche à 29 230 px au-dessus de lui — c'est-à-dire nulle part. La barre
+     colle donc en haut ; repliée, elle ne coûte qu'une ligne, et dépliée elle
+     défile pour elle-même sans emporter la page. */
   .sommaire {
-    position: static;
-    height: auto;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    max-height: 100vh;
+    overflow-y: auto;
     border-right: 0;
     border-bottom: 1px solid var(--filet);
-    padding: 1rem;
+    padding: 0.75rem 1rem;
   }
+  .sommaire[data-ouvert="non"] { overflow-y: visible; }
+  /* Le lien de recherche n'a de sens que là où la barre d'outils est hors
+     d'atteinte : sur grand écran, elle est à demeure en haut du contenu. */
+  .sommaire__recherche { display: block; }
   .sommaire__bascule { display: inline-block; }
   .sommaire[data-ouvert="non"] .sommaire__corps { display: none; }
   /* « position: relative » sert de bloc conteneur aux infobulles du glossaire

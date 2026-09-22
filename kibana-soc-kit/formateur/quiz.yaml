@@ -50,7 +50,8 @@
   explication: >-
     Un écran vide n'est pas une absence de données. Trois causes couvrent la
     quasi-totalité des cas, et se vérifient en quinze secondes : regarde-t-on la
-    bonne source, sur la bonne période, dans le bon langage ? La plage par défaut
+    bonne source, sur la bonne plage de temps, dans le bon langage ? La plage
+    par défaut
     de Kibana se compte en minutes, alors qu'un jeu de données couvre des jours.
 
 - id: Q03
@@ -248,14 +249,15 @@
       Le panneau interroge une autre data view, dont le motif d'index ne couvre pas
       la source affichée par les autres panneaux.
     - >-
-      Le panneau a sa propre plage temporelle, plus courte que celle du tableau de bord.
+      Le panneau a sa propre plage de temps, plus courte que celle du tableau
+      de bord.
     - >-
       Le tableau de bord a trop de panneaux et Kibana en abandonne.
     - >-
       Le panneau doit être rafraîchi manuellement.
   reponse: 1
   explication: >-
-    Un panneau peut porter sa propre plage temporelle, qui l'emporte sur celle
+    Un panneau peut porter sa propre plage de temps, qui l'emporte sur celle
     du tableau de bord. C'est utile — comparer « la dernière heure » à « les sept
     jours » sur le même écran — et déroutant quand on l'a oublié : l'écran reste
     plein, un seul panneau se vide. Kibana signale cette plage par une mention
@@ -401,7 +403,8 @@
       Que le champ host.name n'est pas indexé : un champ absent du mapping ne peut
       pas être recherché.
     - >-
-      Que la machine n'émet aucun journal sur la période retenue par le sélecteur de
+      Que la machine n'émet aucun journal sur la plage de temps retenue par le
+      sélecteur de
       temps.
     - >-
       Rien du tout : cette recherche-là ne regarde pas le contenu des journaux. Elle trouve des applications et des objets enregistrés. Pour chercher une valeur, c'est la barre de requête de Discover.
