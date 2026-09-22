@@ -188,17 +188,34 @@ def saisir_kql(page: Page, requete: str) -> None:
     # Entrée soumet la requête ; le bouton « Actualiser » fait de même et sert
     # de repli si la saisie n'a pas encore été prise en compte.
     barre.press("Enter")
-    page.wait_for_timeout(1_500)
+    page.wait_for_timeout(1_000)
     attendre_chargement(page)
-    page.wait_for_timeout(1_500)
+    # Pas d'attente fixe supplémentaire : « nombre_de_resultats » attend le
+    # compteur lui-même, ce qui vaut sur une machine lente comme sur une rapide.
 
 
-def nombre_de_resultats(page: Page) -> int | None:
+def nombre_de_resultats(page: Page, delai: int = 45_000) -> int | None:
     """Nombre de documents affiché par Discover, ou 0 s'il annonce aucun résultat.
 
     Renvoie None si Discover n'affiche ni compteur ni message : l'appelant doit
     alors signaler un contrôle NON EXÉCUTÉ plutôt que de conclure à zéro.
+
+    PIÈGE RELEVÉ SUR macOS, à la première installation par un humain. Le
+    compteur était lu juste après deux attentes FIXES de 1,5 s. Sur la machine
+    de fabrication, cela suffisait toujours ; sur un MacBook Air, avec 384 682
+    documents dans une machine virtuelle, Discover n'avait pas fini de compter
+    — et les SOIXANTE-HUIT requêtes du parcours rendaient None, c'est-à-dire
+    « contrôle non exécuté ». Une attente fixe mesure la vitesse de la machine,
+    pas le comportement de Kibana. On attend donc que l'un des deux éléments
+    paraisse, et on n'attend rien de plus une fois qu'il est là.
     """
+    try:
+        page.wait_for_selector(
+            f'{ts("nombre_de_resultats")}, {ts("message_aucun_resultat")}',
+            state="visible", timeout=delai,
+        )
+    except Exception:
+        return None
     if page.locator(ts("message_aucun_resultat")).count() > 0:
         return 0
     compteur = page.locator(ts("nombre_de_resultats"))

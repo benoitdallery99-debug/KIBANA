@@ -30,7 +30,13 @@ ligne. Elastic Stack **{version}**, licence **Basic**, interface **{locale}**.
 ./installer.sh      # charge les images et installe les dépendances (une fois)
 make lab-up         # démarre Elasticsearch et Kibana, et initialise le Space
 make data           # engendre et charge les données de la séance
+make corriges       # pose les deux tableaux de bord corrigés
+make guide          # reconstruit guide.html et les PDF sur CES données
 ```
+
+Les deux dernières ne sont pas facultatives : les corrigés vivent dans Kibana
+et non dans l'archive, et les réponses attendues descendent du manifeste du
+générateur — un nouveau `make data` change les données, donc les réponses.
 
 Kibana répond ensuite sur <http://localhost:{port}>.
 Les identifiants sont dans `.env`, créé au premier démarrage et jamais partagé.
@@ -42,6 +48,9 @@ fonctionne seul, sans réseau, sans serveur.
 
 ```bash
 make lab-reset
+make data
+make corriges
+make guide
 ```
 
 Les données sont en **fenêtre glissante** : elles se terminent à l'instant du

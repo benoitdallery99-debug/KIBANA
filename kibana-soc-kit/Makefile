@@ -14,7 +14,7 @@ VERSION := $(shell sed -n 's/^  version:[[:space:]]*"\{0,1\}\([0-9.]*\)"\{0,1\}.
 DEPOT   ?= mirror.gcr.io/library
 
 .PHONY: aide lab-images lab-up lab-down lab-reset epreuve-ouvrir epreuve-fermer \
-        data data-epreuve captures guide package \
+        data data-epreuve captures corriges guide package \
         verif verif-lab verif-donnees verif-parcours verif-corriges verif-guide verif-pdf \
         verif-package lint venv
 
@@ -32,6 +32,7 @@ aide:
 	@echo "  Contenu"
 	@echo "    make data           engendre et charge le jeu du parcours"
 	@echo "    make data-epreuve   engendre et charge le jeu de l'épreuve pratique"
+	@echo "    make corriges       (re)construit les deux tableaux de bord corrigés"
 	@echo "    make captures       régénère les captures d'écran (Playwright)"
 	@echo "    make guide          construit dist/guide.html et les PDF"
 	@echo "    make package        construit l'archive livrable et SHA256SUMS"
@@ -107,6 +108,15 @@ data-epreuve:
 
 captures:
 	@$(PY) captures/produire.py
+
+# MANQUE RELEVÉ À LA PREMIÈRE INSTALLATION PAR UN HUMAIN : les deux tableaux de
+# bord corrigés n'avaient AUCUNE cible. « corriges/construire.py » n'était lancé
+# qu'à la main, dans l'environnement de fabrication. Un formateur qui suivait la
+# marche documentée — lab-up, data — ne les avait donc jamais dans son Kibana,
+# alors que le guide du formateur les annonce et que « make verif-corriges » les
+# exige. Trois contrôles échouaient sans que rien n'explique pourquoi.
+corriges:
+	@$(PY) corriges/construire.py
 
 guide:
 	@$(PY) guide/build.py

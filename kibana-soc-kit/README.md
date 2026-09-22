@@ -34,8 +34,17 @@ Deux chemins, selon ce que vous avez.
 make lab-images     # tire les images Elasticsearch et Kibana par leur étiquette
 make venv           # environnement Python
 make lab-up         # pré-vol, démarrage du pod, initialisation des Spaces
-make data           # engendre et charge 381 039 documents
+make data           # engendre et charge le jeu du parcours
+make corriges       # pose les deux tableaux de bord corrigés dans le Space « corriges »
+make guide          # reconstruit dist/guide.html et les sept PDF sur VOS données
 ```
+
+**Les deux dernières ne sont pas facultatives.** Les corrigés vivent dans
+Kibana, pas dans le dépôt : sans `make corriges`, le formateur n'a rien à
+projeter et `make verif-corriges` échoue. Et les réponses attendues descendent
+du manifeste du générateur : un `make data` change les données, donc les
+réponses, donc les empreintes du guide. Sans `make guide`, le stagiaire saisit
+une bonne réponse et se la voit refuser.
 
 Kibana répond ensuite sur http://localhost:5601. Les mots de passe sont
 engendrés à l'installation dans `.env`, qui n'est jamais commité.
