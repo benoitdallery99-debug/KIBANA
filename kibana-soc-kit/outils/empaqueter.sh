@@ -64,11 +64,64 @@ done
 
 titre "4/6 Dépendances Python"
 # Vendorisées en wheels : l'installation sur la cible ne joint pas PyPI.
-"$PY" -m pip download --quiet --dest "$ETAPE/wheels" -r exigences.txt 2>&1 | tail -2 || {
+#
+# PIÈGE, relevé en instruisant l'installation sur un poste hors ligne : un
+# « pip download » sans --platform produit les wheels DE LA MACHINE DE
+# FABRICATION. Trois d'entre elles portaient « manylinux_x86_64 » ET « cp311 » :
+# l'archive n'était installable que sur Linux x86_64 avec CPython 3.11 très
+# exactement. Sur WSL2 Ubuntu 24.04, qui livre 3.12, l'installation échouait.
+# On déclare donc les cibles, on les télécharge toutes, et on ÉCRIT ce qui est
+# couvert — pour que l'installateur le sache avant de partir en salle blanche,
+# et non devant un pip qui refuse.
+#
+# Windows natif n'est volontairement pas une cible : le kit est piloté par des
+# scripts bash et un Makefile, et podman y tourne de toute façon dans une VM.
+# Sous Windows, tout se passe dans WSL2, qui est un Linux x86_64.
+CIBLES="${KIT_CIBLES_WHEELS:-manylinux_2_17_x86_64/manylinux2014_x86_64:3.11 manylinux_2_17_x86_64/manylinux2014_x86_64:3.12 macosx_11_0_arm64:3.11 macosx_11_0_arm64:3.12}"
+
+couvertes=""
+for cible in $CIBLES; do
+  plateformes="${cible%%:*}"
+  version_py="${cible##*:}"
+  args=""
+  # Une cible peut nommer plusieurs étiquettes de plateforme compatibles.
+  ancien_ifs="$IFS"; IFS='/'
+  for p in $plateformes; do args="$args --platform $p"; done
+  IFS="$ancien_ifs"
+  # shellcheck disable=SC2086
+  if "$PY" -m pip download --quiet --dest "$ETAPE/wheels" \
+      --only-binary=:all: --python-version "$version_py" $args \
+      -r exigences.txt >/dev/null 2>&1; then
+    echo "  [OK]  ${plateformes%%/*} / CPython $version_py"
+    couvertes="$couvertes${couvertes:+, }${plateformes%%/*} cp${version_py}"
+  else
+    echo "  [--]  ${plateformes%%/*} / CPython $version_py : aucune roue complète" >&2
+  fi
+done
+
+# Les paquets sans roue publiée pour une cible donnée arriveraient en source :
+# on complète par un téléchargement sans contrainte, qui les capte pour la
+# plateforme de fabrication au moins.
+"$PY" -m pip download --quiet --dest "$ETAPE/wheels" -r exigences.txt >/dev/null 2>&1 || {
   echo "  AVERTISSEMENT : téléchargement des wheels impossible (réseau ?)." >&2
   echo "  L'archive reste utilisable si Python et ses dépendances sont déjà en place." >&2
 }
-echo "  $(find "$ETAPE/wheels" -name '*.whl' -o -name '*.tar.gz' 2>/dev/null | wc -l) paquet(s)"
+
+{
+  echo "Plateformes couvertes par wheels/ :"
+  echo "  ${couvertes:-aucune (téléchargement contraint en échec)}"
+  echo
+  echo "Une wheel dont le nom porte « cp311 » ou « manylinux » ne s'installe QUE"
+  echo "sur la version de Python et la plateforme correspondantes. Vérifiez avant"
+  echo "de partir hors ligne :"
+  echo "    python3 --version        # doit être l'une des versions ci-dessus"
+  echo "    python3 -c 'import sysconfig; print(sysconfig.get_platform())'"
+  echo
+  echo "Windows natif n'est pas une cible : sous Windows, le kit s'installe dans"
+  echo "WSL2, qui est un Linux x86_64. Voir INSTALLATION.md."
+} > "$ETAPE/wheels/CIBLES.txt"
+
+echo "  $(find "$ETAPE/wheels" -name '*.whl' -o -name '*.tar.gz' 2>/dev/null | wc -l) paquet(s), $(du -sh "$ETAPE/wheels" | cut -f1)"
 
 titre "5/6 README d'installation"
 "$PY" outils/ecrire_readme.py "$ETAPE"

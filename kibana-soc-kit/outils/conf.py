@@ -133,3 +133,12 @@ def secrets() -> dict[str, str]:
 
 def auth_elastic() -> tuple[str, str]:
     return "elastic", secrets()["ELASTIC_PASSWORD"]
+
+
+# Facteur d'échelle auquel les captures d'écran sont prises. Il vit ICI et non
+# dans verif/e2e/kibana.py parce que guide/build.py en a besoin pour écrire le
+# CSS : l'y chercher faisait dépendre la construction du guide de Playwright,
+# donc d'un navigateur de 150 Mo, sur un poste hors ligne qui ne lance aucun
+# test. Mesuré : le guide ne se reconstruisait pas là où il en avait le plus
+# besoin. Une seule valeur, deux lecteurs, aucune dépendance de l'un à l'autre.
+ECHELLE_DES_CAPTURES = 2

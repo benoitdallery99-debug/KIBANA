@@ -66,7 +66,7 @@ def ts(nom: str) -> str:
 # pixels que sa taille LOGIQUE : la rendre à sa taille intrinsèque, c'est la
 # grossir deux fois, et forcer un défilement là où elle tiendrait. Le guide s'en
 # sert pour agrandir « à taille réelle » plutôt qu'« à taille de fichier ».
-ECHELLE_DES_CAPTURES = 2
+ECHELLE_DES_CAPTURES = conf.ECHELLE_DES_CAPTURES
 
 
 @contextmanager

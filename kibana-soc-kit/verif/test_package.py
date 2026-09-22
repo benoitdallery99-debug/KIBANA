@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import os
 import re
+import shutil
 import subprocess
 import tarfile
 import tempfile
@@ -382,3 +383,68 @@ def test_toute_dependance_importee_est_declaree(config):
         "modules importés par la chaîne mais absents d'exigences.txt :\n  "
         + "\n  ".join(manquants)
     )
+
+
+def test_les_images_livrees_repondent_aux_digests_epingles(extraite):
+    """L'image chargée depuis le tar livré doit résoudre la référence du pod.
+
+    DÉFAUT MESURÉ, et invisible des deux machines qui ont construit le kit :
+    « podman save --format docker-archive » resérialise l'image, et « podman
+    load » lui donne un digest de manifeste DIFFÉRENT de celui du registre.
+    Sur la chaîne de fabrication les images viennent d'un « pull », donc le
+    digest de lab/images.yaml résout ; sur un poste hors ligne elles viennent
+    du tar, et il ne résout plus. Avec « imagePullPolicy: Never », le pod ne
+    démarrait pas — c'est-à-dire que le lab ne démarrait sur AUCUNE
+    installation hors ligne neuve, ce qui est précisément le cas d'usage.
+
+    Le contrôle charge une image de l'archive dans un magasin podman vierge et
+    demande la seule chose qui compte : la référence épinglée y est-elle
+    résolvable, ou lab/rendre_pod.py sait-il la réancrer ?
+    """
+    if not shutil.which("podman"):
+        pytest.skip("NON EXÉCUTÉ : podman absent.")
+    tar = extraite / "images" / "elasticsearch.tar"
+    if not tar.exists():
+        pytest.skip("NON EXÉCUTÉ : images/elasticsearch.tar absent de l'archive.")
+    epingles = yaml.safe_load((extraite / "lab" / "images.yaml").read_text(encoding="utf-8"))
+    attendu = epingles["elasticsearch"]
+
+    libre_go = shutil.disk_usage(extraite).free / 1024**3
+    if libre_go < 6:
+        pytest.skip(f"NON EXÉCUTÉ : {libre_go:.1f} Go libres, il en faut 6 "
+                    "pour un magasin d'essai.")
+
+    # MESURÉ : podman refuse un « runroot » de plus de 50 caractères. Le
+    # répertoire temporaire par défaut suffit rarement — on vise /run quand il
+    # est là, sinon on laisse tempfile choisir et le contrôle se saute si podman
+    # proteste sur la longueur.
+    ou = "/run" if os.access("/run", os.W_OK) else None
+    with tempfile.TemporaryDirectory(prefix="kit-magasin-") as magasin, \
+            tempfile.TemporaryDirectory(prefix="kit-r-", dir=ou) as run:
+        podman = ["podman", "--root", magasin, "--runroot", run]
+        charge = subprocess.run([*podman, "load", "-i", str(tar)],
+                                capture_output=True, text=True, timeout=1800, check=False)
+        if "runroot is longer than" in charge.stderr:
+            pytest.skip(f"NON EXÉCUTÉ : chemin de runroot trop long ({run}).")
+        assert charge.returncode == 0, f"podman load a échoué :\n{charge.stderr[-1500:]}"
+
+        resout = subprocess.run([*podman, "image", "exists", attendu],
+                                capture_output=True, check=False).returncode == 0
+        if resout:
+            return  # l'épinglage tient : rien d'autre à prouver.
+
+        # Il ne résout pas : le kit doit alors SAVOIR le réancrer, sinon le pod
+        # référencera une image absente et « imagePullPolicy: Never » l'arrêtera.
+        version = yaml.safe_load((extraite / "kit.config.yaml").read_text(encoding="utf-8"))
+        etiquette = f"mirror.gcr.io/library/elasticsearch:{version['stack']['version']}"
+        par_etiquette = subprocess.run([*podman, "image", "exists", etiquette],
+                                       capture_output=True, check=False).returncode == 0
+        assert par_etiquette, (
+            f"ni le digest épinglé ({attendu}) ni l'étiquette ({etiquette}) ne résolvent "
+            "dans un magasin chargé depuis le tar livré : le lab ne peut pas démarrer hors ligne"
+        )
+        source = (extraite / "lab" / "rendre_pod.py").read_text(encoding="utf-8")
+        assert "existe_localement" in source, (
+            "le digest épinglé ne résout pas après « podman load » et lab/rendre_pod.py ne "
+            "vérifie pas le magasin local : « make lab-up » échouera sur tout poste hors ligne"
+        )

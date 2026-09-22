@@ -78,15 +78,43 @@ def digest(image: str) -> str:
     return r.stdout.strip()
 
 
+def existe_localement(reference: str) -> bool:
+    """L'image est-elle résolvable TELLE QUELLE dans le magasin local ?"""
+    return subprocess.run(
+        ["podman", "image", "exists", reference], capture_output=True, check=False
+    ).returncode == 0
+
+
 def images() -> dict[str, str]:
-    """Relit lab/images.yaml, ou le crée depuis le magasin local au premier appel."""
+    """Relit lab/images.yaml, ou le crée depuis le magasin local au premier appel.
+
+    PIÈGE, mesuré : « podman save --format docker-archive » resérialise l'image,
+    et « podman load » lui redonne un digest de manifeste DIFFÉRENT de celui du
+    registre. Sur la chaîne de fabrication, où les images viennent d'un « pull »,
+    le digest épinglé ici résout ; sur un poste hors ligne, où elles viennent du
+    tar livré, il ne résout pas — et « imagePullPolicy: Never » interdit d'aller
+    le chercher. Le lab ne démarrait donc pas sur une installation hors ligne
+    neuve, alors qu'il démarrait sur les deux machines qui l'avaient construit.
+    Aucun des 121 contrôles ne le voyait, faute d'en avoir jamais chargé un tar.
+
+    L'épinglage par digest est conservé — c'est lui qui rend le lab reproductible
+    à l'octet près — mais il est désormais VÉRIFIÉ contre le magasin local, et
+    réancré sur lui quand il n'y résout pas.
+    """
     v = conf.version()
     if IMAGES.exists():
         d = yaml.safe_load(IMAGES.read_text(encoding="utf-8"))
-        if d.get("version") == v:
-            return d
-        print(f"[rendre_pod] lab/images.yaml concerne {d.get('version')}, "
-              f"or stack.version = {v} : relevé à neuf")
+        if d.get("version") != v:
+            print(f"[rendre_pod] lab/images.yaml concerne {d.get('version')}, "
+                  f"or stack.version = {v} : relevé à neuf")
+        else:
+            absents = [nom for nom in ("elasticsearch", "kibana")
+                       if d.get(nom) and not existe_localement(d[nom])]
+            if not absents:
+                return d
+            print(f"[rendre_pod] digest épinglé introuvable dans le magasin local "
+                  f"({', '.join(absents)}) : images chargées depuis un tar livré, "
+                  f"dont le manifeste est resérialisé. Réancrage sur le magasin.")
 
     depot = os.environ.get("KIT_DEPOT_IMAGES", "mirror.gcr.io/library")
     d = {
@@ -172,7 +200,14 @@ def main() -> int:
     if genres != ["PersistentVolumeClaim", "Pod"]:
         raise SystemExit(f"rendu inattendu : {genres}")
 
-    print(f"[rendre_pod] {sortie.relative_to(conf.RACINE)} engendré — pod « {args.nom} », "
+    # « --sortie » accepte un chemin hors du dépôt : relative_to() levait alors
+    # une ValueError APRÈS que le fichier eut été écrit — un échec annoncé sur
+    # un travail réussi.
+    try:
+        nom_affiche = sortie.relative_to(conf.RACINE)
+    except ValueError:
+        nom_affiche = sortie
+    print(f"[rendre_pod] {nom_affiche} engendré — pod « {args.nom} », "
           f"Elasticsearch et Kibana {conf.version()}, "
           f"locale {conf.valeur('kibana.locale')}, heap {HEAP}")
     return 0
