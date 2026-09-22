@@ -123,6 +123,20 @@ def sante_de_la_collecte() -> dict:
                 },
             },
             # Le volume par source dans le temps : c'est là que se voit le trou (S5).
+            #
+            # L'INTERVALLE EST FIXÉ, et ce n'est pas un détail de présentation.
+            # L'écran est enregistré sur sept jours ; sur sept jours, Lens choisit
+            # tout seul un intervalle de l'ordre de trois heures, et le trou de
+            # deux heures de S5 — qui porte sur la source la moins volumineuse —
+            # devient une encoche de quelques pour cent au sommet d'une barre
+            # empilée. Invisible. C'est exactement ce que M4-E7 enseigne
+            # (« Laisser l'intervalle automatique. Sur sept jours, il lisse
+            # l'interruption jusqu'à la faire disparaître »), et le corrigé ne
+            # peut pas démentir l'exercice qu'il corrige.
+            #
+            # Les barres sont aussi DÉGROUPÉES : empilées, une source qui tombe
+            # est masquée par celles qui continuent ; côte à côte, son creux se
+            # lit.
             {
                 "grid": {"x": 24, "y": 0, "w": 24, "h": 12},
                 "type": "vis",
@@ -130,9 +144,13 @@ def sante_de_la_collecte() -> dict:
                     "type": "xy",
                     "title": "Le volume de chaque source tient-il dans le temps ?",
                     "layers": [{
-                        "type": "bar_stacked",
+                        "type": "bar",
                         "data_source": source_donnees(),
-                        "x": {"operation": "date_histogram", "field": "@timestamp"},
+                        "x": {
+                            "operation": "date_histogram",
+                            "field": "@timestamp",
+                            "interval": "1h",
+                        },
                         "y": [{"operation": "count"}],
                         "breakdown_by": {
                             "operation": "terms", "fields": ["event.dataset"], "limit": 8,
@@ -169,7 +187,14 @@ def sante_de_la_collecte() -> dict:
                     "layers": [{
                         "type": "line",
                         "data_source": source_donnees(),
-                        "x": {"operation": "date_histogram", "field": "@timestamp"},
+                        # « Horaire » dans le titre, horaire dans la requête : un
+                        # panneau qui laisse Lens choisir répond à une autre
+                        # question que celle qu'il affiche.
+                        "x": {
+                            "operation": "date_histogram",
+                            "field": "@timestamp",
+                            "interval": "1h",
+                        },
                         "y": [{"operation": "count"}],
                     }],
                 },
