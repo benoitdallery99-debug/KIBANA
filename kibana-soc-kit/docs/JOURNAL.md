@@ -384,6 +384,42 @@ synonymes, parce que le guide écrit « machines » là où le manifeste dit « 
 
 La suite passe de 91 à **94 contrôles**.
 
+### Troisième passage de `relecteur-expert` — 11,8/20, deux bloquants
+
+Mené autrement : neuf relecteurs, un par critère de SPEC §11 plus un axe transverse sur les interdits
+de CLAUDE.md, et derrière chacun un contre-expert chargé de RÉFUTER plutôt que de valider. Cinq écarts
+sur cinquante-trois sont tombés à cette épreuve. Les quarante-huit qui restent : 2 bloquants,
+23 majeurs, 23 mineurs. La note baisse de 16,5 à 11,8 parce que ce tour a ouvert les images en pleine
+résolution, lancé Chromium sur le guide, injecté axe-core, mesuré les contrastes, rejoué les requêtes
+et recompté les contrôles annoncés — ce que les deux premiers tours ne faisaient pas.
+
+**Bloquant 1.** « Reprenez vos six valeurs de event.dataset » publiait R.nb_sources, réponse de trois
+exercices. Le garde ancre les petits nombres sur le sujet du libellé ; « valeurs » n'est le synonyme de
+rien. Il s'ancre désormais aussi sur le nom du champ porté par la requête de contrôle.
+
+**Bloquant 2.** Le rapport de recette annonçait « 94 contrôles, zéro échec » là où sa seule
+transcription en montrait 91 : récidive exacte de la faute dont ce même document avait tiré sa règle.
+Corrigé sur la sortie réelle de la campagne post-corrections : **96 contrôles, zéro échec**.
+
+**Le plus instructif.** Cinq des dix exercices du capstone validaient une empreinte déjà produite le
+matin — trois par réemploi de clé, deux par COLLISION D'EMPREINTE entre clés distinctes, que le
+contrôle voisin (qui compare les clés) ne pouvait pas voir. La correction a buté sur une contrainte
+arithmétique du jeu : six sources, dont trois portent une réponse de repère et une quatrième les
+événements de deux scénarios. La source muette a changé de jeu ; M4-E7 a changé de question — il
+valide l'heure de reprise de la collecte, que seul l'écran de santé donne. Trois exercices de
+construction n'ont plus d'empreinte et déclarent « rendu », que le contrôle exige explicitement.
+
+**Et la leçon de méthode.** En déplaçant la source muette, deux contrôles ont continué d'interroger
+l'ancienne, écrite en dur ; l'un a échoué en annonçant « silence de 0 min » — il mesurait le silence
+d'une source qui parle. Un contrôle qui écrit en dur ce que le générateur choisit ne vérifie pas le
+kit : il vérifie une copie de lui.
+
+Durées rebudgétées (le parcours vaut 6 h 43, pas 6 h — écart consigné plus bas, E10), grille de
+notation unique pour M4-E10, captures appelées par le texte au lieu d'être déversées en fin de module,
+quiz dont la clé n'est plus la proposition la plus longue 14 fois sur 17, panneau de gravité dans le
+temps ajouté au corrigé « Vue IDS », impression des 113 blocs dépliants réparée, infobulles du
+glossaire rendues révocables, tableaux larges atteignables au clavier.
+
 ### Écart de livraison, non résolu à ce stade
 **Le push vers `YamTeam9/picturegallery` est refusé** : `403`, côté API GitHub
 `Resource not accessible by integration`. La lecture fonctionne, l'écriture non : l'app est installée
@@ -418,4 +454,6 @@ aucune réponse n'est écrite en clair, et chaque piège est décrit tel qu'il s
 | E6 | SPEC §6.3 annonce que `[1025 TO *]` produit un « échec silencieux ». En 9.5.3 fr-FR, c'est FAUX : Discover affiche « Impossible d'extraire les résultats de recherche ». Le vrai piège muet est `_exists_:champ`, qui renvoie 0 résultat sans aucun message. | Mineur (prémisse de la SPEC) | Résolu, SPEC non modifiée | `docs/pieges-lab.json` relève le comportement réel ; le parcours enseignera ce qui se passe vraiment, comme SPEC §6.3 l'exige elle-même (« le guide montre le comportement réel de la version »). |
 | E5 | Le démon Docker, démarré pendant la reconnaissance de l'environnement, active `bridge-nf-call-iptables` et casse les réseaux podman `--internal`. | Mineur | Résolu | Démon arrêté (le kit ne s'en sert pas), réglage remis à 0, contrôle ajouté au pré-vol (D7). |
 | E8 | SPEC §9 demande un quiz de 15 questions ; le kit en livre 17. | Mineur | Assumé et consigné | Q16 et Q17 couvrent les deux pièges d'interface que SPEC §6.3 exige et que rien n'évaluait. L'écart va dans le sens du mieux, mais un écart non consigné reste un écart caché. |
+| E10 | SPEC §1 annonce « 6 h de parcours ». Mesuré lecture des corps et rappel actif compris — que SPEC §1 ne budgète pas et que la charte rend obligatoires —, le parcours vaut **6 h 43**. | Mineur | Assumé et consigné | Le kit garde son contenu et dit la vraie durée plutôt que de la rogner pour rentrer dans une prémisse. Le guide du formateur donne deux formules : quatre séances (recommandée) ou une journée qui finit à 18 h 29, annoncée comme telle à l'inscription. La borne haute du contrôle de durée porte ce commentaire et sa raison. |
+| E11 | Avec six sources, la source muette et celle du trou de collecte ne peuvent pas différer entre le parcours et l'épreuve : trois sources portent une réponse de repère, une quatrième les événements de deux scénarios. | Mineur | Assumé et consigné | Le document remis au stagiaire le lui DIT au lieu de prétendre que rien ne se répète, et la première question de l'épreuve demande en plus l'heure de reprise de la collecte, que le générateur tire à neuf. Une septième source lèverait la contrainte, au prix d'un parc moins lisible. |
 | E4 | La version 9.5.4, dernière stable annoncée, n'est pas disponible ici. | Mineur | Accepté | Kit construit et vérifié en 9.5.3 (D2). La montée de version est prévue par construction : `stack.version` dans `kit.config.yaml`, `make captures` régénère les captures. |

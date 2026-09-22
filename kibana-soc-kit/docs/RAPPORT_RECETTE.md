@@ -15,12 +15,12 @@ comme **non exécuté**, avec sa raison — jamais comme réussi.
 |---|---|---|---|
 | `verif-lab` | 17 | ✅ 17 passés | licence, santé, version, locale, vue de solution, isolation réseau, cloisonnement des quatre Spaces |
 | `verif-donnees` | 14 | ✅ 14 passés | volumes, mapping effectif, S1→S7, déterminisme, jeu d'épreuve distinct |
-| `verif-parcours` | 21 | ✅ 21 passés | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes, réemplois annoncés, corrigé du quiz complet, positions du quiz réparties |
+| `verif-parcours` | 23 | ✅ 23 passés | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes, réemplois annoncés, corrigé du quiz complet, positions du quiz réparties, aucune empreinte validée deux fois, tableau des types adossé au lab |
 | `verif-corriges` | 8 | ✅ 8 passés | import en Space vierge, rendu sans erreur, valeurs conformes |
 | `verif-guide` | 16 | ✅ 16 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement, entités HTML intactes, aucune capture prise sur un corrigé |
 | `verif-pdf` | 10 | ✅ 10 passés | polices embarquées, sommaire paginé, signets, solutions en annexe, aucune réponse dans un document du stagiaire |
 | `verif-package` | 8 | ✅ 8 passés | empreintes, complétude, installation sans réseau |
-| **Total** | **94** | **✅ zéro échec** | |
+| **Total** | **96** | **✅ zéro échec** | |
 
 Exécution complète après `make lab-reset`, donc sur un lab reconstruit depuis un
 volume vide : c'est la seule façon de ne pas confondre « le kit fonctionne » et
@@ -123,16 +123,19 @@ $ make verif-parcours
 20 passed
 ```
 
-Six modules, **347 minutes**, **35 exercices**, **27 objectifs**.
+Six modules, **403 minutes**, **35 exercices**, **27 objectifs**. La durée d'un
+module couvre tout ce qu'il demande : ses exercices, la lecture de son corps et
+son rappel actif. Elle ne les couvrait pas avant le troisième tour de relecture,
+et valait exactement la somme des exercices dans quatre modules sur six.
 
 | Module | Durée | Exercices | Guidage |
 |---|---|---|---|
-| M0 Prise en main | 30 min | 3 | démonstration → guidé → semi-guidé |
-| M1 Rechercher avec Discover | 75 min | 6 | démonstration → … → autonome |
-| M2 Visualiser avec Lens | 60 min | 6 | démonstration → … → autonome |
-| M3 Construire un tableau de bord | 60 min | 6 | démonstration → … → autonome |
-| M4 Capstone SOC | 90 min | 10 | **autonome** de bout en bout |
-| M5 Industrialiser | 30 min | 4 | démonstration → … → autonome |
+| M0 Prise en main | 36 min | 3 | démonstration → guidé → semi-guidé |
+| M1 Rechercher avec Discover | 87 min | 6 | démonstration → … → autonome |
+| M2 Visualiser avec Lens | 70 min | 6 | démonstration → … → autonome |
+| M3 Construire un tableau de bord | 69 min | 6 | démonstration → … → autonome |
+| M4 Capstone SOC | 97 min | 10 | **autonome** de bout en bout |
+| M5 Industrialiser | 44 min | 4 | démonstration → … → autonome |
 
 Prouve : chaque requête KQL **tapée dans Discover** renvoie ce qui est annoncé ;
 chaque libellé d'interface cité **existe** dans l'interface fr-FR du lab ; aucune
@@ -165,15 +168,15 @@ arrive en tête du tableau du dernier événement vu.
 
 ```
 $ make guide
-dist/guide.html — 3.08 Mo, 6 modules, 35 exercices, 17 questions de quiz
+dist/guide.html — 2.88 Mo, 6 modules, 35 exercices, 17 questions de quiz
 $ make verif-guide
-13 passed
+16 passed
 $ make verif-pdf
 10 passed
 ```
 
 Prouve : **zéro requête réseau** à l'ouverture en `file://` ; axe-core injecté
-sans violation `serious` ni `critical` ; 3,08 Mo pour une limite de 20 Mo ;
+sans violation `serious` ni `critical` ; 2,88 Mo pour une limite de 20 Mo ;
 liens internes valides ; texte alternatif sur toutes les images ; empreintes
 conformes au manifeste ; **aucune réponse attendue publiée** ; le manifeste
 n'est pas embarqué ; et, de bout en bout, **une bonne réponse est acceptée et
@@ -184,9 +187,12 @@ sommaire réellement paginé et pointant dans le document, signets, fiche mémo 
 exactement deux pages, solutions absentes du corps et rassemblées en annexe.
 
 **Sept documents produits**, pagination relevée par `pdfinfo` : `guide.pdf`
-(102 pages), `corriges.pdf` (32), `guide-formateur.pdf` (6),
-`rapport-recette.pdf` (6), `note-de-conception.pdf` (5),
-`quiz-imprimable.pdf` (4), `fiche-memo.pdf` (2).
+(115 pages), `corriges.pdf` (46), `rapport-recette.pdf` (8),
+`guide-formateur.pdf` (7), `note-de-conception.pdf` (5),
+`quiz-imprimable.pdf` (4), `fiche-memo.pdf` (2). Le guide et les corrigés ont
+gagné des pages au troisième tour : chaque capture y occupe désormais une page
+A4 paysage qui lui est propre, faute de quoi elle s'imprimait à 153 mm de large
+et le texte de Kibana y tombait sous 4 points.
 
 ---
 
@@ -233,6 +239,38 @@ $ make verif
 17 passed · 14 passed · 20 passed · 8 passed · 14 passed · 10 passed · 8 passed
 ```
 
+Cette transcription est celle du PREMIER tour de revue, et elle totalise 91.
+Les deux tours suivants ont ajouté cinq contrôles ; la voici rejouée en entier
+après les corrections du troisième, sur les données et les captures
+régénérées — c'est elle qui fait foi, et c'est elle que le tableau de synthèse
+recopie :
+
+```
+$ make data && make data-epreuve && .venv/bin/python corriges/construire.py
+  [OK] Santé de la collecte       5 panneaux (HTTP 200)
+  [OK] Vue IDS                    8 panneaux (HTTP 200)
+$ make captures
+8 capture(s) dans captures/images
+$ make guide
+dist/guide.html — 2.88 Mo, 6 modules, 35 exercices, 17 questions de quiz
+$ make verif
+17 passed in 43.51s        (verif-lab)
+14 passed in 20.27s        (verif-donnees)
+23 passed in 279.08s       (verif-parcours)
+8 passed in 57.13s         (verif-corriges)
+16 passed in 11.89s        (verif-guide)
+10 passed in 327.68s       (verif-pdf)
+8 passed in 46.91s         (verif-package)
+$ echo $?
+0
+```
+
+Soit **96 contrôles, zéro échec**. Le tableau de synthèse annonçait 94 « zéro
+échec » alors que la seule transcription du document en montrait 91 : c'était
+le second écart bloquant du troisième tour, et la récidive exacte de la faute
+dont le kit avait tiré sa règle plus haut dans cette même phase. Un chiffre
+recompté dans les fichiers de test n'est pas une exécution.
+
 **`make lab-reset` mesuré : 1 min 49 s.** Le critère de sortie P1 exigeait que
 cette commande fonctionne et que sa durée soit consignée ; elle n'avait jamais
 été lancée, et pour cause — le script qu'elle appelle n'existait pas. Le guide
@@ -259,12 +297,13 @@ défauts ne se montrent que dans ces conditions.
 
 `stagiaire-candide` et `relecteur-expert` ont été lancés sur le kit complet.
 Le premier a buté **neuf fois** ; le second a rendu **16/20** au premier
-passage, sous le seuil de 18, avec un écart bloquant, puis **16,5/20** au
-second, toujours sous le seuil, avec un autre bloquant. Les seize écarts du
-premier tour — sept de l'expert, neuf du candide — ont été corrigés, chacun
-assorti du contrôle qui l'aurait vu ; c'est ce dernier point qui compte, et qui
-explique que la suite soit passée de 78 à 91 contrôles pendant cette revue,
-puis à 94 au tour suivant.
+passage, sous le seuil de 18, avec un écart bloquant ; **16,5/20** au deuxième,
+toujours sous le seuil, avec un autre bloquant ; **11,8/20** au troisième, mené
+autrement et bien plus loin — neuf relecteurs et autant de contre-experts. Les
+seize écarts du premier tour — sept de l'expert, neuf du candide — ont été
+corrigés, chacun assorti du contrôle qui l'aurait vu ; c'est ce dernier point
+qui compte, et qui explique que la suite soit passée de 78 à 91 contrôles
+pendant cette revue, puis à 94, puis à **96**.
 
 Le bloquant du premier tour mérite d'être cité, parce qu'il illustre ce que
 vaut un garde dont personne ne vérifie la portée. `outils/fuites.py` exemptait
@@ -366,6 +405,72 @@ cherche désormais quand le nom qu'ils qualifient les suit — « 21 machines »
 attrapé, « 21 » nu reste ignoré — avec une table de synonymes, puisque le guide
 écrit « machines » là où le manifeste dit « hôtes ».
 
+### Le troisième passage : 11,8/20, et pourquoi la note baisse
+
+Le troisième tour a été mené autrement. Neuf relecteurs, un par critère de la
+grille de SPEC §11 plus un axe transverse sur les interdits de CLAUDE.md ; et,
+derrière chacun, un contre-expert dont la consigne n'était pas de valider mais
+de **réfuter** — rouvrir le fichier à la ligne citée, relancer la commande,
+requalifier la gravité à la hausse comme à la baisse. Cinq écarts sur
+cinquante-trois sont tombés à cette épreuve, dont un que le premier relecteur
+avait classé bloquant.
+
+Ce tour a surtout regardé ailleurs. Les précédents lisaient des fichiers :
+celui-ci a ouvert les images en pleine résolution, lancé Chromium sur le guide,
+injecté axe-core, mesuré des contrastes, rejoué les requêtes contre le lab et
+recompté les contrôles annoncés. La note passe de 16,5 à **11,8/20**. Ce n'est
+pas le kit qui a régressé ; c'est la relecture qui a atteint ce que les deux
+premières ne touchaient pas.
+
+Quarante-huit écarts tiennent : **2 bloquants, 23 majeurs, 23 mineurs**.
+
+**Premier bloquant.** Une consigne de M1 écrivait « Reprenez vos **six** valeurs
+de event.dataset ». Six EST `R.nb_sources`, la réponse attendue de M0-E2, de
+M4-E1 et de M5-E2. Le garde ne l'a pas vu parce qu'il ancre les petits nombres
+sur le sujet du libellé et ses synonymes : « six sources » était attrapé, « six
+valeurs » non — et « valeurs » n'est le synonyme de rien, il est trop courant
+pour être surveillé seul. Le garde s'ancre désormais aussi sur le NOM DU CHAMP
+que porte la requête de contrôle de la réponse : un nombre isolé suivi, à trois
+mots près, de « event.dataset » parle bien du décompte en question.
+
+**Second bloquant : ce document.** Le tableau de synthèse annonçait « 94
+contrôles, zéro échec » quand la seule exécution qu'il affichait en comptait
+91. C'est la récidive exacte de la faute dont le kit avait tiré sa règle en P8.
+Le tableau a été refait sur la sortie réelle de la campagne qui suit ces
+corrections, et non sur un recomptage des fichiers de test.
+
+**Ce que le tour a trouvé de plus instructif.** Cinq des dix exercices du
+capstone validaient une empreinte que le stagiaire avait déjà produite le matin.
+Trois par réemploi de clé. Deux par COLLISION D'EMPREINTE, que rien ne
+surveillait : `R.source_la_moins_volumineuse` valait « ids.alert » et
+`S5.source` aussi ; `R.source_ports_hauts` valait « firewall.traffic » et
+`S6.source` aussi. Deux clés distinctes, deux exercices distincts, une seule
+empreinte — le contrôle voisin comparait les clés et ne pouvait rien voir.
+
+La correction a buté sur une contrainte arithmétique qu'il faut écrire, parce
+qu'elle limite le jeu : avec six sources, trois portent déjà une réponse de
+repère et une quatrième porte les événements de deux scénarios. Déplacer les
+deux scénarios de collecte sur les deux sources restantes a fait apparaître le
+revers — l'une d'elles est nommée dans les exemples de KQL du module M1, et en
+faire une réponse rendait le garde de fuite inexploitable. La source muette a
+donc changé de jeu, et c'est M4-E7 qui a changé de question : il ne valide plus
+le nom de la source du trou mais **l'heure à laquelle la collecte reprend**, que
+seul l'écran de santé donne.
+
+Trois exercices du capstone n'ont plus d'empreinte du tout : on y construit un
+écran, ou on y rédige cinq lignes. Leur en donner une revenait à leur faire
+valider une valeur trouvée ailleurs — l'empreinte était là, et elle ne mesurait
+rien. Ils déclarent désormais `rendu` : ce qui est remis, et comment le
+formateur le juge. Le contrôle l'accepte à la place d'une réponse, et l'exige :
+ni renvoi ni rendu reste un défaut.
+
+**Et deux contrôles qui regardaient la mauvaise source.** En déplaçant la source
+muette, deux tests ont continué d'interroger l'ancienne, écrite en dur. L'un a
+échoué en annonçant « silence de 0 min » : il mesurait le silence d'une source
+qui parle. Ils lisent maintenant le manifeste, qui dit où regarder. C'est la
+leçon du tour, et elle vaut pour tout le kit : un contrôle qui écrit en dur ce
+que le générateur choisit ne vérifie pas le kit, il vérifie une copie de lui.
+
 ---
 
 ## Défauts trouvés par la vérification, et corrigés
@@ -413,6 +518,8 @@ constaté qui est enseigné, comme SPEC §6.3 l'exige elle-même.
 | E6 | Deux prémisses de la SPEC corrigées (voir ci-dessus) | Mineur | Résolu, SPEC non modifiée, comportement réel enseigné |
 | E7 | 64 capacités sur 90 non sondées dans le lab | Mineur | Assumé et signalé : aucune n'étaye une affirmation du parcours |
 | E8 | SPEC §9 demande un quiz de 15 questions ; le kit en livre 17 | Mineur | Assumé : Q16 et Q17 couvrent les deux pièges d'interface de SPEC §6.3, que rien n'évaluait. Écart dans le sens du mieux, mais écart tout de même — d'où cette ligne |
+| E10 | SPEC §1 annonce « 6 h de parcours » ; mesuré lecture des corps et rappel actif compris, il vaut **6 h 43** | Mineur | Assumé et consigné : SPEC §1 ne budgète ni la lecture ni le rappel, que la charte rend obligatoires. Le kit garde son contenu et dit la vraie durée ; le guide du formateur donne deux formules, dont une en quatre séances |
+| E11 | La source muette et celle du trou de collecte sont les mêmes au parcours et à l'épreuve | Mineur | Assumé et consigné : avec six sources, trois portent une réponse de repère et une quatrième les événements de deux scénarios — il ne reste qu'un choix possible de chaque côté. Le document du stagiaire le lui dit, et la première question de l'épreuve demande en plus l'heure de reprise, que le générateur tire à neuf |
 | E9 | Le dépôt distant refuse le `push` : 403, l'application GitHub n'a pas le droit `Contents: write` sur `YamTeam9/picturegallery` | Bloquant pour la livraison, nul pour le kit | Non résolu, hors de portée : relève d'un administrateur de l'organisation. Le travail est remis sous forme de bundle git complet |
 
 ---
