@@ -69,7 +69,7 @@ Les deux connecteurs disponibles confirment exactement l'attendu de SPEC §4.5.
 
 ```
 $ make verif-lab
-17 passed in 43.45s
+18 passed in 43.80s
 ```
 
 Prouve : licence `basic`, santé `green`, Elasticsearch et Kibana en 9.5.3,
@@ -95,7 +95,7 @@ de 2 min sur 4 cœurs. La cible « moins de cinq minutes » de SPEC §4.4 est te
 $ make data
 Total : 386 496 documents
 $ make verif-donnees
-14 passed in 20.72s
+14 passed in 18.01s
 ```
 
 Six sources, fenêtre glissante de 7 jours, rythme ouvré vérifié (≈ 4 400 à
@@ -120,7 +120,7 @@ Prouve notamment :
 
 ```
 $ make verif-parcours
-20 passed
+33 passed in 277.34s
 ```
 
 Six modules, **407 minutes**, **35 exercices**, **27 objectifs**. La durée d'un
@@ -149,7 +149,7 @@ chaque objectif est évalué par au moins un exercice.
 
 ```
 $ make verif-corriges
-8 passed in 58.98s
+9 passed in 54.69s
 ```
 
 « Santé de la collecte » (5 panneaux) et « Vue IDS » (8 panneaux), définis en
@@ -170,9 +170,9 @@ arrive en tête du tableau du dernier événement vu.
 $ make guide
 dist/guide.html — 2.88 Mo, 6 modules, 35 exercices, 17 questions de quiz
 $ make verif-guide
-16 passed
+25 passed in 28.46s
 $ make verif-pdf
-10 passed
+10 passed in 285.63s
 ```
 
 Prouve : **zéro requête réseau** à l'ouverture en `file://` ; axe-core injecté
@@ -214,7 +214,7 @@ la couverture est donc prouvée, pas affirmée.
 
 ```
 $ make verif-package
-8 passed in 48.83s
+9 passed in 45.01s
 ```
 
 Prouve : empreinte de l'archive conforme ; **toutes** les lignes de `SHA256SUMS`
@@ -236,7 +236,7 @@ $ make lab-reset --oui
 Lab remis à neuf.  Données réancrées sur 2026-09-21 22:05.
 DUREE_SECONDES=109
 $ make verif
-17 passed · 14 passed · 20 passed · 8 passed · 14 passed · 10 passed · 8 passed
+18 passed · 14 passed · 33 passed · 9 passed · 25 passed · 10 passed · 9 passed
 ```
 
 Cette transcription est celle du PREMIER tour de revue, et elle totalise 91.
@@ -254,18 +254,18 @@ $ make captures
 $ make guide
 dist/guide.html — 2.88 Mo, 6 modules, 35 exercices, 17 questions de quiz
 $ make verif
-17 passed in 43.77s        (verif-lab)
-14 passed in 20.27s        (verif-donnees)
-24 passed in 278.62s       (verif-parcours)
-8 passed in 56.67s         (verif-corriges)
-18 passed in 19.31s        (verif-guide)
-10 passed in 332.84s       (verif-pdf)
-8 passed in 45.89s         (verif-package)
+18 passed in 43.80s       (verif-lab)
+14 passed in 18.01s       (verif-donnees)
+33 passed in 277.34s      (verif-parcours)
+9 passed in 54.69s        (verif-corriges)
+25 passed in 28.46s       (verif-guide)
+10 passed in 285.63s      (verif-pdf)
+9 passed in 45.01s        (verif-package)
 $ echo $?
 0
 $ make package && make verif-package
 Archive prête : dist/kit-formation-kibana-9.5.3-20260922.tar.gz (1409 Mo)
-8 passed in 43.48s
+9 passed in 45.01s
 ```
 
 L'empreinte de l'archive n'est pas recopiée ici, et c'est volontaire : ce
