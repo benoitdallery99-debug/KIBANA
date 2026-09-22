@@ -503,7 +503,7 @@ niveaux, aucune requête en ligne, sommaire atteignable, recherche qui surligne,
 position à l'exercice, capture à sa taille réelle, filet à 3:1 sur les quatre
 fonds, contrat de `docs/DESIGN.md` relu, chiffres de ce rapport recomptés.
 
-### Écart de livraison, non résolu à ce stade
+### Écart de livraison — RÉSOLU par l'humain, hors session
 **Le push vers `YamTeam9/picturegallery` est refusé** : `403`, côté API GitHub
 `Resource not accessible by integration`. La lecture fonctionne, l'écriture non : l'app est installée
 et le dépôt est dans son périmètre, mais le droit `Contents: write` manque — ou le compte connecté n'a
@@ -524,6 +524,22 @@ propriétaire. Le remède tient en une phrase : **ouvrir une nouvelle session
 avec `benoitdallery99-debug/KIBANA` comme source initiale**. Le bundle git
 remis contient l'historique complet et se restaure par
 `git clone kit.bundle`.
+
+**Dénouement.** C'est cette voie qui a abouti : le bundle a été restauré sur le
+poste de l'humain (`git clone`, 2 171 objets, 12,80 Mio), le dépôt distant
+basculé en SSH après déclaration d'une clé, et les 79 commits poussés vers
+`benoitdallery99-debug/KIBANA` — branche
+`claude/kibana-soc-training-kit-yf6jr7`, historique intact. Trois voies
+automatiques refusées, une voie humaine qui passe : c'est le cas d'arrêt (b) de
+`docs/ORCHESTRATION.md` tel qu'il est prévu.
+
+Deux enseignements pour une prochaine session. D'abord, **vérifier les droits
+avant de proposer une manœuvre** : j'ai orienté l'humain vers l'installation de
+l'app Claude sur `YamTeam9/picturegallery`, dont il n'est pas propriétaire —
+trois échanges perdus. Ensuite, **une pièce jointe ne se télécharge pas toute
+seule** : trois envois sont restés sans effet parce que rien ne disait qu'il
+fallait cliquer la carte du fichier. Un fichier de 131 octets envoyé en sonde a
+tranché la question plus vite que trois hypothèses.
 
 ---
 
