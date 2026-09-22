@@ -1,5 +1,5 @@
 {
-  "engendre_le": "2026-09-22T12:39:46.000Z",
+  "engendre_le": "2026-09-22T16:04:50.000Z",
   "jeu": "epreuve",
   "graine": 7310,
   "namespace": "epreuve",
@@ -9,14 +9,14 @@
   "index_mode": "standard",
   "avertissement": "Données entièrement synthétiques. Adresses réservées à la documentation (RFC 5737, RFC 1918), domaines réservés (RFC 2606), personnes inventées. Aucune donnée réelle (SPEC §5.1, CLAUDE.md).",
   "volumes": {
-    "logs-windows.security-epreuve": 89232,
-    "logs-linux.auth-epreuve": 35175,
-    "logs-ids.alert-epreuve": 14224,
-    "logs-network.dns-epreuve": 98722,
-    "logs-proxy.web-epreuve": 71410,
-    "logs-firewall.traffic-epreuve": 69641
+    "logs-windows.security-epreuve": 90044,
+    "logs-linux.auth-epreuve": 35533,
+    "logs-ids.alert-epreuve": 14354,
+    "logs-network.dns-epreuve": 99635,
+    "logs-proxy.web-epreuve": 72265,
+    "logs-firewall.traffic-epreuve": 70312
   },
-  "total_documents": 378404,
+  "total_documents": 382143,
   "contexte": {
     "organisation": "Groupe Méridien",
     "domaine_ad": "MERIDIEN",
@@ -559,7 +559,7 @@
       {
         "cle": "signature_ids_la_plus_frequente",
         "libelle": "Signature IDS la plus fréquente",
-        "valeur": "ET MALWARE Balise periodique suspecte",
+        "valeur": "ET SCAN Balayage TCP detecte",
         "type": "texte",
         "normalisation": "minuscules, espaces retirés",
         "controle": {
@@ -578,7 +578,7 @@
           "chemin": "aggregations.r.buckets.0.key"
         },
         "empreintes": [
-          "abe77cbda00399529f0226993a7ddf0ca16b803e75c9667638bda700a59375e8"
+          "02537be6643501fe3d2bf44343cd495eba7ce5e5c566cd9b7d2185a4864d4417"
         ]
       }
     ]

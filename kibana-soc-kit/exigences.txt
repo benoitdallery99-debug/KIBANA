@@ -5,3 +5,22 @@ elasticsearch>=9.0,<10.0
 requests>=2.31
 pytest>=8.0
 ruff>=0.6
+
+# DÉCLARÉES APRÈS COUP, et c'est un aveu : elles étaient installées à la main
+# dans l'environnement de fabrication depuis des jours, sans figurer ici. Sur
+# un poste neuf, « make verif » et « make guide » échouaient sur un
+# ModuleNotFoundError. Relevé à la première installation par un humain.
+#
+# playwright pilote le navigateur : rejeu des requêtes du parcours dans
+# Discover, rendu des panneaux des corrigés, audit axe-core du guide, captures.
+playwright>=1.50
+pytest-playwright>=0.5
+# weasyprint rend les sept PDF depuis le même HTML que le guide.
+weasyprint>=62
+# pillow mesure les captures (dimensions, conversion) dans les contrôles.
+pillow>=10.0
+# jinja2 rend les gabarits du guide, markdown convertit le corps des modules.
+jinja2>=3.1
+markdown>=3.5
+# pypdf inspecte les PDF produits : polices embarquées, signets, pagination.
+pypdf>=4.0

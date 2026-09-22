@@ -1,5 +1,5 @@
 {
-  "engendre_le": "2026-09-22T12:39:10.000Z",
+  "engendre_le": "2026-09-22T16:04:16.000Z",
   "jeu": "formation",
   "graine": 20260921,
   "namespace": "formation",
@@ -9,14 +9,14 @@
   "index_mode": "standard",
   "avertissement": "Données entièrement synthétiques. Adresses réservées à la documentation (RFC 5737, RFC 1918), domaines réservés (RFC 2606), personnes inventées. Aucune donnée réelle (SPEC §5.1, CLAUDE.md).",
   "volumes": {
-    "logs-windows.security-formation": 89430,
-    "logs-linux.auth-formation": 35356,
-    "logs-ids.alert-formation": 14671,
-    "logs-network.dns-formation": 100672,
-    "logs-proxy.web-formation": 71416,
-    "logs-firewall.traffic-formation": 69494
+    "logs-windows.security-formation": 90271,
+    "logs-linux.auth-formation": 35663,
+    "logs-ids.alert-formation": 14799,
+    "logs-network.dns-formation": 101590,
+    "logs-proxy.web-formation": 72246,
+    "logs-firewall.traffic-formation": 70146
   },
-  "total_documents": 381039,
+  "total_documents": 384715,
   "contexte": {
     "organisation": "Groupe Méridien",
     "domaine_ad": "MERIDIEN",
@@ -559,7 +559,7 @@
       {
         "cle": "signature_ids_la_plus_frequente",
         "libelle": "Signature IDS la plus fréquente",
-        "valeur": "ET WEB Tentative d'injection SQL",
+        "valeur": "ET POLICY Telechargement executable non signe",
         "type": "texte",
         "normalisation": "minuscules, espaces retirés",
         "controle": {
@@ -578,7 +578,7 @@
           "chemin": "aggregations.r.buckets.0.key"
         },
         "empreintes": [
-          "f7b76a2953e1663f192ee59fb187f43c1c7d71b0ca89406fbd36c5eabdec9066"
+          "23f06931d1fe11255cc311f0e4fb5d75b9508a3c0718d1f2c60fd93c76bbbb7d"
         ]
       }
     ]

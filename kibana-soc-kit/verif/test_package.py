@@ -308,3 +308,77 @@ def test_le_rapport_publie_le_vrai_nombre_de_controles(config):
             )
 
     assert not defauts, "chiffres du rapport de recette :\n  " + "\n  ".join(defauts)
+
+
+# Modules tiers que la chaîne importe. Tout ce qui n'est ni la bibliothèque
+# standard ni un module du kit doit figurer dans exigences.txt.
+STDLIB_ET_KIT = {
+    "outils", "verif", "data", "lab", "guide", "corriges", "captures",
+    "conf", "evenements", "temps", "scenarios", "fuites", "glossaire",
+    "typographie", "libelles", "kibana", "e2e",
+    # Modules frères du kit, importés sans préfixe grâce à sys.path.
+    "gabarits", "contexte", "build", "pdf", "produire", "construire",
+    "engendrer", "rendre_pod", "init",
+}
+
+
+def test_toute_dependance_importee_est_declaree(config):
+    """« Ça marche chez moi » n'est pas un critère de livraison.
+
+    RELEVÉ À LA PREMIÈRE INSTALLATION PAR UN HUMAIN. exigences.txt ne déclarait
+    ni playwright, ni pytest-playwright, ni weasyprint, ni pillow — quatre
+    modules installés à la main dans l'environnement de fabrication, des jours
+    plus tôt, et jamais consignés. Le kit se construisait et se vérifiait ici
+    sans que rien ne signale la dette. Sur un poste neuf, « make verif » et
+    « make guide » s'arrêtaient sur un ModuleNotFoundError.
+
+    Ce contrôle lit les imports de toute la chaîne et exige que chacun soit
+    déclaré. Il ne peut pas attraper un module présent dans les deux
+    environnements, mais il attrape celui qui manque au fichier.
+    """
+    import ast
+    import sys
+
+    exigences = (config.RACINE / "exigences.txt").read_text(encoding="utf-8")
+    declares = {
+        re.split(r"[<>=!~\[]", ligne.strip())[0].lower().replace("-", "_")
+        for ligne in exigences.split("\n")
+        if ligne.strip() and not ligne.strip().startswith("#")
+    }
+    # Quelques distributions ne portent pas le nom de leur module.
+    declares |= {"yaml"} if "pyyaml" in declares else set()
+    declares |= {"PIL".lower()} if "pillow" in declares else set()
+
+    importes: dict[str, str] = {}
+    for dossier in ("data", "lab", "guide", "corriges", "captures", "outils", "verif"):
+        for chemin in (config.RACINE / dossier).rglob("*.py"):
+            if "__pycache__" in chemin.parts:
+                continue
+            try:
+                arbre = ast.parse(chemin.read_text(encoding="utf-8"))
+            except SyntaxError:
+                continue
+            for noeud in ast.walk(arbre):
+                if isinstance(noeud, ast.Import):
+                    noms = [a.name for a in noeud.names]
+                elif isinstance(noeud, ast.ImportFrom):
+                    noms = [noeud.module] if noeud.module and noeud.level == 0 else []
+                else:
+                    continue
+                for nom in noms:
+                    racine = nom.split(".")[0]
+                    importes.setdefault(
+                        racine, str(chemin.relative_to(config.RACINE))
+                    )
+
+    manquants = sorted(
+        f"{module} (importé par {ou})"
+        for module, ou in importes.items()
+        if module not in STDLIB_ET_KIT
+        and module.lower() not in declares
+        and module not in sys.stdlib_module_names
+    )
+    assert not manquants, (
+        "modules importés par la chaîne mais absents d'exigences.txt :\n  "
+        + "\n  ".join(manquants)
+    )

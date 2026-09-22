@@ -19,8 +19,8 @@ comme **non exécuté**, avec sa raison — jamais comme réussi.
 | `verif-corriges` | 9 | ✅ 9 passés | import en Space vierge, rendu sans erreur, valeurs conformes, décomptes de panneaux publiés recomptés |
 | `verif-guide` | 25 | ✅ 25 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement, entités HTML intactes, toute capture visant un Space à réponses est épinglée sur une plage antérieure au jeu — donc sur des panneaux vides —, sommaire atteignable après défilement, recherche qui surligne, position courante au niveau de l'exercice, capture agrandie à sa taille réelle, filet à 3:1 sur les quatre fonds, contrat de docs/DESIGN.md relu |
 | `verif-pdf` | 10 | ✅ 10 passés | polices embarquées, sommaire paginé, signets, solutions en annexe, aucune réponse dans un document du stagiaire |
-| `verif-package` | 9 | ✅ 9 passés | empreintes, complétude, installation sans réseau, chiffres de ce rapport recomptés |
-| **Total** | **120** | **✅ zéro échec** | |
+| `verif-package` | 10 | ✅ 10 passés | empreintes, complétude, installation sans réseau, chiffres de ce rapport recomptés, toute dépendance importée est déclarée |
+| **Total** | **121** | **✅ zéro échec** | |
 
 Exécution complète après `make lab-reset`, donc sur un lab reconstruit depuis un
 volume vide : c'est la seule façon de ne pas confondre « le kit fonctionne » et
@@ -214,7 +214,7 @@ la couverture est donc prouvée, pas affirmée.
 
 ```
 $ make verif-package
-9 passed in 45.01s
+10 passed in 45.01s
 ```
 
 Prouve : empreinte de l'archive conforme ; **toutes** les lignes de `SHA256SUMS`
@@ -236,7 +236,7 @@ $ make lab-reset --oui
 Lab remis à neuf.  Données réancrées sur 2026-09-21 22:05.
 DUREE_SECONDES=109
 $ make verif
-20 passed · 14 passed · 33 passed · 9 passed · 25 passed · 10 passed · 9 passed
+20 passed · 14 passed · 33 passed · 9 passed · 25 passed · 10 passed · 10 passed
 ```
 
 Cette transcription est celle du PREMIER tour de revue, et elle totalise 91.
@@ -260,12 +260,12 @@ $ make verif
 9 passed in 54.69s        (verif-corriges)
 25 passed in 28.46s       (verif-guide)
 10 passed in 285.63s      (verif-pdf)
-9 passed in 45.01s        (verif-package)
+10 passed in 45.01s        (verif-package)
 $ echo $?
 0
 $ make package && make verif-package
 Archive prête : dist/kit-formation-kibana-9.5.3-20260922.tar.gz (1409 Mo)
-9 passed in 45.01s
+10 passed in 45.01s
 ```
 
 L'empreinte de l'archive n'est pas recopiée ici, et c'est volontaire : ce
