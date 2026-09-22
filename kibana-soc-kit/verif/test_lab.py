@@ -122,6 +122,37 @@ def test_le_jeu_de_l_epreuve_est_hors_du_space_de_formation(kbn, config, lab_dem
     )
 
 
+def test_le_fuseau_d_affichage_est_celui_du_metier(kbn, config, lab_demarre):
+    """Deux réponses notées sont des HEURES : l'écran doit les afficher dans le
+    fuseau où le manifeste les calcule.
+
+    Kibana laisse « dateFormat:tz » sur « Browser ». Sur un poste en UTC, M2-E6
+    et M4-E7 affichent deux heures de moins que ce que l'empreinte attend, et la
+    réponse juste est refusée sans un mot. Le contrôle de bout en bout ne
+    pouvait pas le voir : il pilote un navigateur dont le fuseau est forcé sur
+    celui du métier. Celui-ci lit le réglage du serveur, qui est ce que verra
+    le stagiaire.
+    """
+    fuseau = str(config.valeur("donnees.fuseau_metier"))
+    espaces = [
+        str(config.valeur("formation.space_id")),
+        "reseau", "corriges", "epreuve",
+    ]
+    defauts = []
+    for space_id in espaces:
+        r = kbn.get(f"{kbn.base}/s/{space_id}/api/kibana/settings", timeout=60)
+        if r.status_code != 200:
+            defauts.append(f"{space_id} : réglages illisibles (HTTP {r.status_code})")
+            continue
+        pose = (r.json().get("settings", {}).get("dateFormat:tz") or {}).get("userValue")
+        if pose != fuseau:
+            defauts.append(
+                f"{space_id} : dateFormat:tz = {pose!r}, attendu {fuseau!r} — "
+                "l'heure affichée serait celle du poste du stagiaire"
+            )
+    assert not defauts, "fuseau d'affichage :\n  " + "\n  ".join(defauts)
+
+
 def test_roles_et_comptes(kbn, es, lab_demarre):
     for role in ("formateur", "stagiaire"):
         r = kbn.get(f"{kbn.base}/api/security/role/{role}", timeout=30)

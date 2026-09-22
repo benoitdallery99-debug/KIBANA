@@ -646,6 +646,21 @@ mark { background: var(--action-fond); color: var(--encre); padding: 0 0.1em; }
     width: auto;
     margin-top: 1.6em;
   }
+  /* WCAG 1.4.13 « Hoverable » : le pointeur doit pouvoir passer du terme à la
+     bulle sans la faire disparaître. La marge de 1,6 em ci-dessus ouvrait un
+     vide de 23 px mesurés — le pointeur qui descend vers la bulle quittait le
+     terme, et la bulle se fermait avant d'être atteinte. Un pont invisible
+     comble la marge : il fait partie de la bulle, donc le survol ne se rompt
+     pas. Sur écran large la bulle est déjà collée au terme (−3 px) et ce pont
+     n'existe pas. */
+  .glossaire-lien__bulle::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1.7em;
+    height: 1.7em;
+  }
 }
 
 @media print {

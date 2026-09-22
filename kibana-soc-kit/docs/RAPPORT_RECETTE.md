@@ -152,11 +152,11 @@ $ make verif-corriges
 8 passed in 58.98s
 ```
 
-« Santé de la collecte » (5 panneaux) et « Vue IDS » (7 panneaux), définis en
+« Santé de la collecte » (5 panneaux) et « Vue IDS » (8 panneaux), définis en
 code par l'API Dashboards puis exportés en ndjson.
 
 Prouve : import dans un Space **vierge** sans erreur ni référence manquante ;
-panneaux non vides après import ; **les 12 panneaux se rendent sans erreur**
+panneaux non vides après import ; **les 13 panneaux se rendent sans erreur**
 (Playwright) ; la valeur affichée égale le décompte d'Elasticsearch sur la même
 fenêtre ; et le corrigé **révèle effectivement le scénario S6** — l'indicateur
 « sources actives sur la dernière heure » passe sous six, et la source muette

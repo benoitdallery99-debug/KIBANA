@@ -421,13 +421,13 @@
           var choisi = bloc.querySelector("input[type=radio]:checked");
           if (!choisi) {
             retour.setAttribute("data-etat", "");
-            retour.textContent = "Choisissez une proposition avant de valider.";
+            retour.textContent = "Choisissez une proposition avant de vérifier.";
             return;
           }
           var juste = parseInt(choisi.value, 10) === bonne;
           retour.setAttribute("data-etat", juste ? "juste" : "faux");
           retour.textContent = juste
-            ? "Réponse juste."
+            ? "Réponse vérifiée. C'est la bonne."
             : "Ce n'est pas la bonne réponse. L'explication ci-dessous dit pourquoi.";
           if (explication) explication.hidden = false;
           var etat = lire();

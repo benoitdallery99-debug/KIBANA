@@ -167,3 +167,32 @@ figcaption { font-size: 9pt; color: #44515f; margin-top: 5pt; }
 
 a { color: #101720; }
 .lien-doc { font-size: 8.5pt; color: #44515f; word-break: break-all; }
+
+/* --- Ce qui appartient à l'écran, et pas au papier -------------------------
+   Le corps des modules est le MÊME objet dans le guide HTML et dans le PDF :
+   même conversion Markdown, mêmes boutons « Copier » posés par la construction,
+   mêmes infobulles de glossaire posées par outils/glossaire.py. La feuille de
+   l'écran neutralise les deux sous « @media print » ; celle du PDF ne le
+   faisait pas, et WeasyPrint ne lit pas « @media print ».
+   Résultat mesuré sur le livrable : six définitions de glossaire imprimées au
+   milieu d'une phrase — « s'appuie sur l'[agrégation]Un calcul fait par
+   Elasticsearch sur un ensemble de documents… cardinality d'Elasticsearch » —
+   et neuf pastilles grises « Copier » au-dessus des blocs de requête, dont une
+   qui éclatait le tableau des types de M1. */
+.bouton { display: none; }
+.requete__entete { justify-content: flex-start; }
+
+.glossaire-lien__terme { border-bottom: 0; font-weight: inherit; }
+.glossaire-lien__bulle {
+  display: inline;
+  position: static;
+  width: auto;
+  max-width: none;
+  border: 0;
+  background: none;
+  font-size: 0.85em;
+  padding: 0 0 0 0.25em;
+  color: #44515f;
+}
+.glossaire-lien__bulle::before { content: "( "; }
+.glossaire-lien__bulle::after { content: " )"; }

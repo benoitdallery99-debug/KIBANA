@@ -251,10 +251,43 @@ def data_views() -> None:
         )
 
 
+def fuseau_horaire() -> None:
+    """Fixe le fuseau d'affichage de Kibana dans chaque Space.
+
+    PIÈGE, et il coûtait deux réponses notées. Kibana laisse « dateFormat:tz »
+    sur « Browser » : l'heure affichée est celle du POSTE du stagiaire. Or deux
+    exercices font rendre une heure — M2-E6 demande l'heure la plus chargée,
+    M4-E7 l'heure à laquelle la collecte reprend — et le manifeste calcule la
+    réponse dans le fuseau métier. Sur un poste en UTC, l'écran affiche 8 et 12
+    là où l'empreinte attend 10 et 14 : la réponse est refusée sans un mot
+    d'explication, et le stagiaire cherche son erreur là où il n'y en a pas.
+
+    Le contrôle ne pouvait pas l'attraper : la vérification pilote un navigateur
+    dont le fuseau est forcé sur celui du métier. C'est l'écart entre le banc
+    d'essai et la salle, exactement.
+    """
+    fuseau = str(conf.valeur("donnees.fuseau_metier"))
+    for space_id in (
+        str(conf.valeur("formation.space_id")),
+        SPACE_RESEAU,
+        SPACE_CORRIGES,
+        SPACE_EPREUVE,
+    ):
+        etape(
+            f"Fuseau d'affichage « {fuseau} » (Space « {space_id} »)",
+            kbn(
+                "POST",
+                f"/s/{space_id}/api/kibana/settings",
+                json={"changes": {"dateFormat:tz": fuseau}},
+            ),
+        )
+
+
 def main() -> int:
     print(f"Initialisation du lab — Kibana {conf.version()}, "
           f"locale {conf.valeur('kibana.locale')}, vue {conf.valeur('kibana.vue_solution')}")
     spaces()
+    fuseau_horaire()
     roles()
     comptes()
     data_views()

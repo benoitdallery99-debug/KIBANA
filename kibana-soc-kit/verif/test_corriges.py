@@ -163,6 +163,64 @@ def test_au_plus_douze_panneaux(config):
         assert corps["description"], f"{identifiant} sans description (public + question)"
 
 
+def test_les_decomptes_publies_correspondent_aux_corriges(config):
+    """Un chiffre publié qu'aucun contrôle ne recompte est celui qui dérive.
+
+    Le rapport de recette annonçait « Vue IDS (7 panneaux) » et « les 12
+    panneaux se rendent sans erreur » alors que l'écran en porte huit depuis
+    qu'un panneau de gravité dans le temps lui a été ajouté, et que le total
+    vaut treize. Le même document imprimait pourtant, trois cents lignes plus
+    bas, la sortie « [OK] Vue IDS 8 panneaux » : il se contredisait tout seul.
+
+    C'est un manquement aux statuts honnêtes de CLAUDE.md, pas une coquille :
+    le lecteur n'a aucun moyen de savoir lequel des deux chiffres croire. On
+    recompte donc les panneaux dans les corrigés eux-mêmes et on exige que les
+    documents le disent.
+    """
+    import re
+
+    reels = {}
+    for identifiant in TABLEAUX:
+        chemin = config.RACINE / "corriges" / f"{identifiant}.json"
+        if not chemin.exists():
+            pytest.skip(f"NON EXÉCUTÉ : {chemin.name} absent.")
+        corps = json.loads(chemin.read_text(encoding="utf-8"))
+        reels[corps["title"]] = len(corps["panels"])
+    total = sum(reels.values())
+
+    defauts = []
+    for nom in ("docs/RAPPORT_RECETTE.md", "docs/JOURNAL.md"):
+        document = config.RACINE / nom
+        if not document.exists():
+            continue
+        texte = document.read_text(encoding="utf-8")
+
+        # « Vue IDS » (8 panneaux) — le titre, puis son décompte.
+        for titre, attendu in reels.items():
+            for annonce in re.findall(
+                rf"«\s*{re.escape(titre)}\s*»\s*\((\d+)\s+panneaux\)", texte
+            ):
+                if int(annonce) != attendu:
+                    defauts.append(
+                        f"{nom} : « {titre} » annoncé à {annonce} panneaux, "
+                        f"le corrigé en porte {attendu}"
+                    )
+
+        # « les 13 panneaux se rendent sans erreur » — le total.
+        for annonce in re.findall(r"les\s+(\d+)\s+panneaux\s+se\s+rendent", texte):
+            if int(annonce) != total:
+                defauts.append(
+                    f"{nom} : total annoncé à {annonce} panneaux, réel {total}"
+                )
+        for annonce in re.findall(r"rendu\s+des\s+(\d+)\s+panneaux", texte):
+            if int(annonce) != total:
+                defauts.append(
+                    f"{nom} : total annoncé à {annonce} panneaux, réel {total}"
+                )
+
+    assert not defauts, "décomptes de panneaux faux :\n  " + "\n  ".join(defauts)
+
+
 def test_titres_formules_en_questions(config):
     """SPEC §6.2 : les titres de panneaux sont formulés en questions."""
     manquants = []

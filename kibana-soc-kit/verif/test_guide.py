@@ -326,6 +326,31 @@ def test_lien_d_evitement_present_et_premier(page_ouverte):
     )
 
 
+def test_une_action_garde_le_meme_nom_partout(html):
+    """SPEC §7.3, et elle prend précisément cet exemple.
+
+    Le guide avait deux verbes pour un seul geste : « Vérifier ma réponse » sur
+    les vingt-sept exercices, « Valider ma réponse » sur les dix-sept questions
+    du quiz, avec deux familles de retours derrière. Le stagiaire presse ce
+    bouton quarante-quatre fois dans la journée ; qu'il change de nom au milieu
+    lui fait croire que le geste change aussi.
+    """
+    import html as H
+
+    visible = H.unescape(re.sub(r"<[^>]+>", " ", html))
+    concurrents = []
+    for verbe in ("Valider ma réponse", "Valider la réponse", "avant de valider"):
+        if verbe in visible:
+            concurrents.append(verbe)
+    assert not concurrents, (
+        "deux verbes pour la même action, alors que SPEC §7.3 exige « Vérifier "
+        f"ma réponse » partout : {concurrents}"
+    )
+    assert "Vérifier ma réponse" in visible, (
+        "le libellé de validation a disparu du guide"
+    )
+
+
 def test_aucun_balisage_markdown_visible(html):
     """Le balisage n'est pas du texte : il se rend, ou il n'a rien à faire là.
 

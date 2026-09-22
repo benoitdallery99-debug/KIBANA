@@ -158,7 +158,7 @@ porte à des valeurs en dur — précisément ce que CLAUDE.md interdit.
 
 ### Preuve
 `make verif-corriges` : **8 tests passés, sortie 0**, en 59 s. Import dans un Space vierge sans erreur
-ni référence manquante, panneaux non vides après import, rendu des 12 panneaux sans erreur (Playwright),
+ni référence manquante, panneaux non vides après import, rendu des 13 panneaux sans erreur (Playwright),
 valeur affichée égale au décompte d'Elasticsearch sur la même fenêtre, et le corrigé révèle bien S6.
 
 ### Décisions
