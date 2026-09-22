@@ -48,8 +48,17 @@ MASQUAGE = """
 """
 
 # Dessine les repères numérotés à partir des boîtes englobantes.
+#
+# La pastille se pose AU-DESSUS du cadre, jamais à cheval sur son coin :
+# à cheval, elle masque le début de ce qu'elle désigne — le premier chiffre
+# du compteur de M1-C1, par exemple. Et elle est bornée dans la fenêtre :
+# posée sur un élément collé au bord gauche (la liste des champs), elle en
+# sortait et son numéro devenait illisible.
 ANNOTATION = """
 (reperes) => {
+  const COTE = 24;   // diamètre de la pastille
+  const MARGE = 2;   // dégagement minimal au bord de la capture
+
   const couche = document.createElement('div');
   couche.id = 'kit-reperes';
   Object.assign(couche.style, {
@@ -57,11 +66,15 @@ ANNOTATION = """
   });
   document.body.appendChild(couche);
 
+  const introuvables = [];
+  const mal_placees = [];
+  let dessines = 0;
+
   reperes.forEach((r, i) => {
     const cible = document.querySelector('[data-test-subj="' + r.cible + '"]');
-    if (!cible) return;
+    if (!cible) { introuvables.push(r.cible); return; }
     const b = cible.getBoundingClientRect();
-    if (!b.width || !b.height) return;
+    if (!b.width || !b.height) { introuvables.push(r.cible); return; }
 
     const cadre = document.createElement('div');
     Object.assign(cadre.style, {
@@ -72,18 +85,39 @@ ANNOTATION = """
     });
     couche.appendChild(cadre);
 
+    // Au-dessus du liseré du cadre ; sans place au-dessus, à sa gauche.
+    let x = b.left - 3;
+    let y = b.top - 5 - COTE;
+    if (y < MARGE) { x = b.left - 5 - COTE; y = b.top - 3; }
+    // Bornage : une pastille qui sort de la fenêtre est rognée à la capture.
+    x = Math.min(Math.max(x, MARGE), window.innerWidth - COTE - MARGE);
+    y = Math.min(Math.max(y, MARGE), window.innerHeight - COTE - MARGE);
+
     const pastille = document.createElement('div');
     pastille.textContent = String(i + 1);
     Object.assign(pastille.style, {
       position: 'absolute',
-      left: (b.left - 14) + 'px', top: (b.top - 14) + 'px',
-      width: '24px', height: '24px', lineHeight: '24px',
+      left: x + 'px', top: y + 'px',
+      width: COTE + 'px', height: COTE + 'px', lineHeight: COTE + 'px',
       borderRadius: '50%', background: '#5b21b6', color: '#fff',
       font: '700 14px system-ui, sans-serif', textAlign: 'center',
     });
     couche.appendChild(pastille);
+    dessines += 1;
+
+    // Contrôle, après bornage : la pastille doit tenir ENTIÈRE dans la
+    // fenêtre capturée, et ne rien recouvrir de ce qu'elle désigne.
+    const sort = x < 0 || y < 0 ||
+                 x + COTE > window.innerWidth || y + COTE > window.innerHeight;
+    const recouvre = x < b.right && x + COTE > b.left &&
+                     y < b.bottom && y + COTE > b.top;
+    if (sort || recouvre) {
+      mal_placees.push({numero: i + 1, cible: r.cible, sort: sort,
+                        recouvre: recouvre});
+    }
   });
-  return couche.childElementCount;
+  return {dessines: dessines, introuvables: introuvables,
+          mal_placees: mal_placees};
 }
 """
 
@@ -175,13 +209,27 @@ def main() -> int:
                     continue
             page.wait_for_timeout(2_500)
             page.evaluate(MASQUAGE)
-            dessines = page.evaluate(ANNOTATION, capture.get("reperes") or [])
+            annotation = page.evaluate(ANNOTATION, capture.get("reperes") or [])
 
             attendus = len(capture.get("reperes") or [])
-            # Deux éléments par repère : le cadre et la pastille.
-            if dessines != attendus * 2:
-                print(f"  [ATTENTION] {capture['id']} : {dessines // 2} repère(s) "
-                      f"dessiné(s) sur {attendus} — un sélecteur a changé ?")
+            if annotation["dessines"] != attendus:
+                print(f"  [ATTENTION] {capture['id']} : {annotation['dessines']} "
+                      f"repère(s) dessiné(s) sur {attendus} — un sélecteur a "
+                      f"changé ? ({', '.join(annotation['introuvables'])})")
+            if annotation["mal_placees"]:
+                # Une pastille rognée par le bord, ou posée sur ce qu'elle
+                # désigne, rompt la correspondance légende ↔ image : c'est tout
+                # l'intérêt d'une capture annotée. On ne livre pas la figure.
+                for mauvaise in annotation["mal_placees"]:
+                    raison = ("sort du cadre de la capture" if mauvaise["sort"]
+                              else "recouvre l'élément qu'elle désigne")
+                    print(f"  [ÉCHEC] {capture['id']} : la pastille "
+                          f"{mauvaise['numero']} « {mauvaise['cible']} » "
+                          f"{raison}")
+                page.evaluate(
+                    "() => document.getElementById('kit-reperes')?.remove()"
+                )
+                continue
 
             fichier = SORTIE / f"{capture['id']}.webp"
             page.screenshot(path=str(fichier), type="webp", quality=82)

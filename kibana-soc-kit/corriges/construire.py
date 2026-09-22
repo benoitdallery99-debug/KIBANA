@@ -13,9 +13,13 @@ Règles de conception appliquées (SPEC §6.2, module M3) :
 
 Contrainte relevée sur le lab : l'API Dashboards n'accepte pas de référence à
 une data view par son identifiant (« data_view » est refusé, seul
-« data_view_spec » est admis). La portabilité vers la plateforme cible passe
-donc par l'export ndjson, qui, lui, référence la data view par son ID fixe.
-C'est précisément ce que le module M5 enseigne.
+« data_view_spec » est admis). Conséquence, que le module M5 enseigne et qu'il
+faut écrire ici sans l'adoucir : un écran défini par cette API n'a AUCUNE
+référence, et son export ndjson n'en a pas davantage — il porte des data views
+ad hoc et le motif d'index en ligne. Ce n'est donc pas l'export qui rend l'écran
+portable : pour la plateforme cible, c'est le MOTIF qu'on change dans le
+fichier. Seule la voie « construit dans l'interface, puis exporté » produit une
+référence vers une data view à identifiant fixe, et le kit ne l'emprunte pas ici.
 """
 
 from __future__ import annotations
@@ -235,8 +239,32 @@ def vue_ids() -> dict:
                     }],
                 },
             },
+            # M4-O2 et la consigne de M4-E2 demandent la gravité DANS LE TEMPS,
+            # et l'écran n'en montrait que la répartition : un pic de gravité 4
+            # à trois heures du matin y était indiscernable d'une gravité 4
+            # étalée sur la semaine. C'est pourtant la première chose que
+            # l'analyste de permanence regarde.
             {
                 "grid": {"x": 0, "y": 6, "w": 24, "h": 12},
+                "type": "vis",
+                "config": {
+                    "type": "xy",
+                    "title": "Comment la gravité évolue-t-elle au fil du temps ?",
+                    "layers": [{
+                        "type": "bar_stacked",
+                        "data_source": source_donnees(alertes),
+                        "x": {"operation": "date_histogram", "field": "@timestamp"},
+                        "y": [{"operation": "count"}],
+                        # Le générateur ne produit que quatre gravités : la
+                        # limite 5 n'en coupe aucune.
+                        "breakdown_by": {
+                            "operation": "terms", "fields": ["event.severity"], "limit": 5,
+                        },
+                    }],
+                },
+            },
+            {
+                "grid": {"x": 0, "y": 18, "w": 24, "h": 12},
                 "type": "vis",
                 "config": {
                     "type": "data_table",
@@ -268,7 +296,7 @@ def vue_ids() -> dict:
                 },
             },
             {
-                "grid": {"x": 0, "y": 18, "w": 24, "h": 12},
+                "grid": {"x": 0, "y": 30, "w": 24, "h": 12},
                 "type": "vis",
                 "config": {
                     "type": "data_table",
@@ -361,8 +389,10 @@ def main() -> int:
         print(f"  [OK] {corps['title']:26s} {len(corps['panels'])} panneaux "
               f"(HTTP {r.status_code})")
 
-    # Export ndjson : le second format exigé par P4, et le seul qui référence la
-    # data view par son ID fixe — donc le vecteur de portabilité vers la cible.
+    # Export ndjson : le second format exigé par P4. Il ne référence PAS la data
+    # view par son identifiant — ces écrans, définis par l'API Dashboards, n'ont
+    # aucune référence : leur motif d'index est écrit en ligne dans chaque
+    # panneau, et c'est lui qu'on adapte pour la plateforme cible.
     export = kbn(
         "POST", f"/s/{espace}/api/saved_objects/_export",
         json={

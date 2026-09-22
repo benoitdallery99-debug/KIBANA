@@ -66,3 +66,7 @@ au moins un exercice **et** une question du quiz (SPEC §2).
 - **M5-O2** — À l'issue du module, le stagiaire est capable de créer et de remplacer un tableau de bord par l'API Dashboards, de choisir entre ses deux routes, et de dire ce que ce format ne transporte pas.
 - **M5-O3** — À l'issue du module, le stagiaire est capable de préparer le transport d'un écran avec une data view à identifiant fixe, et de dire ce qu'un import produit dans un Space où cet identifiant existe déjà.
 - **M5-O4** — À l'issue du module, le stagiaire est capable de poser une règle d'alerte réalisable en licence Basic et de formuler une détection de silence qui se déclenche vraiment.
+
+## Longueur des propositions du quiz
+
+La bonne réponse est la proposition la plus longue dans **3** question(s) sur **17** (soit 18 %), pour un plafond de 25 % : Q01, Q02, Q10.

@@ -10,11 +10,11 @@
 
 - id: M0-C1
   module: M0
-  titre: Discover, ses trois repères
+  titre: Discover, ses quatre repères
   chemin: "/app/discover#/?_g=(time:(from:now-7d,to:now))&_a=(index:'formation-logs',query:(language:kuery,query:''))"
   attendre: fieldList
   legende: >-
-    Discover sur sept jours de données. Les trois repères à connaître avant
+    Discover sur sept jours de données. Les quatre repères à connaître avant
     toute recherche.
   alt: >-
     L'écran Discover. Le sélecteur de source de données est en haut à gauche,
@@ -78,7 +78,7 @@
       attente_ms: 2500
   legende: >-
     L'éditeur Lens, son sélecteur de type de graphique ouvert. Chaque entrée
-    porte la question à laquelle elle répond.
+    dit à quoi sert la forme.
   alt: >-
     L'éditeur Lens. Le sélecteur de type de graphique est ouvert en haut du
     panneau de configuration et déroule la liste des formes disponibles ;
@@ -106,20 +106,31 @@
   legende: >-
     La structure d'un tableau de bord de santé : l'indicateur qui décide si
     l'on continue à lire en haut à gauche, puis la série temporelle, puis le
-    tableau. Les panneaux sont vides à dessein — la plage de temps est réglée
-    hors des données. Ce sont les titres qu'il faut lire.
+    tableau. Les compteurs affichent 0 et les autres panneaux « Résultat
+    introuvable », à dessein : la plage de temps est forcée dix ans en arrière
+    pour cette capture, là où le jeu de données n'a rien. Ce sont les titres
+    et la disposition qu'il faut lire ici, pas les chiffres. Le rouge de
+    « Sources actives (1 h) » est la coloration conditionnelle du panneau, qui
+    réagit à ce zéro : rien n'est en panne.
   alt: >-
     Un tableau de bord intitulé « Santé de la collecte », affiché sur une plage
-    de temps qui ne contient aucune donnée : les cinq panneaux sont vides. On y
-    lit leur disposition et leurs titres, tous formulés en questions — combien
-    d'événements sur la période, combien de sources ont émis récemment, le
-    volume de chaque source dans le temps, et quand chaque source a émis pour
-    la dernière fois.
+    de temps réglée dix ans en arrière, où le jeu de données ne contient aucun
+    document. On y lit la disposition de ses cinq panneaux et leurs titres,
+    tous formulés en questions. En haut à gauche, « Combien d'événements sur la
+    période ? » : un compteur « Événements collectés » qui affiche 0. À sa
+    droite, « Combien de sources ont émis dans la dernière heure ? » : un
+    compteur « Sources actives (1 h) » qui affiche 0 et dont tout le fond passe
+    au rouge, par coloration conditionnelle, parce que ce compte est nul.
+    Encore à droite, « Le volume de chaque source tient-il dans le temps ? »,
+    et en dessous à gauche, « Quand chaque source a-t-elle émis pour la
+    dernière fois ? » : ces deux panneaux affichent « Résultat introuvable ».
+    Sur toute la largeur du bas, « Le rythme horaire de la collecte est-il
+    régulier ? » : une courbe plate à zéro sur douze mois.
   reperes:
     - cible: dashboardPanelTitle
       note: Le titre d'un panneau énonce la question
     - cible: dateRangePickerControlButton
-      note: La plage enregistrée avec l'écran
+      note: La plage forcée pour cette capture, hors des données
 
 - id: M4-C1
   module: M4
@@ -130,14 +141,23 @@
   espace: corriges
   attendre: embeddablePanel
   legende: >-
-    L'écran de l'analyste de permanence, montré vide : on ne retient ici que
-    l'ordre des panneaux et la façon dont chaque titre pose une question.
+    L'écran de l'analyste de permanence, montré sans données : on ne retient
+    ici que l'ordre des panneaux et la façon dont chaque titre pose une
+    question. La plage de temps est forcée dix ans en arrière pour cette
+    capture, là où le jeu de données n'a rien.
   alt: >-
     Un tableau de bord intitulé « Vue IDS », affiché sur une plage de temps
-    sans données : les panneaux sont vides. On y lit leur agencement et leurs
-    titres — combien d'alertes sur la période, combien de signatures
-    distinctes, leur répartition par gravité, et lesquelles se déclenchent le
-    plus.
+    réglée dix ans en arrière, où le jeu de données ne contient aucun document.
+    On y lit l'agencement de ses sept panneaux et leurs titres, tous formulés
+    en questions. En haut, « Combien d'alertes sur la période ? » : un compteur
+    « Alertes IDS » qui affiche 0 ; à sa droite, « Combien de signatures
+    distinctes ? » : un compteur « Signatures distinctes » qui affiche 0.
+    Viennent ensuite « Comment les alertes se répartissent-elles par
+    gravité ? », « Quelles signatures se déclenchent le plus ? », « Quelles
+    sources déclenchent le plus d'alertes ? » et « Quelles destinations sont
+    les plus visées ? », qui affichent tous « Résultat introuvable ». Le
+    septième, « Quelles sont les dernières alertes reçues ? », n'apparaît qu'en
+    partie : le bas de la fenêtre le coupe.
   reperes:
     - cible: dashboardPanelTitle
       note: Chaque panneau répond à une question

@@ -313,6 +313,9 @@ def charger_modules() -> tuple[dict, list[dict], list[dict]]:
             # Seules les captures que le texte n'appelle pas restent en fin de
             # module : les autres sont déjà posées à l'endroit qui les explique.
             "captures": [c for c in captures_du_module if c["id"] not in appelees],
+            # Le corrigé du formateur, lui, les montre TOUTES et en tête : il
+            # n'a pas de corps de module où les poser, et SPEC §8 les exige.
+            "captures_du_corrige": captures_du_module,
             "id": entete["id"],
             "ancre": f"module-{entete['id'].lower()}",
             "titre": entete["titre"],

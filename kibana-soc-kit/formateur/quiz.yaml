@@ -56,7 +56,8 @@
     valeurs prend le champ event.outcome. Que faites-vous ?
   propositions:
     - >-
-      On ouvre la documentation ECS pour connaître les valeurs normalisées.
+      On ouvre la documentation ECS : event.outcome y est normalisé à « success »
+      et « failure », les données de la collecte suivent donc forcément ces valeurs.
     - >-
       On demande à l'équipe qui a configuré la collecte.
     - >-
@@ -78,13 +79,13 @@
     hors du réseau interne. Quelle requête KQL est correcte ?
   propositions:
     - >-
-      'event.action : "deny" and destination.port : [1025 TO *] and not destination.ip : "10.0.0.0/8"'
+      `event.action : "deny" and destination.port : [1025 TO *] and not destination.ip : "10.0.0.0/8"`
     - >-
-      'event.action : "deny" and destination.port >= 1025 and not destination.ip : "10.0.0.0/8"'
+      `event.action : "deny" and destination.port >= 1025 and not destination.ip : "10.0.0.0/8"`
     - >-
-      'event.action = "deny" AND destination.port > 1024 AND destination.ip != "10.0.0.0/8"'
+      `event.action = "deny" AND destination.port > 1024 AND destination.ip != "10.0.0.0/8"`
     - >-
-      'event.action : "deny" and destination.port : >1024 and destination.ip : not "10.0.0.0/8"'
+      `event.action : "deny" and destination.port : >1024 and destination.ip : not "10.0.0.0/8"`
   reponse: 1
   explication: >-
     En KQL, une comparaison s'écrit avec >= ou >, jamais avec la syntaxe de
@@ -116,7 +117,7 @@
 - id: Q06
   objectifs: [M1-O4, M1-O5]
   question: >-
-    Vous tapez « _exists_ : rule.name » dans la barre de requête de Discover,
+    Vous tapez `_exists_ : rule.name` dans la barre de requête de Discover,
     en KQL. Que se passe-t-il ?
   propositions:
     - >-
@@ -130,9 +131,9 @@
   reponse: 3
   explication: >-
     C'est le piège le plus coûteux du parcours, parce qu'il est MUET.
-    « _exists_ » appartient à Lucene ; en KQL, l'existence s'écrit
-    « rule.name : * ». Kibana n'avertit pas : il cherche un champ nommé
-    « _exists_ » et ne trouve rien. Zéro résultat n'est jamais une réponse,
+    `_exists_` appartient à Lucene ; en KQL, l'existence s'écrit
+    `rule.name : *`. Kibana n'avertit pas : il cherche un champ nommé
+    `_exists_` et ne trouve rien. Zéro résultat n'est jamais une réponse,
     c'est une question. À l'inverse, une syntaxe de plage Lucene, elle, produit
     bien un message d'erreur visible.
 
@@ -150,7 +151,8 @@
     - >-
       Un indicateur, en vérifiant son format d'affichage.
     - >-
-      Un tableau, en vérifiant le nombre de lignes affichées.
+      Un tableau des alertes par jour, en vérifiant le nombre de lignes affichées :
+      un chiffre exact vaut mieux qu'une courbe devant un chef de salle.
   reponse: 1
   explication: >-
     Une question d'évolution appelle un axe du temps. L'intervalle mérite un
@@ -166,13 +168,15 @@
     Quelle précaution prenez-vous avant de le publier ?
   propositions:
     - >-
-      Augmenter le nombre de valeurs à cinquante pour être sûr.
+      Porter le nombre de valeurs à cinquante puis n'en afficher que dix : plus on
+      demande de valeurs, plus le classement obtenu devient exact.
     - >-
       Aucune : un classement est toujours exact.
     - >-
       Vérifier qu'il n'y a pas de catégorie « Autre » qui masquerait des valeurs, et se méfier de deux valeurs proches.
     - >-
-      Trier par ordre alphabétique pour faciliter la lecture.
+      Trier par ordre alphabétique plutôt que par volume, pour retrouver plus vite
+      une signature donnée dans le classement.
   reponse: 2
   explication: >-
     Un classement par valeurs les plus élevées est calculé par fragment d'index
@@ -184,23 +188,25 @@
 - id: Q09
   objectifs: [M2-O4]
   question: >-
-    Un panneau affiche « 4 876 adresses sources distinctes ». Que vaut ce
-    chiffre ?
+    Un « Indicateur » dont la fonction est « Décompte unique » sur le champ
+    dns.question.name affiche 4 907 domaines distincts. Que vaut ce chiffre ?
   propositions:
     - >-
       Il est exact si la plage de temps est inférieure à sept jours.
     - >-
       Il est exact : Elasticsearch compte les valeurs une à une.
     - >-
-      Il est approximatif, et Kibana affiche un avertissement pour le signaler.
+      Il est approximatif, mais Kibana affiche un avertissement sur le panneau dès
+      que le décompte dépasse le seuil de précision.
     - >-
       Il est approximatif au-delà d'environ trois mille valeurs, et rien ne l'indique à l'écran.
   reponse: 3
   explication: >-
     Le décompte de valeurs distinctes repose sur une estimation
     (HyperLogLog++), exacte en deçà de son seuil de précision — trois mille par
-    défaut — et approximative au-delà. Constaté en lab : le même décompte vaut
-    4 876 à 4 892 selon le chemin emprunté, contre 4 847 avec un seuil relevé.
+    défaut — et approximative au-delà. Constaté en lab : l'indicateur affiche
+    4 907 domaines, alors que le décompte exhaustif en dénombre 4 856 — chiffre
+    que l'on retrouve en portant le seuil de précision à 40 000.
     Kibana n'affiche AUCUN avertissement. Un chiffre qu'on publie doit donc
     rester sous le seuil, ou être recalculé autrement.
 
@@ -232,7 +238,8 @@
     tous les autres sont pleins. Quelle est la cause la plus probable ?
   propositions:
     - >-
-      Le panneau interroge une data view différente.
+      Le panneau interroge une autre data view, dont le motif d'index ne couvre pas
+      la source affichée par les autres panneaux.
     - >-
       Le panneau a sa propre plage temporelle, plus courte que celle du tableau de bord.
     - >-
@@ -254,7 +261,8 @@
     une source, sans écrire de requête. Que posez-vous, et de quel type ?
   propositions:
     - >-
-      Rien : il suffit de cliquer sur une barre du graphique.
+      Rien : il suffit de cliquer sur une barre du graphique, le filtre posé vaut
+      pour tout le tableau de bord et s'enregistre avec lui.
     - >-
       Une zone de texte expliquant comment écrire la requête.
     - >-
@@ -278,9 +286,12 @@
     - >-
       Un tableau de bord créé par l'API Dashboards référence lui aussi sa data view par identifiant.
     - >-
-      Importer un identifiant déjà présent dans un autre Space écrase l'objet existant.
+      Importer un objet dont l'identifiant existe déjà dans un autre Space écrase
+      silencieusement l'objet existant : il faut le renommer avant de l'importer sur
+      la cible.
     - >-
-      Un export ndjson s'importe dans n'importe quelle version de Kibana.
+      Un export ndjson s'importe dans n'importe quelle version de Kibana : le format
+      des objets enregistrés est stable d'une version à l'autre.
     - >-
       Un export ndjson référence sa data view par identifiant : recréer sur la cible une data view de même identifiant permet à l'objet importé de se raccrocher.
   reponse: 3
@@ -304,9 +315,10 @@
     - >-
       Il faut augmenter la plage de temps jusqu'à ce que la source réapparaisse.
     - >-
-      Il faut poser une règle d'alerte sur un seuil « nombre inférieur à 1 » par source.
+      Il faut poser une règle d'alerte sur un seuil « nombre d'événements inférieur
+      à 1 », groupée par source : elle se déclenche dès qu'une source cesse d'émettre.
     - >-
-      Il suffit, la source apparaîtra à zéro.
+      Il suffit : la source apparaîtra à zéro sur les jours où elle n'émet plus rien.
   reponse: 0
   explication: >-
     C'est la subtilité la plus utile de la journée. Une agrégation ne crée un
@@ -325,7 +337,8 @@
     - >-
       On attend la nuit suivante pour voir si cela se reproduit.
     - >-
-      Incident avéré : ce volume ne laisse aucun doute, on déclenche l'astreinte.
+      Incident avéré : huit cents échecs en une nuit sur dix serveurs, avec des
+      comptes d'administration, ne laissent aucun doute — on déclenche l'astreinte.
     - >-
       Rien tant qu'on n'a pas confronté cette adresse à la fiche de contexte de l'organisation.
     - >-
@@ -347,11 +360,14 @@
     table montre bien des documents. Que s'est-il passé ?
   propositions:
     - >-
-      La data view est cassée : il faut la recréer.
+      La data view est cassée : son motif ne correspond plus aux index en place, il
+      faut la recréer pour que les champs reviennent.
     - >-
       Un filtre par type de champ est resté coché dans la barre latérale. Il vide la liste sans afficher le moindre message ; les documents, eux, restent là.
     - >-
-      La plage de temps est trop courte : aucun document ne tombe dedans.
+      La plage de temps est trop courte : les champs sans valeur dans la fenêtre
+      basculent dans « Champs vides », et la liste des champs disponibles finit
+      par se vider.
     - >-
       L'index n'a pas de mapping : Elasticsearch ne sait pas quels champs existent.
   reponse: 1
@@ -371,11 +387,15 @@
     Kibana. Rien ne ressort. Qu'en conclure ?
   propositions:
     - >-
-      Que la data view ne couvre pas l'index de cette machine.
+      Que la data view active ne couvre pas l'index de cette machine : cette loupe
+      interroge les mêmes données que Discover, elle s'arrête donc aux index du motif
+      de la vue en cours et ignore tous les autres index.
     - >-
-      Que le champ host.name n'est pas indexé.
+      Que le champ host.name n'est pas indexé : un champ absent du mapping ne peut
+      pas être recherché.
     - >-
-      Que la machine n'émet aucun journal sur la période.
+      Que la machine n'émet aucun journal sur la période retenue par le sélecteur de
+      temps.
     - >-
       Rien du tout : cette recherche-là ne regarde pas le contenu des journaux. Elle trouve des applications et des objets enregistrés. Pour chercher une valeur, c'est la barre de requête de Discover.
   reponse: 3

@@ -78,7 +78,7 @@
 <section id="{{ m.ancre }}">
   <h2>{{ m.id }} — {{ m.titre }}</h2>
   <p>{{ m.resume }}</p>
-  <p class="lien-doc">{{ m.duree_minutes }} minutes · {{ m.exercices | length }} exercice(s)</p>
+  <p class="lien-doc">{{ m.duree_minutes }} minutes · {{ m.exercices | length }} exercice{{ "s" if m.exercices | length > 1 }}</p>
 
   <h3>Ce que vous saurez faire</h3>
   <ul>{% for o in m.objectifs %}<li>{{ o.enonce }}</li>{% endfor %}</ul>

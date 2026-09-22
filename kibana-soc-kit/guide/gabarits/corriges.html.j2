@@ -17,6 +17,15 @@
 {% for m in modules %}
 <section>
   <h2>{{ m.id }} — {{ m.titre }}</h2>
+  {# SPEC §8 demande des captures dans ce document. Ce sont les mêmes que
+     celles du guide : le formateur montre l'écran attendu à côté de la
+     démarche, plutôt que de le décrire. #}
+  {% for c in m.captures_du_corrige %}
+  <figure class="capture">
+    <img src="{{ c.source }}" alt="{{ c.alt }}">
+    <figcaption><strong>{{ c.id }}</strong> — {{ c.titre }}. {{ c.legende }}</figcaption>
+  </figure>
+  {% endfor %}
   {% for e in m.exercices %}
   <div class="exercice">
     <p class="exercice__entete"><span class="exercice__id">{{ e.id }}</span> —

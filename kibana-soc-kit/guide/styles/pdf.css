@@ -134,6 +134,28 @@ table, tr { break-inside: avoid; }
 .piege { border-left: 3pt solid #101720; padding: 5pt 8pt; margin: 6pt 0; break-inside: avoid; }
 .piege__titre { font-weight: 700; display: block; }
 
+/* --- Captures --------------------------------------------------------------
+   PIÈGE, mesuré : l'image tombait à 152,8 mm de large (pdfimages : 3200 px à
+   532 ppp), soit moins que les 174 mm de la zone de texte, pour une capture de
+   1 600 px logiques — le corps de texte de Kibana y valait 1,34 mm, environ
+   3,8 pt : plus rien de lisible. Chaque capture reçoit donc une page A4
+   PAYSAGE qui lui est propre, où elle occupe les 261 mm utiles : le même
+   corps de texte y passe à environ 6,5 pt. La page n'est jamais blanche, la
+   légende l'accompagne. */
+@page capture {
+  size: A4 landscape;
+  margin: 14mm 18mm;
+}
+figure {
+  page: capture;
+  break-before: page;
+  break-after: page;
+  break-inside: avoid;
+  margin: 0;
+}
+figure img { display: block; width: 100%; height: auto; }
+figcaption { font-size: 9pt; color: #44515f; margin-top: 5pt; }
+
 .champ-reponse {
   border: 0.5pt solid #c3ccd6;
   height: 22pt;

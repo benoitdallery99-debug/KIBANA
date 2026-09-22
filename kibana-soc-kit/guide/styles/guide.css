@@ -137,6 +137,11 @@ a { color: var(--action); text-underline-offset: 2px; }
   font-weight: 600;
 }
 .sommaire ol { list-style: none; margin: 0; padding: 0; }
+/* Pendant une recherche, le script masque les entrées dont la section est
+   masquée. « [hidden] » est une règle du navigateur, de faible spécificité :
+   sans ceci, le « display: flex » ci-dessous l'emporterait et le lien resterait
+   visible — donc mort. */
+.sommaire a[hidden], .sommaire li[hidden] { display: none !important; }
 .sommaire__module > a {
   display: flex;
   justify-content: space-between;
@@ -360,6 +365,13 @@ details > div { padding: 0.4rem 0 0.4rem 1rem; border-left: 1px solid var(--file
 
 /* --- Tableaux ------------------------------------------------------------ */
 table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.93rem; }
+/* Une zone qui défile doit s'atteindre au clavier (WCAG 2.1.1) : le script lui
+   pose « tabindex », « role » et « aria-label » quand elle déborde réellement,
+   et le contour interne garantit que le focus se voit même au bord du cadre. */
+.tableau-defilant:focus-visible {
+  outline: 3px solid var(--action);
+  outline-offset: -3px;
+}
 th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--filet); }
 th { font-weight: 600; color: var(--encre-douce); }
 
@@ -370,9 +382,66 @@ code { font-family: var(--mono); font-size: 0.93em; }
   border-radius: 3px;
 }
 
-figure { margin: 1.5rem 0; }
-figure img { max-width: 100%; height: auto; border: 1px solid var(--filet); border-radius: 4px; }
-figcaption { font-size: 0.85rem; color: var(--encre-douce); margin-top: 0.4rem; }
+/* --- Figures ---------------------------------------------------------------
+   PIÈGE, mesuré : une capture de 1 600 px logiques ramenée à la colonne de
+   68 caractères se rend à 749 px, soit 47 % de sa taille — plus aucun nom de
+   champ ni compteur de documents n'y est lisible, c'est-à-dire exactement ce
+   que les légendes demandent de regarder. Le gabarit émet donc les figures
+   HORS du « .colonne », et elles prennent toute la largeur du contenu, plafonnée
+   à la taille logique de la capture pour ne jamais l'agrandir au-delà.
+   La légende, elle, retourne à la colonne : on ne lit pas une phrase sur
+   1 100 px de large. */
+figure { margin: 1.5rem 0; max-width: min(100%, 100rem); }
+/* Une capture appelée par le texte reste À L'ENDROIT de la phrase qu'elle
+   illustre — donc dans la colonne de lecture, qui est étroite par construction.
+   Elle en sort en largeur sans en sortir en position : la colonne fait 68ch,
+   le contenu est plus large, et la figure reprend cette largeur-là. « max-width
+   none » annule l'héritage de la colonne, et la marge droite négative lui rend
+   la place. Sur un contenu plus étroit que la colonne — téléphone —, le calcul
+   donne zéro et rien ne bouge. */
+/* Le corps d'un module porte des figures appelées par le texte : elles doivent
+   rester à l'endroit de la phrase qu'elles illustrent, ET prendre la largeur du
+   contenu. On retire donc la contrainte de colonne du conteneur et on la rend à
+   chacun de ses enfants, sauf aux figures. */
+.colonne--figures { max-width: none; }
+.colonne--figures > :not(figure) { max-width: var(--colonne); }
+figure img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--filet);
+  border-radius: 4px;
+}
+figcaption {
+  font-size: 0.85rem;
+  color: var(--encre-douce);
+  margin-top: 0.4rem;
+  max-width: var(--colonne);
+}
+/* Sur téléphone, la largeur du contenu vaut 358 px : même hors de la colonne,
+   une capture de 1 600 px logiques n'y tient qu'à 22 %. Le script ajoute donc
+   un bouton « Agrandir » qui la rend à sa taille native dans un cadre qui
+   défile — et ce cadre, parce qu'il défile, est focalisable au clavier avec un
+   rôle et un libellé (WCAG 2.1.1), comme les tableaux larges. */
+.figure__outils { margin: 0.4rem 0 0; }
+.figure__cadre { max-width: 100%; }
+figure[data-agrandi="oui"] .figure__cadre {
+  overflow: auto;
+  max-height: 75vh;
+  border: 1px solid var(--filet);
+  border-radius: 4px;
+}
+figure[data-agrandi="oui"] .figure__cadre img {
+  width: auto;
+  max-width: none;
+  border: 0;
+  border-radius: 0;
+}
+.figure__cadre:focus-visible {
+  outline: 3px solid var(--action);
+  outline-offset: -3px;
+}
 
 /* --- Glossaire ----------------------------------------------------------- */
 .terme {
@@ -420,10 +489,18 @@ mark { background: var(--action-fond); color: var(--encre); padding: 0 0.1em; }
   }
   .sommaire__bascule { display: inline-block; }
   .sommaire[data-ouvert="non"] .sommaire__corps { display: none; }
-  .contenu { padding: 1.5rem 1rem 4rem; }
+  /* « position: relative » sert de bloc conteneur aux infobulles du glossaire
+     (voir plus bas) : sans lui, elles se calent sur la fenêtre. */
+  .contenu { padding: 1.5rem 1rem 4rem; position: relative; }
   /* Un tableau large défile dans son cadre ; la page, elle, ne défile jamais
-     horizontalement. */
+     horizontalement.
+     Repli sans script : le tableau défile lui-même, comme avant — mais il perd
+     alors ses rôles ARIA de tableau, et la zone défilante n'est pas focalisable.
+     C'est pourquoi le script l'enveloppe au chargement dans « .tableau-defilant »,
+     qui prend le défilement à son compte et rend au tableau sa sémantique. */
   table { display: block; overflow-x: auto; max-width: 100%; }
+  .tableau-defilant { overflow-x: auto; max-width: 100%; }
+  .tableau-defilant > table { display: table; overflow-x: visible; }
 
   /* Plus de marge à déborder : la couleur et le carré portent seuls la
      distinction, comme prévu dans la maquette téléphone de docs/DESIGN.md. */
@@ -438,13 +515,41 @@ mark { background: var(--action-fond); color: var(--encre); padding: 0 0.1em; }
     --papier-appui: #f0f0f0; --action: #000; --action-fond: #fff;
     --alerte: #000; --alerte-fond: #fff; --filet: #999;
   }
-  .sommaire, .outils, .bouton, .reponse__ligne { display: none; }
+  .sommaire, .outils, .bouton { display: none; }
   .ossature { display: block; }
   .contenu { padding: 0; }
   .action { border-left-width: 4px; margin-left: 0; }
   details { display: block; }
   details > summary { list-style: none; font-weight: 700; color: #000; }
   details[open] > div, details > div { display: block; }
+  /* Le contenu d'un « details » fermé est masqué par le slot du composant, que
+     le « display » de l'enfant ne surcharge pas : les 113 blocs « Indice » et
+     « Voir la démarche » s'imprimaient vides. C'est le script qui les ouvre
+     (beforeprint) et restaure l'état ensuite ; cette règle sert les moteurs qui
+     exposent le pseudo-élément, et couvre le cas où le script est absent. */
+  details::details-content { content-visibility: visible; display: block; block-size: auto; }
+  /* Une étiquette « Votre réponse — … » sans rien pour écrire n'a aucun sens
+     sur papier : la ligne de saisie devient une ligne à remplir. Le bouton,
+     lui, disparaît avec « .bouton ». */
+  .reponse__ligne { display: block; }
+  .reponse input[type="text"] {
+    border: 0;
+    border-bottom: 1px solid #000;
+    border-radius: 0;
+    background: transparent;
+    width: 60%;
+    min-width: 0;
+  }
+  /* Un lien imprimé sans son adresse ne mène nulle part. */
+  .contenu a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    word-break: break-all;
+  }
+  figure { break-inside: avoid; page-break-inside: avoid; }
+  .figure__outils { display: none; }
+  figure[data-agrandi="oui"] .figure__cadre { overflow: visible; max-height: none; border: 0; }
+  figure[data-agrandi="oui"] .figure__cadre img { width: 100%; max-width: 100%; }
   .exercice { break-inside: avoid; page-break-inside: avoid; }
   h1, h2, h3 { break-after: avoid; page-break-after: avoid; }
   a { color: #000; }
@@ -477,7 +582,7 @@ mark { background: var(--action-fond); color: var(--encre); padding: 0 0.1em; }
 }
 .evitement:focus {
   left: 0;
-  outline: 3px solid var(--accent);
+  outline: 3px solid var(--action);
   outline-offset: 2px;
 }
 
@@ -526,6 +631,26 @@ mark { background: var(--action-fond); color: var(--encre); padding: 0 0.1em; }
 }
 /* Refermée par Échap : le script pose cet attribut, et il l'emporte. */
 .glossaire-lien__bulle[hidden] { display: none !important; }
+
+/* PIÈGE, mesuré à 390 px : la bulle est calée sur le terme (« left: 0 » depuis
+   un « .glossaire-lien » en position relative), donc un terme situé aux trois
+   quarts de la ligne poussait ses 32 caractères hors de la fenêtre — et
+   « body { overflow-x: hidden } » les coupait au lieu de les laisser défiler :
+   les dix définitions étaient illisibles sur téléphone. Sous 62 rem, la bulle
+   s'aligne donc sur le bloc de contenu, d'un bord à l'autre, au lieu de suivre
+   le terme ; « top: auto » la laisse à sa place dans le flux, c'est-à-dire sur
+   la ligne du terme. Ce bloc vient APRÈS la règle de base : à spécificité
+   égale, c'est le dernier écrit qui l'emporte. */
+@media (max-width: 62rem) {
+  .glossaire-lien { position: static; }
+  .glossaire-lien__bulle {
+    left: 1rem;
+    right: 1rem;
+    top: auto;
+    width: auto;
+    margin-top: 1.6em;
+  }
+}
 
 @media print {
   /* À l'impression, la bulle devient une parenthèse : rien ne survole du papier. */

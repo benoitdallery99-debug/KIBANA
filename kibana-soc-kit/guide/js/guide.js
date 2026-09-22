@@ -327,6 +327,37 @@
     var compteur = document.getElementById("recherche-resultats");
     if (!champ) return;
     var sections = document.querySelectorAll("[data-cherchable]");
+    var liensSommaire = document.querySelectorAll(".sommaire a[href^='#']");
+
+    /* Le sommaire doit suivre la recherche. Sans cela, 41 de ses 44 liens
+       pointaient vers une section masquée : le clic changeait bien le fragment
+       de l'URL, mais la page ne bougeait pas et rien n'expliquait pourquoi.
+       Un lien mort est pire qu'un lien absent. */
+    /* Une cible peut être masquée par elle-même ou par sa section : on remonte
+       la chaîne plutôt que de ne regarder que l'élément. */
+    function masquee(element) {
+      for (var n = element; n; n = n.parentElement) {
+        if (n.hidden) return true;
+      }
+      return false;
+    }
+
+    function accorderSommaire() {
+      Array.prototype.forEach.call(liensSommaire, function (a) {
+        var id = a.getAttribute("href").slice(1);
+        var cible = id ? document.getElementById(id) : null;
+        a.hidden = !!(cible && masquee(cible));
+      });
+      /* Un module dont le titre et tous les exercices sont masqués disparaît
+         en entier, puce comprise. */
+      Array.prototype.forEach.call(
+        document.querySelectorAll(".sommaire li.sommaire__module"),
+        function (li) {
+          var restants = li.querySelectorAll("a[href^='#']:not([hidden])");
+          li.hidden = restants.length === 0;
+        }
+      );
+    }
 
     champ.addEventListener("input", function () {
       var q = champ.value.trim().toLowerCase();
@@ -337,6 +368,7 @@
         s.hidden = !dedans;
         if (dedans) trouves++;
       });
+      accorderSommaire();
       if (compteur) {
         compteur.textContent = !q
           ? ""
@@ -418,6 +450,159 @@
     jauge.setAttribute("aria-label", justes + " bonne(s) réponse(s) sur " + total);
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Impression                                                          */
+  /* Un « details » fermé masque son contenu par le slot du composant :   */
+  /* aucune règle CSS portant sur l'enfant ne le rouvre, et les 113 blocs */
+  /* « Indice » et « Voir la démarche » s'imprimaient vides. On pose donc */
+  /* « open » avant l'impression, et on restaure l'état exact ensuite —   */
+  /* le stagiaire retrouve son écran tel qu'il l'avait laissé.            */
+  /* ------------------------------------------------------------------ */
+  function initImpression() {
+    var memoire = null;
+
+    function ouvrir() {
+      if (memoire) return;           // beforeprint ET matchMedia peuvent tomber
+      memoire = [];
+      Array.prototype.forEach.call(
+        document.querySelectorAll("details"),
+        function (d) {
+          memoire.push([d, d.open]);
+          d.open = true;
+        }
+      );
+    }
+
+    function restaurer() {
+      if (!memoire) return;
+      memoire.forEach(function (paire) { paire[0].open = paire[1]; });
+      memoire = null;
+    }
+
+    window.addEventListener("beforeprint", ouvrir);
+    window.addEventListener("afterprint", restaurer);
+    /* Repli : certains moteurs n'émettent pas « beforeprint », mais tous
+       basculent le média. */
+    if (window.matchMedia) {
+      var mq = window.matchMedia("print");
+      var bascule = function (e) { if (e.matches) ouvrir(); else restaurer(); };
+      if (mq.addEventListener) mq.addEventListener("change", bascule);
+      else if (mq.addListener) mq.addListener(bascule);
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Tableaux larges : zone défilante accessible au clavier              */
+  /* Sous 62 rem, un tableau de référence déborde et défile. Une zone qui */
+  /* défile sans être focalisable est inatteignable au clavier et au      */
+  /* lecteur d'écran (WCAG 2.1.1, axe « scrollable-region-focusable »).   */
+  /* On enveloppe donc chaque tableau, et on ne pose « tabindex » que     */
+  /* lorsqu'il déborde vraiment : pas d'arrêt de tabulation inutile sur   */
+  /* un poste de bureau.                                                  */
+  /* ------------------------------------------------------------------ */
+  function initTableaux() {
+    var enveloppes = [];
+    Array.prototype.forEach.call(
+      document.querySelectorAll(".contenu table"),
+      function (t) {
+        var parent = t.parentNode;
+        if (parent && parent.classList.contains("tableau-defilant")) {
+          enveloppes.push(parent);
+          return;
+        }
+        var boite = document.createElement("div");
+        boite.className = "tableau-defilant";
+        parent.insertBefore(boite, t);
+        boite.appendChild(t);
+        enveloppes.push(boite);
+      }
+    );
+    if (!enveloppes.length) return;
+
+    function accorder() {
+      enveloppes.forEach(function (boite) {
+        if (boite.scrollWidth > boite.clientWidth + 1) {
+          boite.setAttribute("tabindex", "0");
+          boite.setAttribute("role", "region");
+          boite.setAttribute("aria-label", "Tableau, défilement horizontal");
+        } else {
+          boite.removeAttribute("tabindex");
+          boite.removeAttribute("role");
+          boite.removeAttribute("aria-label");
+        }
+      });
+    }
+
+    accorder();
+    window.addEventListener("resize", accorder);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Captures : un moyen de les agrandir                                 */
+  /* Hors de la colonne de lecture, une capture se rend à 69 % de sa     */
+  /* taille logique sur un écran de 1 440 px — mais à 22 % seulement sur */
+  /* un téléphone de 390 px, où plus aucun nom de champ n'est lisible.   */
+  /* Le bouton la rend à sa taille native dans un cadre qui défile.      */
+  /* ------------------------------------------------------------------ */
+  function initCaptures() {
+    Array.prototype.forEach.call(
+      document.querySelectorAll("figure[data-capture]"),
+      function (figure) {
+        var image = figure.querySelector("img");
+        var legende = figure.querySelector("figcaption");
+        if (!image || figure.querySelector(".figure__cadre")) return;
+
+        var cadre = document.createElement("div");
+        cadre.className = "figure__cadre";
+        cadre.id = figure.id + "-cadre";
+        figure.insertBefore(cadre, image);
+        cadre.appendChild(image);
+
+        var bouton = document.createElement("button");
+        bouton.type = "button";
+        bouton.className = "bouton";
+        bouton.textContent = "Agrandir la capture";
+        bouton.setAttribute("aria-expanded", "false");
+        bouton.setAttribute("aria-controls", cadre.id);
+
+        var outils = document.createElement("p");
+        outils.className = "figure__outils";
+        outils.appendChild(bouton);
+        if (legende) figure.insertBefore(outils, legende);
+        else figure.appendChild(outils);
+
+        function accorder() {
+          var defile = cadre.scrollWidth > cadre.clientWidth + 1 ||
+                       cadre.scrollHeight > cadre.clientHeight + 1;
+          if (defile) {
+            cadre.setAttribute("tabindex", "0");
+            cadre.setAttribute("role", "region");
+            cadre.setAttribute("aria-label", "Capture agrandie, défilement");
+          } else {
+            cadre.removeAttribute("tabindex");
+            cadre.removeAttribute("role");
+            cadre.removeAttribute("aria-label");
+          }
+        }
+
+        bouton.addEventListener("click", function () {
+          var agrandi = figure.getAttribute("data-agrandi") === "oui";
+          /* Une image en « loading: lazy » hors écran n'a pas de dimension
+             native : on la charge avant de l'agrandir. */
+          image.loading = "eager";
+          figure.setAttribute("data-agrandi", agrandi ? "non" : "oui");
+          bouton.setAttribute("aria-expanded", agrandi ? "false" : "true");
+          bouton.textContent = agrandi
+            ? "Agrandir la capture"
+            : "Réduire la capture";
+          accorder();
+        });
+
+        window.addEventListener("resize", accorder);
+      }
+    );
+  }
+
   function init() {
     initTheme();
     initSommaire();
@@ -426,6 +611,9 @@
     initPosition();
     initRecherche();
     initQuiz();
+    initTableaux();
+    initCaptures();
+    initImpression();
     majProgression();
     majQuiz();
   }
@@ -439,25 +627,69 @@
 
 // --- Glossaire en infobulle -------------------------------------------------
 // WCAG 2.1 §1.4.13 « Content on Hover or Focus » exige qu'une bulle apparue au
-// survol ou au focus soit RENVOYABLE sans déplacer le pointeur ni le focus.
-// Le CSS seul ne sait pas faire cela : d'où ces quelques lignes.
+// survol ou au focus soit RENVOYABLE sans déplacer le pointeur ni le focus
+// (« Dismissible »), et qu'elle reste écartée tant que ni l'un ni l'autre n'a
+// changé (« Persistent »). Le CSS seul ne sait pas faire cela.
+//
+// Deux pièges, tous deux mesurés :
+//   — Échap conditionné à « document.activeElement » n'agissait jamais pour la
+//     souris, puisque le survol ne donne pas le focus. On suit donc aussi le
+//     dernier terme survolé.
+//   — un écouteur « mouseleave » capturant, posé sur le document, se déclenche
+//     au mouseleave de N'IMPORTE QUEL élément et rouvrait TOUTES les bulles :
+//     celle qu'on venait d'écarter au clavier revenait au premier mouvement de
+//     souris, ailleurs sur la page. Chaque terme ne réarme donc plus que SA
+//     bulle, et seulement quand le pointeur ou le focus le quitte lui.
 (function () {
-  function refermer() {
-    document.querySelectorAll(".glossaire-lien__bulle[hidden]").forEach(function (b) {
-      b.removeAttribute("hidden");
+  "use strict";
+
+  var survole = null;
+
+  function bulleDe(terme) {
+    if (!terme) return null;
+    var b = terme.nextElementSibling;
+    return (b && b.classList.contains("glossaire-lien__bulle")) ? b : null;
+  }
+
+  function ecarter(terme) {
+    var b = bulleDe(terme);
+    if (b) b.setAttribute("hidden", "");
+  }
+
+  // Réarmement : la bulle redevient affichable au prochain survol ou focus.
+  function rearmer(terme) {
+    var b = bulleDe(terme);
+    if (b) b.removeAttribute("hidden");
+  }
+
+  function poser() {
+    Array.prototype.forEach.call(
+      document.querySelectorAll(".glossaire-lien"),
+      function (groupe) {
+        var terme = groupe.querySelector(".glossaire-lien__terme");
+        if (!terme) return;
+        groupe.addEventListener("mouseenter", function () { survole = terme; });
+        groupe.addEventListener("mouseleave", function () {
+          if (survole === terme) survole = null;
+          rearmer(terme);
+        });
+        terme.addEventListener("focusout", function () { rearmer(terme); });
+      }
+    );
+
+    document.addEventListener("keydown", function (evt) {
+      if (evt.key !== "Escape") return;
+      var actif = document.activeElement;
+      var terme = (actif && actif.classList.contains("glossaire-lien__terme"))
+        ? actif
+        : survole;
+      if (terme) ecarter(terme);
     });
   }
-  document.addEventListener("keydown", function (evt) {
-    if (evt.key !== "Escape") return;
-    var actif = document.activeElement;
-    if (!actif || !actif.classList.contains("glossaire-lien__terme")) return;
-    var bulle = actif.nextElementSibling;
-    if (bulle && bulle.classList.contains("glossaire-lien__bulle")) {
-      bulle.setAttribute("hidden", "");
-    }
-  });
-  // La bulle réapparaît dès qu'on revient sur le terme : « hidden » ne vaut que
-  // pour la fois où l'on a appuyé sur Échap.
-  document.addEventListener("focusout", refermer);
-  document.addEventListener("mouseleave", refermer, true);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", poser);
+  } else {
+    poser();
+  }
 })();

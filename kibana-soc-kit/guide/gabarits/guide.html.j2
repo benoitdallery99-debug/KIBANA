@@ -148,7 +148,7 @@
       <h2>{{ m.id }} — {{ m.titre }}</h2>
       <p class="module__resume">{{ m.resume }}</p>
       <p class="module__meta">{{ m.duree_minutes }} minutes ·
-        {{ m.exercices | length }} exercice(s)</p>
+        {{ m.exercices | length }} exercice{{ "s" if m.exercices | length > 1 }}</p>
 
       <h3>Ce que vous saurez faire</h3>
       <ul>
@@ -167,20 +167,33 @@
       {% endfor %}
       {% endif %}
 
-      {{ m.corps_html | safe }}
-
-      {% for c in m.captures %}
-      <figure id="fig-{{ c.id }}" data-capture="{{ c.id }}">
-        <img src="{{ c.source }}" alt="{{ c.alt }}" loading="lazy">
-        <figcaption>
-          <strong>{{ c.id }}</strong> — {{ c.titre }}. {{ c.legende }}
-          {% if c.reperes %}
-          <br>{% for r in c.reperes %}<span>{{ loop.index }} · {{ r.note }}{% if not loop.last %} · {% endif %}</span>{% endfor %}
-          {% endif %}
-        </figcaption>
-      </figure>
-      {% endfor %}
     </div>
+
+    {# Le corps du module sort du « .colonne » parce qu'il porte maintenant des
+       figures, appelées par le texte à l'endroit qu'elles illustrent. Le CSS
+       rend la colonne de lecture à tout ce qui n'est pas une figure ; les
+       figures, elles, prennent la largeur du contenu. #}
+    <div class="colonne colonne--figures">
+      {{ m.corps_html | safe }}
+    </div>
+
+    {# Les captures sortent de la colonne de lecture. Mesurée à 1 440 px, une
+       capture de 1 600 px logiques s'y rendait à 749 px : ni les noms de
+       champs, ni la barre de requête, ni le compteur de documents n'y étaient
+       lisibles — c'est-à-dire exactement ce que les légendes demandent de
+       regarder. Hors du « .colonne », la figure prend toute la largeur du
+       contenu ; la légende, elle, reste bornée à la colonne par le CSS. #}
+    {% for c in m.captures %}
+    <figure id="fig-{{ c.id }}" data-capture="{{ c.id }}">
+      <img src="{{ c.source }}" alt="{{ c.alt }}" loading="lazy">
+      <figcaption>
+        <strong>{{ c.id }}</strong> — {{ c.titre }}. {{ c.legende }}
+        {% if c.reperes %}
+        <br>{% for r in c.reperes %}<span>{{ loop.index }} · {{ r.note }}{% if not loop.last %} · {% endif %}</span>{% endfor %}
+        {% endif %}
+      </figcaption>
+    </figure>
+    {% endfor %}
 
     {% for e in m.exercices %}
     <article class="exercice" id="{{ e.ancre }}" data-ancre data-cherchable>
