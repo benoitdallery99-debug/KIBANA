@@ -191,6 +191,11 @@ exercices:
   milliers : 384 592.
 - Pas de majuscule à « data view », « keyword », « text ».
 - Les noms de produits gardent leur casse : Kibana, Elasticsearch, Discover, Lens.
+- **Apostrophe droite `'` dans la prose du kit, apostrophe typographique `’` dans un libellé cité**
+  — parce qu'un libellé se recopie et ne se retape pas. Le lab sert « Impossible d’extraire les
+  résultats de recherche » avec `’` : le kit l'écrit ainsi, et laisse `'` partout ailleurs. Le
+  mélange n'est donc pas une négligence, c'est la règle ; `make verif-parcours` refuse une citation
+  qui remplace `’` par `'`.
 
 ## 10. Ce qui est interdit
 

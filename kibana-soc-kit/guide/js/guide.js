@@ -726,11 +726,30 @@
           }
         }
 
+        /* MESURÉ : agrandie, la capture se rendait a 3 200 px — sa taille
+           intrinseque. Or elle est prise a un facteur d'echelle de 2 sur une
+           fenetre de 1 600 px : 3 200 px, c'est DEUX FOIS la taille reelle de
+           l'ecran photographie, et le defilement horizontal qui va avec. On
+           agrandit a la taille logique, celle que le stagiaire a devant lui. */
+        function largeurLogique() {
+          var echelle = parseFloat(
+            getComputedStyle(document.documentElement)
+              .getPropertyValue("--capture-echelle")
+          ) || 1;
+          return image.naturalWidth ? Math.round(image.naturalWidth / echelle) : 0;
+        }
+
         bouton.addEventListener("click", function () {
           var agrandi = figure.getAttribute("data-agrandi") === "oui";
           /* Une image en « loading: lazy » hors écran n'a pas de dimension
              native : on la charge avant de l'agrandir. */
           image.loading = "eager";
+          if (!agrandi) {
+            var l = largeurLogique();
+            if (l) image.style.width = l + "px";
+          } else {
+            image.style.width = "";
+          }
           figure.setAttribute("data-agrandi", agrandi ? "non" : "oui");
           bouton.setAttribute("aria-expanded", agrandi ? "false" : "true");
           bouton.textContent = agrandi

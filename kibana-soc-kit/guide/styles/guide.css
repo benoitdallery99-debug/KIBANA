@@ -47,6 +47,9 @@
   --mono: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
 
   --colonne: 68ch;
+  /* Facteur d'échelle auquel les captures sont prises (verif/e2e/kibana.py,
+     ECHELLE_DES_CAPTURES). La valeur réelle est injectée à la construction. */
+  --capture-echelle: __ECHELLE_DES_CAPTURES__;
   --transition: 120ms;
 }
 
@@ -215,11 +218,20 @@ h1 { font-size: 2rem; margin: 0 0 0.35rem; }
 h2 { font-size: 1.35rem; margin: 2.4rem 0 0.6rem; font-weight: 600; }
 h3 { font-size: 1.08rem; margin: 1.6rem 0 0.4rem; font-weight: 600; }
 .module__resume { color: var(--encre-douce); margin: 0 0 1.75rem; }
+/* Réservé aux MÉTADONNÉES — version, licence, durée, nombre d'exercices : des
+   valeurs qu'on aligne et qu'on compare. La phrase d'avertissement et le lien
+   vers la documentation y étaient aussi, et se lisaient donc en chasse fixe,
+   qui n'est faite ni pour l'une ni pour l'autre. */
 .module__meta {
   font-family: var(--mono);
   font-size: 0.8rem;
   color: var(--encre-douce);
 }
+.note, .lien-doc {
+  font-size: 0.9rem;
+  color: var(--encre-douce);
+}
+.note { font-style: italic; }
 
 /* --- Bloc d'action : le marqueur UNIQUE ---------------------------------- */
 /* Filet de marge + carré plein + étiquette + débordement à gauche. Quatre
@@ -440,6 +452,9 @@ figure[data-agrandi="oui"] .figure__cadre {
   border-radius: 4px;
 }
 figure[data-agrandi="oui"] .figure__cadre img {
+  /* Repli sans script : la moitié de la taille intrinsèque n'étant pas
+     exprimable en CSS, on garde « auto », et le script pose la bonne largeur
+     dès qu'il tourne. */
   width: auto;
   max-width: none;
   border: 0;
@@ -485,7 +500,7 @@ mark { background: var(--action-fond); color: var(--encre); padding: 0 0.1em; }
    le trait souligné le porte aussi pour qui ne distingue pas les teintes. */
 mark.recherche__trouve {
   background: var(--action-fond);
-  box-shadow: inset 0 -2px 0 var(--action);
+  border-bottom: 2px solid var(--action);
   border-radius: 2px;
 }
 

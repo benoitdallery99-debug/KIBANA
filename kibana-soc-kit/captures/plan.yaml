@@ -118,7 +118,7 @@
     de temps réglée dix ans en arrière, où le jeu de données ne contient aucun
     document. On y lit la disposition de ses cinq panneaux et leurs titres,
     tous formulés en questions. En haut à gauche, « Combien d'événements sur la
-    période ? » : un compteur « Événements collectés » qui affiche 0. À sa
+    plage de temps ? » : un compteur « Événements collectés » qui affiche 0. À sa
     droite, « Combien de sources ont émis dans la dernière heure ? » : un
     compteur « Sources actives (1 h) » qui affiche 0 et dont tout le fond passe
     au rouge, par coloration conditionnelle, parce que ce compte est nul.
@@ -149,17 +149,17 @@
   alt: >-
     Un tableau de bord intitulé « Vue IDS », affiché sur une plage de temps
     réglée dix ans en arrière, où le jeu de données ne contient aucun document.
-    On y lit l'agencement de ses huit panneaux et leurs titres, tous formulés
-    en questions. En haut, « Combien d'alertes sur la période ? » : un compteur
-    « Alertes IDS » qui affiche 0 ; à sa droite, « Combien de signatures
-    distinctes ? » : un compteur « Signatures distinctes » qui affiche 0.
-    Viennent ensuite « Comment les alertes se répartissent-elles par
-    gravité ? », « Comment la gravité évolue-t-elle au fil du temps ? »,
-    « Quelles sources déclenchent le plus d'alertes ? », « Quelles signatures
-    se déclenchent le plus ? », « Quelles sont les dernières alertes reçues ? »
-    et « Quelles destinations sont les plus visées ? », qui affichent tous
-    « Résultat introuvable ». Les derniers n'apparaissent qu'en partie : le bas
-    de la fenêtre les coupe.
+    L'écran compte huit panneaux ; la fenêtre en laisse voir SEPT, tous
+    formulés en questions. En haut à gauche, « Combien d'alertes sur la plage
+    de temps ? » : un compteur « Alertes IDS » qui affiche 0 ; à sa droite,
+    « Combien de signatures distinctes ? » : un compteur « Signatures
+    distinctes » qui affiche 0. Viennent ensuite « Comment les alertes se
+    répartissent-elles par gravité ? », « Comment la gravité évolue-t-elle au
+    fil du temps ? », « Quelles sources déclenchent le plus d'alertes ? »,
+    « Quelles signatures se déclenchent le plus ? » et « Quelles sont les
+    dernières alertes reçues ? », qui affichent tous « Résultat introuvable ».
+    Le huitième panneau, « Quelles destinations sont les plus visées ? », est
+    sous le bas de la fenêtre et n'apparaît pas.
   reperes:
     - cible: dashboardPanelTitle
       note: Chaque panneau répond à une question

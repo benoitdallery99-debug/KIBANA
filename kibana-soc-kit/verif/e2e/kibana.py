@@ -62,6 +62,13 @@ def ts(nom: str) -> str:
     return f'[data-test-subj="{SEL[nom]}"]'
 
 
+# Facteur d'échelle des captures. Une image prise à 2 porte deux fois plus de
+# pixels que sa taille LOGIQUE : la rendre à sa taille intrinsèque, c'est la
+# grossir deux fois, et forcer un défilement là où elle tiendrait. Le guide s'en
+# sert pour agrandir « à taille réelle » plutôt qu'« à taille de fichier ».
+ECHELLE_DES_CAPTURES = 2
+
+
 @contextmanager
 def navigateur(entetes: bool = False):
     """Ouvre un navigateur configuré comme l'exige SPEC §7.2.
@@ -79,7 +86,7 @@ def navigateur(entetes: bool = False):
             locale=str(conf.valeur("kibana.locale")),
             timezone_id=str(conf.valeur("donnees.fuseau_metier")),
             viewport={"width": 1600, "height": 1000},
-            device_scale_factor=2,
+            device_scale_factor=ECHELLE_DES_CAPTURES,
         )
         contexte.set_default_timeout(60_000)
         try:

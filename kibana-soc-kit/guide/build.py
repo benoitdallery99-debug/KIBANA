@@ -25,6 +25,7 @@ from outils import conf
 from outils.fuites import chercher as chercher_fuites
 from outils.glossaire import lier as lier_glossaire
 from outils.typographie import corriger_html
+from verif.e2e import kibana as K
 
 GUIDE = conf.RACINE / "guide"
 DIST = conf.RACINE / "dist"
@@ -62,6 +63,10 @@ def css_avec_polices() -> str:
             raise SystemExit(f"police absente : {chemin}")
         encode = base64.b64encode(chemin.read_bytes()).decode("ascii")
         css = css.replace(marque, f"data:font/ttf;base64,{encode}")
+    # Le facteur d'échelle des captures vient de leur producteur, jamais d'une
+    # valeur recopiée : c'est lui qui décide de la taille réelle d'un écran
+    # photographié, donc de la largeur à laquelle le guide l'agrandit.
+    css = css.replace("__ECHELLE_DES_CAPTURES__", str(K.ECHELLE_DES_CAPTURES))
     return css
 
 

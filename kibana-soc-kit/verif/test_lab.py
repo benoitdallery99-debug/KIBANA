@@ -140,7 +140,15 @@ def test_le_fuseau_d_affichage_est_celui_du_metier(kbn, config, lab_demarre):
     ]
     defauts = []
     for space_id in espaces:
-        r = kbn.get(f"{kbn.base}/s/{space_id}/api/kibana/settings", timeout=60)
+        # « /api/kibana/settings » est documentée publique, mais 9.5.3 répond
+        # 400 « exists but is not available with the current configuration »
+        # tant que l'appel ne se déclare pas d'origine interne — relevé en lab
+        # sur les deux routes, « /api/ » et « /internal/ ».
+        r = kbn.get(
+            f"{kbn.base}/s/{space_id}/api/kibana/settings",
+            headers={"x-elastic-internal-origin": "Kibana"},
+            timeout=60,
+        )
         if r.status_code != 200:
             defauts.append(f"{space_id} : réglages illisibles (HTTP {r.status_code})")
             continue

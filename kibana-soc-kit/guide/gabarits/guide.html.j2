@@ -88,7 +88,7 @@
     <p>Vous rejoignez le SOC de <strong>{{ contexte.organisation }}</strong>. Voici ce
       qu'un analyste de permanence a sous les yeux. Gardez cette fiche ouverte :
       elle contient au moins une clé dont vous aurez besoin.</p>
-    <p class="module__meta">{{ contexte.avertissement }}</p>
+    <p class="note">{{ contexte.avertissement }}</p>
 
     <h3>Le plan d'adressage</h3>
     <table>
@@ -288,7 +288,7 @@
         {% endif %}
 
         {% if e.doc %}
-        <p class="module__meta"><a href="{{ e.doc }}">Documentation Elastic sur ce point</a></p>
+        <p class="lien-doc"><a href="{{ e.doc }}">Documentation Elastic sur ce point</a></p>
         {% endif %}
       </div>
     </article>

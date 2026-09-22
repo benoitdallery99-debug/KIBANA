@@ -167,6 +167,7 @@ figcaption { font-size: 9pt; color: #44515f; margin-top: 5pt; }
 
 a { color: #101720; }
 .lien-doc { font-size: 8.5pt; color: #44515f; word-break: break-all; }
+.note { font-size: 9pt; color: #44515f; font-style: italic; }
 
 /* --- Ce qui appartient à l'écran, et pas au papier -------------------------
    Le corps des modules est le MÊME objet dans le guide HTML et dans le PDF :

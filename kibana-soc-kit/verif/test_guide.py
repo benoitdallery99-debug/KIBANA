@@ -720,3 +720,99 @@ def test_la_position_courante_descend_au_niveau_de_l_exercice(page_ouverte):
         "l'exercice est marqué mais son module ne l'est plus : le lecteur perd "
         "tout repère de module"
     )
+
+
+def test_une_capture_agrandie_se_rend_a_sa_taille_reelle(page_ouverte):
+    """Agrandie, la capture doublait la taille de l'écran qu'elle photographie.
+
+    MESURÉ : 3 200 px de large, soit la taille intrinsèque du fichier. Or les
+    captures sont prises à un facteur d'échelle de 2 sur une fenêtre de
+    1 600 px : les rendre à 3 200 px, c'est un grossissement ×2 que personne
+    n'a demandé, et un défilement horizontal deux fois plus long pour lire le
+    même écran. « Agrandir » doit rendre la taille RÉELLE.
+    """
+    from verif.e2e.kibana import ECHELLE_DES_CAPTURES
+
+    page, _ = page_ouverte
+    page.set_viewport_size({"width": 1440, "height": 900})
+    figure = page.locator("figure").first
+    figure.scroll_into_view_if_needed()
+    page.wait_for_timeout(400)
+    figure.locator("button").first.click()
+    page.wait_for_timeout(900)
+
+    mesure = page.evaluate("""() => {
+        const f = document.querySelector('figure[data-agrandi="oui"]');
+        if (!f) return null;
+        const i = f.querySelector('img');
+        return {naturel: i.naturalWidth,
+                rendu: Math.round(i.getBoundingClientRect().width)};
+    }""")
+    page.evaluate("window.scrollTo(0, 0)")
+    assert mesure, "aucune figure ne s'est agrandie"
+    attendu = round(mesure["naturel"] / ECHELLE_DES_CAPTURES)
+    assert abs(mesure["rendu"] - attendu) <= 2, (
+        f"capture agrandie rendue à {mesure['rendu']} px pour une taille réelle "
+        f"de {attendu} px ({mesure['naturel']} px de fichier, échelle "
+        f"{ECHELLE_DES_CAPTURES})"
+    )
+
+
+def test_le_contrat_de_design_est_tenu(config):
+    """docs/DESIGN.md §« Contrat que le code devra respecter », vérifié.
+
+    Un contrat qu'aucun contrôle ne relit dérive en silence : celui-ci
+    interdisait toute « box-shadow » alors que l'infobulle du glossaire en
+    portait une depuis P5, et réservait « --action » aux blocs d'action et au
+    focus alors que les liens, le sommaire et le quiz s'en servaient. Le
+    document a été rendu à ce que le kit fait vraiment ; ce contrôle empêche la
+    dérive suivante.
+    """
+    css = (config.RACINE / "guide" / "styles" / "guide.css").read_text(encoding="utf-8")
+
+    # Une seule ombre, celle de l'infobulle. « box-shadow: none » ne compte pas.
+    ombres = [
+        ligne.strip()
+        for ligne in css.split("\n")
+        if "box-shadow" in ligne and "none" not in ligne
+    ]
+    assert len(ombres) == 1, (
+        f"{len(ombres)} box-shadow dans guide.css — le contrat n'en admet qu'une, "
+        f"celle de l'infobulle du glossaire :\n  " + "\n  ".join(ombres)
+    )
+
+    # Aucun arrondi au-dessus de 4 px.
+    trop_ronds = [
+        f"{valeur}px"
+        for valeur in re.findall(r"border-radius:\s*(\d+)px", css)
+        if int(valeur) > 4
+    ]
+    assert not trop_ronds, (
+        f"border-radius supérieurs à 4 px : {', '.join(sorted(set(trop_ronds)))}"
+    )
+
+    # La colonne de lecture, et le focus jamais supprimé.
+    assert "--colonne: 68ch" in css, "la ligne de texte n'est plus bornée à 68ch"
+    assert "outline: none" not in css.replace("outline: none;", "", css.count(
+        "outline: none; /* remplacé"
+    )), "un « outline: none » supprime un focus"
+
+    # Les valeurs de la palette annoncées par DESIGN.md sont celles du CSS.
+    design = (config.RACINE / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    # UNIQUEMENT la palette de la direction retenue : le document expose aussi
+    # celle de la direction B, écartée, dont les valeurs ne sont pas au CSS —
+    # et le contrôle les y cherchait.
+    debut = design.index("### Palette — 5 couleurs nommées")
+    design = design[debut:design.index("### Rôles typographiques", debut)]
+    jeux = _themes(css)
+    defauts = []
+    for ligne in re.findall(r"^\|\s*`(--[\w-]+)`\s*\|\s*`(#[0-9a-fA-F]{6})`\s*\|"
+                            r"\s*`(#[0-9a-fA-F]{6})`\s*\|", design, re.M):
+        jeton, clair, sombre = ligne
+        reel_clair = (jeux.get("clair") or {}).get(jeton)
+        reel_sombre = (jeux.get("sombre (choisi)") or {}).get(jeton)
+        if reel_clair and reel_clair.lower() != clair.lower():
+            defauts.append(f"{jeton} clair : DESIGN.md dit {clair}, le CSS {reel_clair}")
+        if reel_sombre and reel_sombre.lower() != sombre.lower():
+            defauts.append(f"{jeton} sombre : DESIGN.md dit {sombre}, le CSS {reel_sombre}")
+    assert not defauts, "la palette a dérivé de DESIGN.md :\n  " + "\n  ".join(defauts)

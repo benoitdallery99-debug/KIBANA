@@ -46,13 +46,19 @@ Plus quatre jetons d'appui, qui ne portent jamais de texte :
 | `--papier-appui` | `#e8edf2` | `#1b212a` | Fond des encadrés et des blocs de code |
 | `--action-fond` | `#f1ebfd` | `#241a3a` | Fond des blocs « dans Kibana » |
 | `--alerte-fond` | `#fbeeec` | `#34201c` | Fond des encadrés « piège » |
-| `--filet` | `#7d8794` | `#616e7e` | Tout trait qui délimite un composant |
+| `--filet` | `#7d8794` | `#6e7b8c` | Tout trait qui délimite un composant |
 
 Le `--filet` valait `#c3ccd6` / `#2b333d` à la première rédaction. Mesuré, il tombait à **1,49:1** en
 clair et **1,42:1** en sombre, sous les **3:1** que WCAG 1.4.11 exige d'un trait porteur
 d'information — et les encadrés « piège » de ce guide ne se distinguent QUE par leur trait : sous ce
-seuil, le piège cessait d'être signalé pour qui voit mal les contrastes. Les valeurs livrées donnent
-3,34:1 et 3,49:1 sur `--papier`, 3,09:1 et 3,11:1 sur `--papier-appui`, le fond le moins favorable.
+seuil, le piège cessait d'être signalé pour qui voit mal les contrastes.
+
+Le rapport se mesure sur CE QUE LE TRAIT BORDE, et non sur le seul papier — une erreur que cette
+page a faite : elle désignait `--papier-appui` comme « le fond le moins favorable » alors que
+`--alerte-fond`, justement celui des encadrés « piège », l'est davantage. Le gris sombre `#616e7e`
+tenait 3,49:1 sur `--papier` mais tombait à **2,95:1** sur `--alerte-fond`. Valeurs livrées, clair
+puis sombre : 3,34 et 4,21 sur `--papier` ; 3,09 et 3,76 sur `--papier-appui` ; 3,22 et 3,56 sur
+`--alerte-fond` ; 3,13 et 3,80 sur `--action-fond`. `make verif-guide` recalcule les seize.
 
 Contrastes mesurés sur le fond (calcul WCAG, script dans le journal) : encre 16,5:1 et 15,2:1 ;
 encre douce 7,4:1 et 8,5:1 ; action 8,2:1 et 9,0:1 ; alerte 7,0:1 et 8,9:1. Tous au-dessus de 4,5:1,
@@ -224,8 +230,17 @@ conformément à SPEC §7.2.
 
 ## Contrat que le code devra respecter
 
-- Aucune `box-shadow`. Aucun `border-radius` supérieur à 4 px.
-- `--action` n'apparaît que sur les blocs d'action Kibana et sur le focus. Nulle part ailleurs.
+- Aucun `border-radius` supérieur à 4 px.
+- **Une seule `box-shadow` dans tout le guide**, et elle est fonctionnelle : l'infobulle du
+  glossaire, qui flotte au-dessus du texte courant et doit se lire comme détachée de lui. Partout
+  ailleurs, la profondeur se dit par un trait. `make verif-guide` recompte les ombres et refuse la
+  deuxième.
+- `--action` porte tout ce qui SE FAIT ou SE SUIT : les blocs d'action Kibana, le focus, les liens,
+  la position courante du sommaire, le repère d'une réponse juste, le surlignage de recherche.
+  La première rédaction disait « les blocs d'action et le focus, nulle part ailleurs », et le code
+  ne l'a jamais respecté — un lien sans couleur d'accent n'est pas un lien. Ce qui reste interdit,
+  c'est de l'employer en ORNEMENT : un fond, un liseré ou un titre qui ne se clique pas et ne
+  signale aucune position.
 - Ligne de texte : `max-width: 68ch`.
 - Focus visible : contour de 2 px en `--action`, décalé de 2 px, jamais supprimé.
 - `prefers-reduced-motion` respecté : aucune transition au-delà de 0 ms si l'utilisateur le demande.

@@ -40,9 +40,27 @@ MASQUAGE = """
     document.querySelectorAll(s).forEach(e => { e.style.visibility = 'hidden'; });
   }
   // Le curseur clignotant d'une zone de saisie apparaît au hasard des captures.
+  //
+  // ARTEFACT MESURÉ : la rangée d'actions rapides d'un panneau — filtre,
+  // exploration, inspection, agrandissement, menu — restait peinte en haut à
+  // droite d'un panneau sur M3-C1 et M4-C1, parce que le pointeur de
+  // Playwright s'était arrêté dessus. Le stagiaire voyait donc une barre
+  // d'outils qu'il n'obtiendrait qu'en survolant, sans que rien ne l'explique,
+  // et sur un panneau choisi au hasard. On la neutralise pour toutes les
+  // captures ; celles qui doivent la montrer la montreront par un geste
+  // déclaré, pas par un accident de pointeur.
   const style = document.createElement('style');
   style.textContent = '*{caret-color:transparent!important}' +
-                      '*{animation:none!important;transition:none!important}';
+                      '*{animation:none!important;transition:none!important}' +
+                      // NE PAS viser le conteneur « embPanel__hoverActions » :
+                      // en 9.5 il ENVELOPPE le panneau, et le masquer efface
+                      // l'écran entier. Constaté : M3-C1 rendu vide, M4-C1
+                      // refusée faute de « embeddablePanel » visible. On ne
+                      // masque que les boutons.
+                      '[data-test-subj^="embeddablePanelAction-"],' +
+                      '[data-test-subj^="hover-actions-"],' +
+                      '[data-test-subj="embeddablePanelToggleMenuIcon"]' +
+                      '{opacity:0!important;visibility:hidden!important}';
   document.head.appendChild(style);
 }
 """
@@ -68,6 +86,7 @@ ANNOTATION = """
 
   const introuvables = [];
   const mal_placees = [];
+  const serrees = [];
   let dessines = 0;
 
   reperes.forEach((r, i) => {
@@ -85,13 +104,82 @@ ANNOTATION = """
     });
     couche.appendChild(cadre);
 
-    // Au-dessus du liseré du cadre ; sans place au-dessus, à sa gauche.
-    let x = b.left - 3;
-    let y = b.top - 5 - COTE;
-    if (y < MARGE) { x = b.left - 5 - COTE; y = b.top - 3; }
-    // Bornage : une pastille qui sort de la fenêtre est rognée à la capture.
-    x = Math.min(Math.max(x, MARGE), window.innerWidth - COTE - MARGE);
-    y = Math.min(Math.max(y, MARGE), window.innerHeight - COTE - MARGE);
+    // Quatre places candidates, essayées dans cet ordre : au-dessus du cadre,
+    // à sa gauche, à sa droite, sous lui. La première qui ne recouvre RIEN
+    // gagne.
+    //
+    // PIÈGE MESURÉ : le code ne vérifiait que le recouvrement de la CIBLE.
+    // Sur M4-C1, la pastille du premier titre de panneau, bornée à la marge
+    // gauche, se posait sur la barre de filtres — donc sur le bouton
+    // « Ajouter un filtre » et son menu. Elle ne recouvrait pas sa cible : le
+    // contrôle passait, et l'image montrait un rond violet au milieu d'une
+    // barre d'outils.
+    // On ne regarde que l'élément du DESSUS à chaque point, et on ne le compte
+    // que s'il porte lui-même de l'encre : du texte en propre, ou un contrôle.
+    // Remonter la pile des ancêtres déclarait tout occupé — le conteneur d'un
+    // panneau « contient du texte » même là où le pixel est blanc.
+    const encre = (e) => {
+      if (!e || couche.contains(e) ||
+          e === document.body || e === document.documentElement) return false;
+      if (['BUTTON', 'INPUT', 'IMG', 'svg', 'path', 'CANVAS'].includes(e.tagName)) {
+        return true;
+      }
+      for (const n of e.childNodes) {
+        if (n.nodeType === 3 && n.nodeValue.trim()) return true;
+      }
+      return false;
+    };
+    const occupe = (x, y) => {
+      const points = [
+        [x + 3, y + 3], [x + COTE - 3, y + 3],
+        [x + 3, y + COTE - 3], [x + COTE - 3, y + COTE - 3],
+        [x + COTE / 2, y + COTE / 2],
+      ];
+      return points.some(([px, py]) => {
+        const pile = document.elementsFromPoint(px, py)
+          .filter(e => !couche.contains(e));
+        return encre(pile[0]);
+      });
+    };
+
+    const places = [
+      [b.left - 3, b.top - 5 - COTE],              // au-dessus
+      [b.left - 5 - COTE, b.top - 3],              // à gauche
+      [b.right + 5, b.top - 3],                    // à droite
+      [b.left - 3, b.bottom + 5],                  // dessous
+    ];
+    // Dernier recours avant le repli : DANS la cible, calée à son extrémité
+    // droite. Un titre de panneau est une boîte large dont le texte n'occupe
+    // que la gauche : la pastille y tient sans rien masquer, là où les quatre
+    // places extérieures butent sur la barre de filtres ou sur le panneau
+    // voisin. C'est ce qui posait la pastille 1 de M3-C1 et M4-C1 sur le
+    // bouton « Ajouter un filtre ».
+    if (b.width > 3 * COTE && b.height >= COTE) {
+      places.push([b.right - COTE - 4, b.top + (b.height - COTE) / 2]);
+    }
+    const tient = ([cx, cy]) =>
+      cx >= MARGE && cy >= MARGE &&
+      cx + COTE <= window.innerWidth - MARGE &&
+      cy + COTE <= window.innerHeight - MARGE;
+
+    const dans_le_cadre = places.filter(tient);
+    if (!dans_le_cadre.length) {
+      mal_placees.push({numero: i + 1, cible: r.cible, sort: true,
+                        recouvre: false});
+      return;
+    }
+    // La première place LIBRE ; à défaut, la première qui tient dans le cadre.
+    // Sur une interface dense — la liste des champs de Discover, collée au
+    // bord — les quatre places portent de l'encre : on pose quand même, et on
+    // le dit, plutôt que de refuser la capture.
+    let x = null, y = null;
+    for (const [cx, cy] of dans_le_cadre) {
+      if (!occupe(cx, cy)) { x = cx; y = cy; break; }
+    }
+    if (x === null) {
+      [x, y] = dans_le_cadre[0];
+      serrees.push({numero: i + 1, cible: r.cible});
+    }
 
     const pastille = document.createElement('div');
     pastille.textContent = String(i + 1);
@@ -104,20 +192,9 @@ ANNOTATION = """
     });
     couche.appendChild(pastille);
     dessines += 1;
-
-    // Contrôle, après bornage : la pastille doit tenir ENTIÈRE dans la
-    // fenêtre capturée, et ne rien recouvrir de ce qu'elle désigne.
-    const sort = x < 0 || y < 0 ||
-                 x + COTE > window.innerWidth || y + COTE > window.innerHeight;
-    const recouvre = x < b.right && x + COTE > b.left &&
-                     y < b.bottom && y + COTE > b.top;
-    if (sort || recouvre) {
-      mal_placees.push({numero: i + 1, cible: r.cible, sort: sort,
-                        recouvre: recouvre});
-    }
   });
   return {dessines: dessines, introuvables: introuvables,
-          mal_placees: mal_placees};
+          mal_placees: mal_placees, serrees: serrees};
 }
 """
 
@@ -216,13 +293,23 @@ def main() -> int:
                 print(f"  [ATTENTION] {capture['id']} : {annotation['dessines']} "
                       f"repère(s) dessiné(s) sur {attendus} — un sélecteur a "
                       f"changé ? ({', '.join(annotation['introuvables'])})")
+            for serree in annotation.get("serrees") or []:
+                print(f"  [ATTENTION] {capture['id']} : la pastille "
+                      f"{serree['numero']} « {serree['cible']} » est posée sur "
+                      f"une zone chargée — aucune place libre autour de sa cible")
             if annotation["mal_placees"]:
                 # Une pastille rognée par le bord, ou posée sur ce qu'elle
                 # désigne, rompt la correspondance légende ↔ image : c'est tout
                 # l'intérêt d'une capture annotée. On ne livre pas la figure.
                 for mauvaise in annotation["mal_placees"]:
-                    raison = ("sort du cadre de la capture" if mauvaise["sort"]
-                              else "recouvre l'élément qu'elle désigne")
+                    if mauvaise.get("sans_place"):
+                        raison = ("n'a aucune place libre autour de sa cible : "
+                                  "les quatre positions candidates recouvrent "
+                                  "du contenu ou sortent du cadre")
+                    elif mauvaise["sort"]:
+                        raison = "sort du cadre de la capture"
+                    else:
+                        raison = "recouvre l'élément qu'elle désigne"
                     print(f"  [ÉCHEC] {capture['id']} : la pastille "
                           f"{mauvaise['numero']} « {mauvaise['cible']} » "
                           f"{raison}")

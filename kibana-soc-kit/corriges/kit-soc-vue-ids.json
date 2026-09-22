@@ -17,7 +17,7 @@
       "type": "vis",
       "config": {
         "type": "metric",
-        "title": "Combien d'alertes sur la période ?",
+        "title": "Combien d'alertes sur la plage de temps ?",
         "data_source": {
           "type": "data_view_spec",
           "index_pattern": "logs-ids.alert-formation",
