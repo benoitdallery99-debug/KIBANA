@@ -78,6 +78,33 @@ PIEGES = [
 ]
 
 
+# Ce que chaque forme de requête suppose du TYPE du champ. Le parcours publie un
+# tableau qui l'énonce (parcours/M1.md, « Chacune de ces formes suppose quelque
+# chose du champ ») ; il a longtemps dit « tout sauf un champ de type ip », ce
+# qui est faux : Elasticsearch refuse le joker de début sur tout ce qui n'est ni
+# keyword, ni text, ni wildcard — donc aussi sur un nombre et sur une date. Ces
+# sondes-là ne sont pas des pièges du parcours : aucun exercice ne les provoque.
+# Elles sont la source du tableau, relevée plutôt que rédigée de mémoire.
+SONDES_DE_TYPE = [
+    {"id": "joker-sur-keyword", "forme": "joker", "type_de_champ": "keyword",
+     "requete": "event.dataset : network*"},
+    {"id": "joker-sur-long", "forme": "joker", "type_de_champ": "long",
+     "requete": "destination.port : 44*"},
+    {"id": "joker-sur-date", "forme": "joker", "type_de_champ": "date",
+     "requete": "@timestamp : 2026*"},
+    {"id": "joker-sur-ip", "forme": "joker", "type_de_champ": "ip",
+     "requete": 'destination.ip : 198.51*'},
+    {"id": "comparaison-sur-long", "forme": "comparaison", "type_de_champ": "long",
+     "requete": "destination.port >= 1025"},
+    {"id": "comparaison-sur-date", "forme": "comparaison", "type_de_champ": "date",
+     "requete": '@timestamp >= "2026-09-20"'},
+    {"id": "comparaison-sur-keyword", "forme": "comparaison", "type_de_champ": "keyword",
+     "requete": 'event.dataset >= "n"'},
+    {"id": "comparaison-sur-ip", "forme": "comparaison", "type_de_champ": "ip",
+     "requete": 'source.ip >= "10.0.0.0"'},
+]
+
+
 def relever_filtre_de_type(page) -> dict:
     """Piège SPEC §6.3 : « 0 champ disponible » quand un filtre de type est actif.
 
@@ -270,6 +297,7 @@ def main() -> int:
             "Le parcours ne peut affirmer que ce que montre ce fichier."
         ),
         "pieges": [],
+        "sondes_de_type": [],
     }
     with K.navigateur() as contexte:
         page = contexte.new_page()
@@ -286,6 +314,13 @@ def main() -> int:
                   f"juste={entree['ce_qui_marche']['nombre_de_resultats']!s:>8}"
                   + (f"  « {entree['ce_qui_echoue']['message_affiche'][:52]} »"
                      if entree["ce_qui_echoue"]["message_affiche"] else ""))
+        for sonde in SONDES_DE_TYPE:
+            releve_sonde = relever(page, sonde["requete"])
+            releve["sondes_de_type"].append({**sonde, **releve_sonde})
+            print(f"  {sonde['id']:26s} "
+                  f"résultats={releve_sonde['nombre_de_resultats']!s:>8}"
+                  + (f"  « {releve_sonde['message_affiche'][:52]} »"
+                     if releve_sonde["message_affiche"] else ""))
 
     # Le piège d'ouverture du parcours : la plage de temps par défaut de Kibana
     # est bien trop courte pour un jeu de données de sept jours. On mesure les

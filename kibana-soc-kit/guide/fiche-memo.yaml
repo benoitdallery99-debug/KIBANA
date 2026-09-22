@@ -8,9 +8,9 @@ recto:
       lignes:
         - ["Égalité", 'champ : "valeur"', "La casse compte sur un champ keyword."]
         - ["Et / ou / non", "a : 1 and b : 2", "and, or, not — en minuscules."]
-        - ["Comparaison", "destination.port >= 1025", ">= > <= < sur un champ numérique."]
+        - ["Comparaison", "destination.port >= 1025", ">= > <= < sur un nombre, une date, une adresse."]
         - ["Existence", "rule.name : *", "Le champ est renseigné."]
-        - ["Joker", 'url.domain : *.example', "Sur du texte, pas sur une adresse."]
+        - ["Joker", 'url.domain : *.example', "Keyword ou text. Refusé sur un nombre, une date, une adresse."]
         - ["Réseau", 'source.ip : "10.0.0.0/8"', "CIDR, directement sur un champ ip."]
 
     - titre: Exemples de salle

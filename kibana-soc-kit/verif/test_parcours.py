@@ -453,6 +453,64 @@ def test_le_corrige_du_formateur_couvre_toutes_les_questions(config):
     )
 
 
+def test_le_tableau_des_types_de_M1_dit_ce_que_le_lab_montre(config):
+    """Le tableau « ce que chaque forme suppose du champ » vient du lab, pas de mémoire.
+
+    Il a longtemps écrit « joker sur le début : tout sauf un champ de type ip ».
+    C'est faux, et d'une façon coûteuse : Elasticsearch refuse le joker de début
+    sur tout ce qui n'est ni keyword, ni text, ni wildcard. Un analyste qui tape
+    « destination.port : 44* » reçoit le même échec que sur une adresse, après
+    qu'un tableau de référence lui a promis que seul le type ip posait problème.
+
+    Les sondes de « lab/sonder_pieges.py » relèvent le comportement réel, forme
+    par forme et type par type. Ce contrôle exige que le tableau les suive.
+    """
+    releve = config.RACINE / "docs" / "pieges-lab.json"
+    module = config.RACINE / "parcours" / "M1.md"
+    if not releve.exists() or not module.exists():
+        pytest.skip("NON EXÉCUTÉ : docs/pieges-lab.json ou parcours/M1.md absent.")
+
+    sondes = json.loads(releve.read_text(encoding="utf-8")).get("sondes_de_type")
+    if not sondes:
+        pytest.skip(
+            "NON EXÉCUTÉ : docs/pieges-lab.json ne porte pas de « sondes_de_type ». "
+            "Relancez « .venv/bin/python lab/sonder_pieges.py »."
+        )
+
+    texte = module.read_text(encoding="utf-8")
+    ligne = next(
+        (r for r in texte.splitlines() if r.startswith("| joker sur le début")), None
+    )
+    assert ligne, "le tableau des types de M1 n'a plus de ligne « joker sur le début »"
+
+    # Le tableau parle français ; les sondes parlent le vocabulaire d'Elasticsearch.
+    NOM_FR = {"long": "nombre", "date": "date", "ip": "adresse", "keyword": "keyword"}
+    manques, faux = [], []
+    for sonde in sondes:
+        if sonde.get("forme") != "joker":
+            continue
+        mot = NOM_FR.get(sonde.get("type_de_champ", ""))
+        if not mot:
+            continue
+        refuse = not sonde.get("aboutit", True) or sonde.get("message_affiche")
+        present = mot in ligne.lower()
+        if refuse and not present:
+            manques.append(f"{sonde['type_de_champ']} (« {sonde['requete']} » a échoué en lab)")
+        if not refuse and mot != "keyword" and present:
+            faux.append(f"{sonde['type_de_champ']} (« {sonde['requete']} » a abouti en lab)")
+
+    assert not manques, (
+        "le tableau des types de M1 ne signale pas des types que le lab refuse : "
+        + ", ".join(manques)
+        + f"\n  ligne : {ligne}"
+    )
+    assert not faux, (
+        "le tableau des types de M1 annonce refusés des types qui aboutissent : "
+        + ", ".join(faux)
+        + f"\n  ligne : {ligne}"
+    )
+
+
 def test_les_bonnes_reponses_du_quiz_ne_sont_pas_toujours_au_meme_rang(config):
     """Un quiz se triche au rang, pas au fond.
 

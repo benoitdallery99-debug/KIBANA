@@ -16,7 +16,7 @@
       },
       "ce_qui_marche": {
         "requete": "destination.port >= 1025",
-        "nombre_de_resultats": 36025,
+        "nombre_de_resultats": 35679,
         "message_affiche": null,
         "aboutit": true
       }
@@ -34,7 +34,7 @@
       },
       "ce_qui_marche": {
         "requete": "rule.name : *",
-        "nombre_de_resultats": 85269,
+        "nombre_de_resultats": 84423,
         "message_affiche": null,
         "aboutit": true
       }
@@ -52,7 +52,7 @@
       },
       "ce_qui_marche": {
         "requete": "user.name : \"svc-facturation\"",
-        "nombre_de_resultats": 5079,
+        "nombre_de_resultats": 5012,
         "message_affiche": null,
         "aboutit": true
       }
@@ -65,13 +65,13 @@
       "type": "requete",
       "ce_qui_echoue": {
         "requete": "message : \"ECHEC\"",
-        "nombre_de_resultats": 6395,
+        "nombre_de_resultats": 6351,
         "message_affiche": null,
         "aboutit": true
       },
       "ce_qui_marche": {
         "requete": "message : \"echec\"",
-        "nombre_de_resultats": 6395,
+        "nombre_de_resultats": 6350,
         "message_affiche": null,
         "aboutit": true
       }
@@ -89,8 +89,8 @@
       },
       "ce_qui_marche": {
         "requete": "destination.ip : \"10.0.0.0/8\"",
-        "nombre_de_resultats": 166484,
-        "message_affiche": "@timestampsept. 21, 2026 @ 23:26:45.000destination.ip10.20.1.10destination.port53dns.question.namemeteo.service-public.exampledns.question.registered_domainservice-public.exampledns.question.typeAdns.response_codeNOERRORecs.version8.11.0event.actionrequete-dnsevent.categorynetworkevent.datasetnetwork.dnsevent.kindeventevent.modulenetworkevent.outcomesuccessevent.typeprotocolhost.ip10.10.11.21host.namepc-compta-01messageRequete DNS meteo.service-public.example depuis 10.10.11.21network.protocoldnsnetwork.transportudporganization.nameGroupe Méridiensource.ip10.10.11.21_idvtPexaAB_NjqeP5TDE8g_ignored(null)_index.ds-logs-network.dns-formation-2026.09.21-000001_score(null)",
+        "nombre_de_resultats": 164548,
+        "message_affiche": null,
         "aboutit": true
       }
     },
@@ -105,7 +105,7 @@
       },
       "ce_qui_marche": {
         "plage": "now-7d → now",
-        "nombre_de_resultats": 389132
+        "nombre_de_resultats": 384424
       }
     },
     {
@@ -116,7 +116,7 @@
       "ce_qui_echoue": {
         "geste": "filtre de type « date » coché",
         "champs_affiches": 1,
-        "documents_affiches": 389132,
+        "documents_affiches": 384414,
         "aboutit": false
       },
       "ce_qui_marche": {
@@ -137,9 +137,83 @@
       },
       "ce_qui_marche": {
         "requete": "host.name : \"fw-perimetre-01\"",
-        "nombre_de_resultats": 70404,
+        "nombre_de_resultats": 69639,
         "aboutit": true
       }
+    }
+  ],
+  "sondes_de_type": [
+    {
+      "id": "joker-sur-keyword",
+      "forme": "joker",
+      "type_de_champ": "keyword",
+      "requete": "event.dataset : network*",
+      "nombre_de_resultats": 101040,
+      "message_affiche": null,
+      "aboutit": true
+    },
+    {
+      "id": "joker-sur-long",
+      "forme": "joker",
+      "type_de_champ": "long",
+      "requete": "destination.port : 44*",
+      "nombre_de_resultats": null,
+      "message_affiche": "Impossible d’extraire les résultats de recherche",
+      "aboutit": false
+    },
+    {
+      "id": "joker-sur-date",
+      "forme": "joker",
+      "type_de_champ": "date",
+      "requete": "@timestamp : 2026*",
+      "nombre_de_resultats": null,
+      "message_affiche": "Impossible d’extraire les résultats de recherche",
+      "aboutit": false
+    },
+    {
+      "id": "joker-sur-ip",
+      "forme": "joker",
+      "type_de_champ": "ip",
+      "requete": "destination.ip : 198.51*",
+      "nombre_de_resultats": null,
+      "message_affiche": "Impossible d’extraire les résultats de recherche",
+      "aboutit": false
+    },
+    {
+      "id": "comparaison-sur-long",
+      "forme": "comparaison",
+      "type_de_champ": "long",
+      "requete": "destination.port >= 1025",
+      "nombre_de_resultats": 35673,
+      "message_affiche": null,
+      "aboutit": true
+    },
+    {
+      "id": "comparaison-sur-date",
+      "forme": "comparaison",
+      "type_de_champ": "date",
+      "requete": "@timestamp >= \"2026-09-20\"",
+      "nombre_de_resultats": 82843,
+      "message_affiche": null,
+      "aboutit": true
+    },
+    {
+      "id": "comparaison-sur-keyword",
+      "forme": "comparaison",
+      "type_de_champ": "keyword",
+      "requete": "event.dataset >= \"n\"",
+      "nombre_de_resultats": 264677,
+      "message_affiche": null,
+      "aboutit": true
+    },
+    {
+      "id": "comparaison-sur-ip",
+      "forme": "comparaison",
+      "type_de_champ": "ip",
+      "requete": "source.ip >= \"10.0.0.0\"",
+      "nombre_de_resultats": 384437,
+      "message_affiche": null,
+      "aboutit": true
     }
   ]
 }
