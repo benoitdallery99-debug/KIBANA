@@ -765,3 +765,128 @@ def test_tout_reemploi_de_reponse_est_annonce(modules):
     assert not defauts, (
         "réemplois de réponse non annoncés :\n  " + "\n  ".join(defauts)
     )
+
+
+# --------------------------------------------------------------------------
+# ES|QL
+# --------------------------------------------------------------------------
+
+_BLOC_ESQL = re.compile(r"```esql\n(.*?)```", re.S)
+
+# Seuil de précision par défaut de l'agrégation « cardinality », annoncé par le
+# corps de M2. En deçà, COUNT_DISTINCT est exact ; au-delà, c'est une estimation.
+SEUIL_DE_PRECISION_PAR_DEFAUT = 3000
+
+
+def _requetes_esql(modules):
+    """(module, numéro de ligne, requête) pour chaque bloc ```esql du parcours."""
+    trouvees = []
+    for module in modules:
+        texte = module["chemin"].read_text(encoding="utf-8")
+        for bloc in _BLOC_ESQL.finditer(texte):
+            ligne = texte.count("\n", 0, bloc.start()) + 1
+            trouvees.append((module["chemin"].name, ligne, bloc.group(1).strip()))
+    return trouvees
+
+
+def _jouer_esql(es, requete: str):
+    """Renvoie (colonnes, lignes) ou lève avec le message d'Elasticsearch."""
+    r = es.post(
+        f"{es.base}/_query",
+        data=json.dumps({"query": requete}),
+        timeout=120,
+    )
+    if r.status_code != 200:
+        raise AssertionError(f"HTTP {r.status_code} — {r.text[:400]}")
+    charge = r.json()
+    return [c["name"] for c in charge.get("columns", [])], charge.get("values", [])
+
+
+def test_chaque_requete_esql_du_parcours_repond_dans_le_lab(modules, lab_demarre, es):
+    """Toute requête donnée au stagiaire est rejouée, comme les requêtes KQL.
+
+    ÉCART CORRIGÉ : « requetes_kql » couvrait les requêtes portées par les
+    exercices, mais les quatre requêtes ES|QL du corps de M2 n'étaient rejouées
+    par rien. Elles sont pourtant copiées telles quelles par le stagiaire : une
+    faute de syntaxe, un champ disparu du jeu, une fonction retirée par une
+    montée de version, et le module fait taper une requête qui échoue — sans
+    que rien du kit ne le signale. La charte l'interdit ; ce test l'applique.
+    """
+    a_jouer = _requetes_esql(modules)
+    if not a_jouer:
+        pytest.skip("NON EXÉCUTÉ : aucun bloc ```esql dans le parcours")
+
+    defauts = []
+    for fichier, ligne, requete in a_jouer:
+        repere = f"{fichier}:{ligne}"
+        try:
+            colonnes, lignes = _jouer_esql(es, requete)
+        except AssertionError as exc:
+            defauts.append(f"{repere} : {exc}\n      {requete.splitlines()[0]}")
+            continue
+        if not colonnes:
+            defauts.append(f"{repere} : aucune colonne renvoyée")
+        if not lignes:
+            defauts.append(
+                f"{repere} : zéro ligne — le stagiaire verrait un tableau vide\n"
+                f"      {requete.splitlines()[0]}"
+            )
+
+    assert not defauts, (
+        f"{len(defauts)} requête(s) ES|QL du parcours ne répondent pas :\n  "
+        + "\n  ".join(defauts)
+    )
+
+
+def test_le_contraste_de_cardinalite_promis_par_M2_existe_dans_le_lab(
+    modules, lab_demarre, es
+):
+    """M2 promet « voir l'écart de vos yeux » : encore faut-il qu'il y ait un écart.
+
+    Le module fait taper deux fois COUNT_DISTINCT sur le même champ, une fois au
+    seuil par défaut, une fois à 40 000, et annonce que les deux nombres
+    diffèrent parce que le champ porte plus de 3 000 valeurs distinctes. Si le
+    générateur venait à produire moins de domaines, les deux requêtes rendraient
+    le même chiffre : la démonstration ne montrerait plus rien, et le stagiaire
+    conclurait que l'approximation est un mythe. Rien ne le signalait.
+    """
+    paires = {}
+    for fichier, ligne, requete in _requetes_esql(modules):
+        m = re.search(r"COUNT_DISTINCT\(\s*([\w.]+)\s*(?:,\s*(\d+)\s*)?\)", requete)
+        if not m:
+            continue
+        paires.setdefault(m.group(1), {})[m.group(2) or "defaut"] = (
+            f"{fichier}:{ligne}",
+            requete,
+        )
+
+    contrastes = {c: v for c, v in paires.items() if len(v) >= 2}
+    if not contrastes:
+        pytest.skip(
+            "NON EXÉCUTÉ : aucun champ n'est compté deux fois avec deux seuils "
+            "de précision dans le parcours"
+        )
+
+    defauts = []
+    for champ, seuils in contrastes.items():
+        mesures = {}
+        for seuil, (repere, requete) in seuils.items():
+            _, lignes = _jouer_esql(es, requete)
+            mesures[seuil] = (int(lignes[0][0]), repere)
+
+        exact = max(v for v, _ in mesures.values())
+        if exact <= SEUIL_DE_PRECISION_PAR_DEFAUT:
+            defauts.append(
+                f"{champ} : {exact} valeurs distinctes, sous le seuil de "
+                f"{SEUIL_DE_PRECISION_PAR_DEFAUT} — les deux requêtes de M2 "
+                f"rendront le même nombre et la leçon tombe à plat"
+            )
+            continue
+        distincts = {v for v, _ in mesures.values()}
+        if len(distincts) < 2:
+            defauts.append(
+                f"{champ} : les deux seuils rendent {distincts.pop()} — "
+                f"aucun écart à montrer ({', '.join(r for _, r in mesures.values())})"
+            )
+
+    assert not defauts, "contraste de cardinalité :\n  " + "\n  ".join(defauts)

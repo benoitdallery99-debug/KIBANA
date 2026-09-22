@@ -32,17 +32,27 @@ from outils import conf
 
 TEMPS = 30
 
+# PIÈGE MESURÉ EN LAB (9.5.3). « POST /api/kibana/settings » est documentée
+# comme publique, mais elle répond
+#   400 — « uri [/api/kibana/settings] with method [post] exists but is not
+#   available with the current configuration »
+# tant que l'appel ne se déclare pas d'origine interne. Le même appel avec cet
+# en-tête répond 200. Relevé sur les deux routes, « /api/ » et « /internal/ ».
+ORIGINE_INTERNE = {"x-elastic-internal-origin": "Kibana"}
+
 
 def entetes() -> dict[str, str]:
     return {"kbn-xsrf": "true", "Content-Type": "application/json"}
 
 
-def kbn(methode: str, chemin: str, **kw: Any) -> requests.Response:
+def kbn(
+    methode: str, chemin: str, entetes_sup: dict[str, str] | None = None, **kw: Any
+) -> requests.Response:
     return requests.request(
         methode,
         f"{conf.url_kibana()}{chemin}",
         auth=conf.auth_elastic(),
-        headers=entetes(),
+        headers=entetes() | (entetes_sup or {}),
         timeout=TEMPS,
         **kw,
     )
@@ -278,6 +288,7 @@ def fuseau_horaire() -> None:
             kbn(
                 "POST",
                 f"/s/{space_id}/api/kibana/settings",
+                entetes_sup=ORIGINE_INTERNE,
                 json={"changes": {"dateFormat:tz": fuseau}},
             ),
         )
