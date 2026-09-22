@@ -130,10 +130,10 @@ et valait exactement la somme des exercices dans quatre modules sur six.
 
 | Module | Durée | Exercices | Guidage |
 |---|---|---|---|
-| M0 Prise en main | 36 min | 3 | démonstration → guidé → semi-guidé |
+| M0 Prise en main | 37 min | 3 | démonstration → guidé → semi-guidé |
 | M1 Rechercher avec Discover | 87 min | 6 | démonstration → … → autonome |
-| M2 Visualiser avec Lens | 70 min | 6 | démonstration → … → autonome |
-| M3 Construire un tableau de bord | 69 min | 6 | démonstration → … → autonome |
+| M2 Visualiser avec Lens | 71 min | 6 | démonstration → … → autonome |
+| M3 Construire un tableau de bord | 70 min | 6 | démonstration → … → autonome |
 | M4 Capstone SOC | 98 min | 10 | **autonome** de bout en bout |
 | M5 Industrialiser | 44 min | 4 | démonstration → … → autonome |
 

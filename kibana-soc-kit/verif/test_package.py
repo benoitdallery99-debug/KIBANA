@@ -22,6 +22,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
+import yaml
 from playwright.sync_api import sync_playwright
 
 from verif.e2e import kibana as K
@@ -247,5 +248,63 @@ def test_le_rapport_publie_le_vrai_nombre_de_controles(config):
     for annonce in re.findall(r"\|\s*\*\*Total\*\*\s*\|\s*\*\*(\d+)\*\*", texte):
         if int(annonce) != total:
             defauts.append(f"total annoncé {annonce}, réel {total}")
+
+    # Les TRANSCRIPTIONS, ensuite. Le rapport en compte une par phase — « $ make
+    # verif-parcours » suivi de « 20 passed » — et une, globale, qui nomme la
+    # suite en fin de ligne. Elles vieillissaient sans que rien ne les relise :
+    # le tableau de bilan disait 33 contrôles de parcours et la transcription de
+    # la phase P3, vingt. Un lecteur qui descend d'une page voit le kit se
+    # contredire.
+    for marque, annonce in re.findall(
+        r"\$\s*make\s+verif-(\w+)\s*\n\s*(\d+)\s+pass", texte
+    ):
+        reel = reels.get(marque)
+        if reel is not None and int(annonce) != reel:
+            defauts.append(
+                f"transcription « make verif-{marque} » : {annonce} passés, "
+                f"{reel} contrôles écrits"
+            )
+    for annonce, marque in re.findall(
+        r"^\s*(\d+)\s+passed[^\n(]*\(verif-(\w+)\)", texte, re.M
+    ):
+        reel = reels.get(marque)
+        if reel is not None and int(annonce) != reel:
+            defauts.append(
+                f"transcription globale, verif-{marque} : {annonce} passés, "
+                f"{reel} contrôles écrits"
+            )
+
+    # Le tableau des modules du §P3 : durées et nombres d'exercices.
+    modules = {}
+    for chemin in sorted((config.RACINE / "parcours").glob("M*.md")):
+        entete = yaml.safe_load(chemin.read_text(encoding="utf-8").split("---", 2)[1])
+        modules[entete["id"]] = (
+            entete["duree_minutes"], len(entete["exercices"])
+        )
+    for identifiant, duree, exercices in re.findall(
+        r"^\|\s*(M\d)[^|]*\|\s*(\d+)\s*min\s*\|\s*(\d+)\s*\|", texte, re.M
+    ):
+        reel = modules.get(identifiant)
+        if not reel:
+            continue
+        if int(duree) != reel[0]:
+            defauts.append(
+                f"§P3, {identifiant} : {duree} min publiées, {reel[0]} déclarées"
+            )
+        if int(exercices) != reel[1]:
+            defauts.append(
+                f"§P3, {identifiant} : {exercices} exercices publiés, {reel[1]} écrits"
+            )
+    total_minutes = sum(d for d, _ in modules.values())
+    total_exercices = sum(e for _, e in modules.values())
+    for minutes, exercices in re.findall(
+        r"\*\*(\d+) minutes\*\*,\s*\*\*(\d+) exercices\*\*", texte
+    ):
+        if int(minutes) != total_minutes:
+            defauts.append(f"§P3 : {minutes} minutes publiées, {total_minutes} réelles")
+        if int(exercices) != total_exercices:
+            defauts.append(
+                f"§P3 : {exercices} exercices publiés, {total_exercices} réels"
+            )
 
     assert not defauts, "chiffres du rapport de recette :\n  " + "\n  ".join(defauts)
