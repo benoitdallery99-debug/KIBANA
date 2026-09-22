@@ -1124,3 +1124,59 @@ def test_aucune_version_en_dur_ne_diverge_de_la_configuration(config):
     assert not fautes, (
         "version citée hors configuration :\n  " + "\n  ".join(fautes)
     )
+
+
+def test_les_indices_sont_a_deux_niveaux(modules):
+    """SPEC §6.1 et la charte §5 : « indices à deux niveaux ».
+
+    Le premier oriente, le second montre presque. Deux exercices en portaient
+    trois et quatre — M0-E2 et M1-E5, celui-là parce que le passage au guidage
+    semi-guidé y avait versé les clics retirés des consignes. Quatre indices, ce
+    n'est plus une gradation : c'est la solution en pièces détachées, et le
+    stagiaire qui ouvre le premier ouvre les quatre.
+
+    Un exercice en DÉMONSTRATION montre déjà les gestes : il peut n'avoir aucun
+    indice — c'est le cas de quatre d'entre eux — ou porter les deux niveaux
+    quand ils apprennent autre chose que le geste, comme M5-E1. Ce qu'aucun
+    exercice ne peut faire, c'est en porter un seul, ou plus de deux.
+    """
+    defauts = []
+    for _, exercice in _exercices(modules):
+        indices = exercice.get("indices") or []
+        admis = (0, 2) if exercice.get("guidage") == "demonstration" else (2,)
+        if len(indices) not in admis:
+            defauts.append(
+                f"{exercice['id']} ({exercice.get('guidage')}) : {len(indices)} "
+                f"indice(s), {' ou '.join(str(a) for a in admis)} attendu(s)"
+            )
+    assert not defauts, "indices à deux niveaux :\n  " + "\n  ".join(defauts)
+
+
+def test_aucune_requete_en_ligne_dans_le_corps_d_un_module(modules):
+    """docs/CHARTE_REDACTION.md §8 : les requêtes vont dans un bloc de code.
+
+    Trois requêtes traînaient dans une phrase de M1, guillemets français et
+    astérisques échappées — « destination.port : 44\\* ». En ligne, une requête
+    ne se copie pas d'un clic, son astérisque doit être protégée du Markdown, et
+    rien ne dit au lecteur que c'est du KQL plutôt que de la prose. Le contrôle
+    ne regarde que le CORPS : une consigne est du YAML, elle n'a pas de bloc à
+    sa disposition et emploie l'italique de code.
+    """
+    motif = re.compile(r"[a-z_@]+\.[a-z_.]+\s*:\s*\S")
+    fautes = []
+    for module in modules:
+        dans_un_bloc = False
+        for numero, ligne in enumerate(module["corps"].split("\n"), 1):
+            if ligne.startswith("```"):
+                dans_un_bloc = not dans_un_bloc
+                continue
+            if dans_un_bloc:
+                continue
+            if motif.search(re.sub(r"`[^`]*`", "", ligne)):
+                fautes.append(
+                    f"{module['chemin'].name} (corps, ligne {numero}) : "
+                    f"{ligne.strip()[:70]}"
+                )
+    assert not fautes, (
+        "requêtes écrites en ligne dans un corps de module :\n  " + "\n  ".join(fautes)
+    )

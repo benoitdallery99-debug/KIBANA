@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import re
 import subprocess
 import tarfile
 import tempfile
@@ -185,3 +186,66 @@ def test_le_guide_livre_s_ouvre_hors_ligne(extraite):
         assert modules >= 2, f"{modules} section(s) dans le guide livré"
         contexte.close()
         lanceur.close()
+
+
+# --------------------------------------------------------------------------
+# Les chiffres que le rapport de recette publie
+# --------------------------------------------------------------------------
+
+def test_le_rapport_publie_le_vrai_nombre_de_controles(config):
+    """Un tableau de bilan que rien ne recompte vieillit à chaque contrôle ajouté.
+
+    Le rapport annonçait « verif-lab 17 », « verif-parcours 24 », « verif-guide
+    18 » et un total de 99 alors que les suites en comptaient respectivement 18,
+    31, 25 et 115. Un lecteur qui veut savoir ce que le kit prouve lit ce
+    tableau, pas le code ; un chiffre faux y vaut une preuve fausse.
+
+    On recompte les fonctions de test de chaque suite, on les rattache à leur
+    marque par « pytestmark », et on exige que le tableau le dise — total
+    compris.
+    """
+    rapport = config.RACINE / "docs" / "RAPPORT_RECETTE.md"
+    if not rapport.exists():
+        pytest.skip("NON EXÉCUTÉ : docs/RAPPORT_RECETTE.md absent.")
+    texte = rapport.read_text(encoding="utf-8")
+
+    reels: dict[str, int] = {}
+    for chemin in sorted((config.RACINE / "verif").glob("test_*.py")):
+        source = chemin.read_text(encoding="utf-8")
+        marque = re.search(r"^pytestmark = pytest\.mark\.(\w+)", source, re.M)
+        if not marque:
+            continue
+        reels[marque.group(1)] = len(re.findall(r"^def test_", source, re.M))
+    assert reels, "aucune suite reconnue dans verif/"
+
+    defauts = []
+    vus = set()
+    for marque, annonce, repete in re.findall(
+        r"\|\s*`verif-(\w+)`\s*\|\s*(\d+)\s*\|\s*✅\s*(\d+)\s+pass", texte
+    ):
+        vus.add(marque)
+        reel = reels.get(marque)
+        if reel is None:
+            defauts.append(f"verif-{marque} : suite inconnue de verif/")
+            continue
+        if int(annonce) != reel:
+            defauts.append(
+                f"verif-{marque} : {annonce} contrôles annoncés, {reel} écrits"
+            )
+        if annonce != repete:
+            defauts.append(
+                f"verif-{marque} : le tableau dit {annonce} puis {repete} passés"
+            )
+
+    manquantes = sorted(set(reels) - vus)
+    if manquantes:
+        defauts.append(
+            "suites absentes du tableau : " + ", ".join(f"verif-{m}" for m in manquantes)
+        )
+
+    total = sum(reels.values())
+    for annonce in re.findall(r"\|\s*\*\*Total\*\*\s*\|\s*\*\*(\d+)\*\*", texte):
+        if int(annonce) != total:
+            defauts.append(f"total annoncé {annonce}, réel {total}")
+
+    assert not defauts, "chiffres du rapport de recette :\n  " + "\n  ".join(defauts)

@@ -13,14 +13,14 @@ comme **non exécuté**, avec sa raison — jamais comme réussi.
 
 | Suite | Contrôles | Résultat | Ce qui est prouvé |
 |---|---|---|---|
-| `verif-lab` | 17 | ✅ 17 passés | licence, santé, version, locale, vue de solution, isolation réseau, cloisonnement des quatre Spaces |
+| `verif-lab` | 18 | ✅ 18 passés | licence, santé, version, locale, vue de solution, isolation réseau, cloisonnement des quatre Spaces, fuseau d'affichage posé dans chacun |
 | `verif-donnees` | 14 | ✅ 14 passés | volumes, mapping effectif, S1→S7, déterminisme, jeu d'épreuve distinct |
-| `verif-parcours` | 24 | ✅ 24 passés | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes, réemplois annoncés, corrigé du quiz complet, positions du quiz réparties, aucune empreinte validée deux fois, tableau des types adossé au lab |
-| `verif-corriges` | 8 | ✅ 8 passés | import en Space vierge, rendu sans erreur, valeurs conformes |
-| `verif-guide` | 18 | ✅ 18 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement, entités HTML intactes, toute capture visant un Space à réponses est épinglée sur une plage antérieure au jeu, donc sur des panneaux vides |
+| `verif-parcours` | 32 | ✅ 32 passés | requêtes rejouées, libellés réels, aucune réponse en clair, pièges conformes, réemplois annoncés, corrigé du quiz complet, positions du quiz réparties, aucune empreinte validée deux fois, tableau des types adossé au lab, requêtes ES|QL du corps rejouées, aucune requête écrite en ligne, contraste de cardinalité réellement présent, un seul mot pour la fenêtre de temps, déroulé minuté recalculé, aucun évaluateur unique proposé au sacrifice, versions citées liées à la configuration, indices à deux niveaux |
+| `verif-corriges` | 9 | ✅ 9 passés | import en Space vierge, rendu sans erreur, valeurs conformes, décomptes de panneaux publiés recomptés |
+| `verif-guide` | 25 | ✅ 25 passés | zéro requête réseau, axe-core, empreintes, validation de bout en bout, téléphone, lien d'évitement, entités HTML intactes, toute capture visant un Space à réponses est épinglée sur une plage antérieure au jeu — donc sur des panneaux vides —, sommaire atteignable après défilement, recherche qui surligne, position courante au niveau de l'exercice, capture agrandie à sa taille réelle, filet à 3:1 sur les quatre fonds, contrat de docs/DESIGN.md relu |
 | `verif-pdf` | 10 | ✅ 10 passés | polices embarquées, sommaire paginé, signets, solutions en annexe, aucune réponse dans un document du stagiaire |
-| `verif-package` | 8 | ✅ 8 passés | empreintes, complétude, installation sans réseau |
-| **Total** | **99** | **✅ zéro échec** | |
+| `verif-package` | 9 | ✅ 9 passés | empreintes, complétude, installation sans réseau, chiffres de ce rapport recomptés |
+| **Total** | **117** | **✅ zéro échec** | |
 
 Exécution complète après `make lab-reset`, donc sur un lab reconstruit depuis un
 volume vide : c'est la seule façon de ne pas confondre « le kit fonctionne » et
@@ -123,7 +123,7 @@ $ make verif-parcours
 20 passed
 ```
 
-Six modules, **405 minutes**, **35 exercices**, **27 objectifs**. La durée d'un
+Six modules, **406 minutes**, **35 exercices**, **27 objectifs**. La durée d'un
 module couvre tout ce qu'il demande : ses exercices, la lecture de son corps et
 son rappel actif. Elle ne les couvrait pas avant le troisième tour de relecture,
 et valait exactement la somme des exercices dans quatre modules sur six.
@@ -527,7 +527,7 @@ constaté qui est enseigné, comme SPEC §6.3 l'exige elle-même.
 | E6 | Deux prémisses de la SPEC corrigées (voir ci-dessus) | Mineur | Résolu, SPEC non modifiée, comportement réel enseigné |
 | E7 | 64 capacités sur 90 non sondées dans le lab | Mineur | Assumé et signalé : aucune n'étaye une affirmation du parcours |
 | E8 | SPEC §9 demande un quiz de 15 questions ; le kit en livre 17 | Mineur | Assumé : Q16 et Q17 couvrent les deux pièges d'interface de SPEC §6.3, que rien n'évaluait. Écart dans le sens du mieux, mais écart tout de même — d'où cette ligne |
-| E10 | SPEC §1 annonce « 6 h de parcours » ; mesuré lecture des corps et rappel actif compris, il vaut **6 h 45** | Mineur | Assumé et consigné : SPEC §1 ne budgète ni la lecture ni le rappel, que la charte rend obligatoires. Le kit garde son contenu et dit la vraie durée ; le guide du formateur donne deux formules, dont une en quatre séances |
+| E10 | SPEC §1 annonce « 6 h de parcours » ; mesuré lecture des corps et rappel actif compris, il vaut **6 h 46** | Mineur | Assumé et consigné : SPEC §1 ne budgète ni la lecture ni le rappel, que la charte rend obligatoires. Le kit garde son contenu et dit la vraie durée ; le guide du formateur donne deux formules, dont une en quatre séances |
 | E11 | La source muette et celle du trou de collecte sont les mêmes au parcours et à l'épreuve | Mineur | Assumé et consigné : avec six sources, trois portent une réponse de repère et une quatrième les événements de deux scénarios — il ne reste qu'un choix possible de chaque côté. Le document du stagiaire le lui dit, et la première question de l'épreuve demande en plus l'heure de reprise, que le générateur tire à neuf |
 | E9 | Le dépôt distant refuse le `push` : 403, l'application GitHub n'a pas le droit `Contents: write` sur `YamTeam9/picturegallery` | Bloquant pour la livraison, nul pour le kit | Non résolu, hors de portée : relève d'un administrateur de l'organisation. Le travail est remis sous forme de bundle git complet |
 
