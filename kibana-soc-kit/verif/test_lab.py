@@ -474,3 +474,46 @@ def test_aucun_corrige_dans_le_space_de_formation(kbn_stagiaire, config, lab_dem
         if "corrig" in t.lower() or t in ("Santé de la collecte", "Vue IDS")
     ]
     assert not suspects, f"corrigés présents dans le Space de formation : {suspects}"
+
+
+# --------------------------------------------------------------------------
+# Portabilité du pré-vol
+# --------------------------------------------------------------------------
+
+# Options que seul le coreutils GNU connaît. Le kit annonce macOS et Windows
+# dans INSTALLATION.md : un pré-vol qui ne sait y lire ni un disque ni une
+# mémoire refuse de démarrer un poste parfaitement capable.
+OPTIONS_GNU_SEULEMENT = (
+    "--output=", "-BG", "-BM", "--block-size", "df -h --total",
+    "free -g", "free -m", "nproc", "readlink -f", "sed -i ",
+)
+
+
+def test_le_prevol_n_emploie_aucune_option_propre_a_gnu(config):
+    """RELEVÉ À LA PREMIÈRE INSTALLATION PAR UN HUMAIN, sur macOS.
+
+    Le contrôle d'espace disque employait « df -BG --output=avail ». Le df de
+    BSD ne connaît ni l'une ni l'autre : la commande échouait en silence, la
+    valeur retombait à zéro, et le pré-vol annonçait « 0 Go libres, minimum
+    10 Go » sur une machine qui en avait quarante. Trois blocages affichés,
+    dont deux faux.
+
+    Aucun test ne pouvait l'attraper : la vérification tourne sous Linux, où
+    ces options existent. Celui-ci lit le script plutôt que de l'exécuter.
+    """
+    chemin = config.RACINE / "lab" / "preflight.sh"
+    if not chemin.exists():
+        pytest.skip("NON EXÉCUTÉ : lab/preflight.sh absent.")
+    source = chemin.read_text(encoding="utf-8")
+
+    trouvees = []
+    for numero, ligne in enumerate(source.split("\n"), 1):
+        nue = ligne.split("#", 1)[0]
+        for option in OPTIONS_GNU_SEULEMENT:
+            if option in nue:
+                trouvees.append(f"preflight.sh:{numero} « {option} » — {nue.strip()[:60]}")
+
+    assert not trouvees, (
+        "options propres à GNU dans un script que macOS doit exécuter :\n  "
+        + "\n  ".join(trouvees)
+    )

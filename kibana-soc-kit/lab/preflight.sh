@@ -74,12 +74,35 @@ if [ -r /proc/meminfo ]; then
     faire "  podman machine stop && podman machine set --memory 8192 && podman machine start"
   fi
 else
-  alerte "Mémoire disponible non mesurable sur ce système."
-  faire "Assurez-vous d'avoir au moins ${MIN_RAM_GO} Go libres, dont 2 Go pour le heap Elasticsearch."
+  # Hors Linux, podman tourne dans une machine virtuelle : c'est SA mémoire qui
+  # compte, pas celle de l'hôte. Un Mac de 16 Go avec une VM réglée à 2 Go ne
+  # fera pas tourner Elasticsearch, et l'inverse est vrai aussi. On interroge
+  # donc la VM plutôt que de renvoyer l'humain à son propre jugement.
+  vm_mo="$(podman machine inspect --format '{{.Resources.Memory}}' 2>/dev/null \
+           | tr -dc '0-9' | head -c 9)"
+  if [ -n "$vm_mo" ] && [ "$vm_mo" -gt 0 ] 2>/dev/null; then
+    vm_go=$((vm_mo / 1024))
+    if [ "$vm_go" -ge "$MIN_RAM_GO" ]; then
+      ok "${vm_go} Go alloués à la machine podman (minimum ${MIN_RAM_GO} Go)"
+    else
+      echec "la machine podman n'a que ${vm_go} Go, or le lab en demande ${MIN_RAM_GO}."
+      faire "podman machine stop && podman machine set --memory 8192 && podman machine start"
+    fi
+  else
+    alerte "Mémoire disponible non mesurable sur ce système."
+    faire "Assurez-vous d'avoir au moins ${MIN_RAM_GO} Go libres, dont 2 Go pour le heap Elasticsearch."
+  fi
 fi
 
 titre "4. Espace disque"
-dispo_go="$(df -BG --output=avail "$RACINE" 2>/dev/null | tail -1 | tr -dc '0-9' || echo 0)"
+# PIÈGE RELEVÉ SUR macOS, à la première installation par un humain : la mesure
+# employait « df -BG --output=avail », deux options GNU que le df de BSD ne
+# connaît pas. La commande échouait, la valeur retombait à zéro, et le pré-vol
+# refusait de démarrer un poste qui avait quarante gigaoctets libres. « df -Pk »
+# est POSIX : une seule ligne garantie, des blocs de 1 Kio, sur GNU comme sur
+# BSD. Le kit annonce macOS et Windows dans INSTALLATION.md : il doit y savoir
+# lire un disque.
+dispo_go="$(df -Pk "$RACINE" 2>/dev/null | awk 'NR==2 {print int($4 / 1048576)}')"
 if [ -n "$dispo_go" ] && [ "$dispo_go" -ge "$MIN_DISQUE_GO" ]; then
   ok "${dispo_go} Go libres (minimum ${MIN_DISQUE_GO} Go)"
 else
@@ -89,7 +112,7 @@ fi
 # Elasticsearch refuse d'allouer un shard au-delà de ses seuils d'occupation.
 # Le lab les exprime en valeur absolue (voir lab/pod.yaml.tmpl) : il suffit donc
 # d'avoir l'espace réel, même sur un disque déjà bien rempli en pourcentage.
-pct="$(df --output=pcent "$RACINE" 2>/dev/null | tail -1 | tr -dc '0-9' || echo 0)"
+pct="$(df -Pk "$RACINE" 2>/dev/null | awk 'NR==2 {gsub(/%/, "", $5); print $5}')"
 if [ -n "$pct" ] && [ "$pct" -ge 90 ]; then
   alerte "Le système de fichiers est occupé à ${pct} %."
   faire "Sans réglage, Elasticsearch bloquerait toute allocation au-delà de 90 %."
