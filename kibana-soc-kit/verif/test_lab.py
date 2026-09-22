@@ -7,6 +7,7 @@ et fonctionnement sur un réseau podman « --internal » sans accès extérieur 
 
 from __future__ import annotations
 
+import pathlib
 import re
 import subprocess
 import time
@@ -284,6 +285,32 @@ def _attendre(fn, limite: int, pas: int = 5):
     return None
 
 
+# Ce contrôle monte un SECOND pod complet — Elasticsearch et Kibana — pendant
+# que le premier tourne. Deux heaps de 2 Go, deux Kibana : il faut le double de
+# ce que le lab seul demande. RELEVÉ SUR UN MacBook Air à 8 Go de VM : la suite
+# s'y enlisait sans rien dire, cinq minutes et plus, là où le pré-vol n'annonce
+# que 6 Go pour FAIRE TOURNER le lab — jamais pour le VÉRIFIER.
+MEMOIRE_POUR_DEUX_PILES_GO = 12
+
+
+def _memoire_disponible_go() -> int | None:
+    """Mémoire réellement disponible, Linux ou machine podman. None si inconnue."""
+    meminfo = pathlib.Path("/proc/meminfo")
+    if meminfo.exists():
+        for ligne in meminfo.read_text(encoding="utf-8").split("\n"):
+            if ligne.startswith("MemAvailable:"):
+                return int(ligne.split()[1]) // 1024 // 1024
+    try:
+        sortie = subprocess.run(
+            ["podman", "machine", "inspect", "--format", "{{.Resources.Memory}}"],
+            capture_output=True, text=True, timeout=30, check=False,
+        ).stdout
+        chiffres = "".join(c for c in sortie if c.isdigit())
+        return int(chiffres) // 1024 if chiffres else None
+    except Exception:
+        return None
+
+
 def test_lab_fonctionne_sur_reseau_interne(config, reseau_interne, tmp_path_factory):
     """Le lab doit fonctionner sur un réseau podman « --internal » (SPEC §4.6).
 
@@ -292,6 +319,15 @@ def test_lab_fonctionne_sur_reseau_interne(config, reseau_interne, tmp_path_fact
     Ce réseau ne publiant pas de ports vers l'hôte, les contrôles s'exécutent
     depuis un conteneur attaché au même réseau, comme le prévoit la SPEC.
     """
+    dispo = _memoire_disponible_go()
+    if dispo is not None and dispo < MEMOIRE_POUR_DEUX_PILES_GO:
+        pytest.skip(
+            f"NON EXÉCUTÉ : {dispo} Go disponibles, or ce contrôle monte un SECOND "
+            f"pod complet pendant que le premier tourne — il en faut "
+            f"{MEMOIRE_POUR_DEUX_PILES_GO}. Sur macOS : podman machine stop && "
+            f"podman machine set --memory 12288 && podman machine start."
+        )
+
     nom = f"{config.NOM_POD}-interne"
     rendu = config.RACINE / "lab" / "generated" / "pod-interne.yaml"
     image = _image_sonde(config)

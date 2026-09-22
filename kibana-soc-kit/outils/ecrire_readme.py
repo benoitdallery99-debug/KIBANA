@@ -97,9 +97,15 @@ l'archive est à retélécharger : ne poursuivez pas.
 |---|---|---|
 | podman | 4.4 | Le lab est lancé par `podman kube play` |
 | Mémoire libre | 6 Go | Heap Elasticsearch de 2 Go, plus Kibana |
-| Espace disque | 10 Go | Images, index et données |
-| `vm.max_map_count` | 262144 | Exigence d'Elasticsearch |
-| Python | 3.11 | Générateur, construction, vérifications |
+| Espace disque | 10 Go | Images, index et données — sous macOS et Windows, dans la VM podman ; l'hôte n'a besoin que de 3 Go |
+| `vm.max_map_count` | 262144 | Exigence d'Elasticsearch. Sous macOS et Windows, à régler DANS la VM |
+| Python | 3.11 | Générateur, construction, vérifications. `datetime.UTC` n'existe pas avant |
+
+**Faire tourner le lab demande 6 Go ; le VÉRIFIER en demande 12.** Un contrôle
+de `make verif` monte un second pod complet, sur un réseau isolé, pendant que
+le premier tourne : deux heaps de 2 Go et deux Kibana. Sous les 12 Go, ce
+contrôle s'annonce NON EXÉCUTÉ avec sa raison plutôt que de s'enliser — le
+reste de la suite s'exécute normalement.
 
 Le pré-vol contrôle tout cela et **dit quoi faire** en cas de manque :
 
@@ -189,8 +195,22 @@ done
 podman images --format '  {{{{.Repository}}}}:{{{{.Tag}}}}' | sort -u
 
 echo "== Environnement Python =="
+# « python3 » n'est pas le même interpréteur pour tout le monde : sur un poste
+# où conda est actif, c'est souvent un 3.9. L'environnement se créait alors
+# sans broncher, et l'échec tombait au chargement des données, sur « cannot
+# import name UTC from datetime ». On le dit ici, avec le remède.
 if [ ! -x .venv/bin/python ]; then
-  python3 -m venv .venv
+  if ! python3 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)'; then
+    echo "  ERREUR : $(python3 -V 2>&1) — le kit exige Python 3.11 ou plus récent." >&2
+    echo "  Le générateur emploie datetime.UTC, qui n'existe pas avant." >&2
+    echo "  Indiquez un interpréteur récent :  PYTHON=/chemin/vers/python3.12 ./installer.sh" >&2
+    exit 1
+  fi
+  "${{PYTHON:-python3}}" -m venv .venv
+fi
+if ! .venv/bin/python -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)'; then
+  echo "  ERREUR : .venv porte un Python trop ancien. Supprimez-le et relancez." >&2
+  exit 1
 fi
 if [ -d wheels ] && [ -n "$(ls -A wheels 2>/dev/null)" ]; then
   # --no-index : aucune connexion à PyPI, même si le réseau existe.

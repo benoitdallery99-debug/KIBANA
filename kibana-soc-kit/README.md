@@ -65,6 +65,12 @@ podman machine ssh 'sudo sysctl -w vm.max_map_count=262144'
 Le pré-vol lit la mémoire de cette VM, pas celle de l'hôte : un Mac de 16 Go
 avec une VM réglée à 2 Go ne fera pas tourner Elasticsearch.
 
+**Faire tourner le lab demande 6 Go ; le vérifier en demande 12.** Un contrôle
+de `make verif` monte un second pod complet sur un réseau isolé pendant que le
+premier tourne. Sous les 12 Go, il s'annonce NON EXÉCUTÉ avec sa raison, et le
+reste de la suite s'exécute. Pour l'exécuter vraiment :
+`podman machine set --memory 12288`.
+
 ## Vérifier
 
 ```bash
