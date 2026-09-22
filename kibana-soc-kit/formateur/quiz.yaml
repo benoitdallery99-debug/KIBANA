@@ -14,14 +14,14 @@
     Lequel prenez-vous, et pourquoi ?
   propositions:
     - >-
+      Ni l'un ni l'autre : il faut un champ text pour compter des valeurs.
+    - >-
       host.ip, parce qu'une adresse est unique sur le réseau.
     - >-
       host.name, parce qu'une machine peut changer d'adresse au cours de la semaine.
     - >-
       Les deux donnent le même résultat, le choix est indifférent.
-    - >-
-      Ni l'un ni l'autre : il faut un champ text pour compter des valeurs.
-  reponse: 1
+  reponse: 2
   explication: >-
     Une machine peut changer d'adresse — bail DHCP, second réseau — et serait
     comptée deux fois. host.name est un keyword : la valeur est conservée telle
@@ -35,14 +35,14 @@
     Dans quel ordre vérifiez-vous, avant de réveiller l'astreinte ?
   propositions:
     - >-
-      Les journaux du serveur, puis le réseau, puis Kibana.
-    - >-
       La data view active, puis la plage de temps, puis le langage de requête.
     - >-
       On redémarre Kibana, c'est le plus rapide.
     - >-
       On regarde d'abord si les autres utilisateurs voient la même chose.
-  reponse: 1
+    - >-
+      Les journaux du serveur, puis le réseau, puis Kibana.
+  reponse: 0
   explication: >-
     Un écran vide n'est pas une absence de données. Trois causes couvrent la
     quasi-totalité des cas, et se vérifient en quinze secondes : regarde-t-on la
@@ -56,14 +56,14 @@
     valeurs prend le champ event.outcome. Que faites-vous ?
   propositions:
     - >-
-      On écrit event.outcome : "echec" et on ajuste si ça ne renvoie rien.
-    - >-
-      On clique sur le champ dans la barre latérale pour lire ses valeurs principales.
-    - >-
       On ouvre la documentation ECS pour connaître les valeurs normalisées.
     - >-
       On demande à l'équipe qui a configuré la collecte.
-  reponse: 1
+    - >-
+      On écrit event.outcome : "echec" et on ajuste si ça ne renvoie rien.
+    - >-
+      On clique sur le champ dans la barre latérale pour lire ses valeurs principales.
+  reponse: 3
   explication: >-
     Ne jamais deviner une valeur. La barre latérale affiche les valeurs
     principales d'un champ en un clic : c'est plus rapide qu'une requête à
@@ -99,14 +99,14 @@
     un text. Laquelle de ces affirmations est exacte ?
   propositions:
     - >-
-      Les deux sont sensibles à la casse : Elasticsearch compare toujours à l'identique.
-    - >-
-      Aucune n'est sensible à la casse : Kibana normalise les requêtes.
-    - >-
       user.name est sensible à la casse, message ne l'est pas.
     - >-
       message est sensible à la casse, user.name ne l'est pas.
-  reponse: 2
+    - >-
+      Les deux sont sensibles à la casse : Elasticsearch compare toujours à l'identique.
+    - >-
+      Aucune n'est sensible à la casse : Kibana normalise les requêtes.
+  reponse: 0
   explication: >-
     Un keyword est stocké tel quel et comparé à l'identique : la casse compte.
     Un text est découpé en mots et mis en minuscules à l'indexation ; la requête
@@ -120,14 +120,14 @@
     en KQL. Que se passe-t-il ?
   propositions:
     - >-
+      Kibana bascule automatiquement en Lucene et interprète la requête.
+    - >-
       Kibana affiche un message d'erreur de syntaxe.
     - >-
       Kibana renvoie les documents où rule.name est renseigné.
     - >-
       Kibana renvoie zéro résultat, sans aucun message.
-    - >-
-      Kibana bascule automatiquement en Lucene et interprète la requête.
-  reponse: 2
+  reponse: 3
   explication: >-
     C'est le piège le plus coûteux du parcours, parce qu'il est MUET.
     « _exists_ » appartient à Lucene ; en KQL, l'existence s'écrit
@@ -144,14 +144,14 @@
     en premier ?
   propositions:
     - >-
-      Un tableau, en vérifiant le nombre de lignes affichées.
-    - >-
       Un graphique en secteurs, en vérifiant le nombre de parts.
     - >-
       Une ligne ou des barres sur un histogramme des dates, en vérifiant l'intervalle.
     - >-
       Un indicateur, en vérifiant son format d'affichage.
-  reponse: 2
+    - >-
+      Un tableau, en vérifiant le nombre de lignes affichées.
+  reponse: 1
   explication: >-
     Une question d'évolution appelle un axe du temps. L'intervalle mérite un
     regard : Kibana le choisit automatiquement selon la plage, si bien que deux
@@ -166,14 +166,14 @@
     Quelle précaution prenez-vous avant de le publier ?
   propositions:
     - >-
+      Augmenter le nombre de valeurs à cinquante pour être sûr.
+    - >-
       Aucune : un classement est toujours exact.
     - >-
       Vérifier qu'il n'y a pas de catégorie « Autre » qui masquerait des valeurs, et se méfier de deux valeurs proches.
     - >-
       Trier par ordre alphabétique pour faciliter la lecture.
-    - >-
-      Augmenter le nombre de valeurs à cinquante pour être sûr.
-  reponse: 1
+  reponse: 2
   explication: >-
     Un classement par valeurs les plus élevées est calculé par fragment d'index
     puis agrégé : deux valeurs proches peuvent être interverties. La catégorie
@@ -188,14 +188,14 @@
     chiffre ?
   propositions:
     - >-
+      Il est exact si la plage de temps est inférieure à sept jours.
+    - >-
       Il est exact : Elasticsearch compte les valeurs une à une.
     - >-
       Il est approximatif, et Kibana affiche un avertissement pour le signaler.
     - >-
       Il est approximatif au-delà d'environ trois mille valeurs, et rien ne l'indique à l'écran.
-    - >-
-      Il est exact si la plage de temps est inférieure à sept jours.
-  reponse: 2
+  reponse: 3
   explication: >-
     Le décompte de valeurs distinctes repose sur une estimation
     (HyperLogLog++), exacte en deçà de son seuil de précision — trois mille par
@@ -211,14 +211,14 @@
     marquer visuellement un seuil d'alerte. Quels outils ?
   propositions:
     - >-
-      Deux panneaux séparés, il n'y a pas d'autre moyen.
-    - >-
       Une formule pour la part, et une ligne de référence pour le seuil.
     - >-
       Une coloration par valeur suffit à exprimer les deux.
     - >-
       Un graphique en secteurs avec une légende détaillée.
-  reponse: 1
+    - >-
+      Deux panneaux séparés, il n'y a pas d'autre moyen.
+  reponse: 0
   explication: >-
     Une formule permet de rapporter une mesure à un total, plutôt que d'afficher
     des volumes bruts qu'il faut comparer de tête. Une ligne de référence trace
@@ -254,14 +254,14 @@
     une source, sans écrire de requête. Que posez-vous, et de quel type ?
   propositions:
     - >-
+      Rien : il suffit de cliquer sur une barre du graphique.
+    - >-
       Une zone de texte expliquant comment écrire la requête.
     - >-
       Un contrôle de type liste d'options sur event.dataset, qui est un keyword.
     - >-
       Un contrôle de type curseur de plage sur event.dataset.
-    - >-
-      Rien : il suffit de cliquer sur une barre du graphique.
-  reponse: 1
+  reponse: 2
   explication: >-
     Le type du contrôle suit le type du champ : liste d'options pour un keyword,
     curseur de plage pour un champ numérique, curseur temporel pour le temps.
@@ -276,14 +276,14 @@
     Quelle affirmation est exacte ?
   propositions:
     - >-
-      Un export ndjson s'importe dans n'importe quelle version de Kibana.
-    - >-
-      Un export ndjson référence sa data view par identifiant : recréer sur la cible une data view de même identifiant permet à l'objet importé de se raccrocher.
-    - >-
       Un tableau de bord créé par l'API Dashboards référence lui aussi sa data view par identifiant.
     - >-
       Importer un identifiant déjà présent dans un autre Space écrase l'objet existant.
-  reponse: 1
+    - >-
+      Un export ndjson s'importe dans n'importe quelle version de Kibana.
+    - >-
+      Un export ndjson référence sa data view par identifiant : recréer sur la cible une data view de même identifiant permet à l'objet importé de se raccrocher.
+  reponse: 3
   explication: >-
     C'est tout l'intérêt de l'identifiant fixe. Attention aux trois autres :
     un export ne se réimporte que dans la même version, une mineure plus récente
@@ -300,14 +300,14 @@
     faut-il faire ?
   propositions:
     - >-
-      Il suffit, la source apparaîtra à zéro.
-    - >-
       Une source muette ne produit aucun groupe : elle disparaît du panneau. Il faut raisonner sur le dernier événement vu par source.
     - >-
       Il faut augmenter la plage de temps jusqu'à ce que la source réapparaisse.
     - >-
       Il faut poser une règle d'alerte sur un seuil « nombre inférieur à 1 » par source.
-  reponse: 1
+    - >-
+      Il suffit, la source apparaîtra à zéro.
+  reponse: 0
   explication: >-
     C'est la subtilité la plus utile de la journée. Une agrégation ne crée un
     groupe que s'il existe au moins un document : une source silencieuse ne
@@ -323,14 +323,14 @@
     « root », « test ». Que concluez-vous ?
   propositions:
     - >-
+      On attend la nuit suivante pour voir si cela se reproduit.
+    - >-
       Incident avéré : ce volume ne laisse aucun doute, on déclenche l'astreinte.
     - >-
       Rien tant qu'on n'a pas confronté cette adresse à la fiche de contexte de l'organisation.
     - >-
       Faux positif : des comptes par défaut signifient toujours un outil automatique.
-    - >-
-      On attend la nuit suivante pour voir si cela se reproduit.
-  reponse: 1
+  reponse: 2
   explication: >-
     Le volume ne dit rien du caractère malveillant. Ici, la fiche de contexte
     désigne cette adresse comme celle du scanner de vulnérabilités autorisé,
@@ -371,14 +371,14 @@
     Kibana. Rien ne ressort. Qu'en conclure ?
   propositions:
     - >-
-      Que la machine n'émet aucun journal sur la période.
-    - >-
-      Rien du tout : cette recherche-là ne regarde pas le contenu des journaux. Elle trouve des applications et des objets enregistrés. Pour chercher une valeur, c'est la barre de requête de Discover.
-    - >-
       Que la data view ne couvre pas l'index de cette machine.
     - >-
       Que le champ host.name n'est pas indexé.
-  reponse: 1
+    - >-
+      Que la machine n'émet aucun journal sur la période.
+    - >-
+      Rien du tout : cette recherche-là ne regarde pas le contenu des journaux. Elle trouve des applications et des objets enregistrés. Pour chercher une valeur, c'est la barre de requête de Discover.
+  reponse: 3
   explication: >-
     La recherche globale et la barre de requête se ressemblent et ne font pas du
     tout le même travail. La première est un navigateur : elle vous emmène vers

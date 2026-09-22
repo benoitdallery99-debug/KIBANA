@@ -8,6 +8,7 @@ chaque piège de SPEC §6.3 est provoqué par un exercice ; le guidage est dégr
 
 from __future__ import annotations
 
+import collections
 import json
 import re
 
@@ -20,6 +21,11 @@ from outils.libelles import normaliser as normaliser_libelle
 from verif.e2e import kibana as K
 
 pytestmark = pytest.mark.parcours
+
+# Part maximale des questions dont la bonne réponse partage le même rang.
+# Quatre propositions donnent 25 % au hasard pur ; au-delà d'un tiers, la
+# position devient une stratégie plus payante que la lecture de la question.
+PART_MAXIMALE_D_UN_RANG = 1 / 3
 
 GUIDAGES = ("demonstration", "guide", "semi-guide", "autonome")
 RANG = {g: i for i, g in enumerate(GUIDAGES)}
@@ -444,6 +450,58 @@ def test_le_corrige_du_formateur_couvre_toutes_les_questions(config):
     assert not faux, (
         f"le guide du formateur annonce {faux} question(s) alors que le quiz en "
         f"pose {len(posees)}"
+    )
+
+
+def test_les_bonnes_reponses_du_quiz_ne_sont_pas_toujours_au_meme_rang(config):
+    """Un quiz se triche au rang, pas au fond.
+
+    À la première rédaction, la bonne réponse occupait le rang 2 pour treize
+    questions sur dix-sept et le rang 3 pour les quatre autres : jamais la
+    première ni la dernière. Un stagiaire qui cochait systématiquement la
+    deuxième proposition obtenait 13/17, soit 76 %, sans avoir ouvert Kibana.
+    Rien ne mesurait le fond ; l'évaluation mesurait un réflexe.
+
+    Le contrôle exige donc que chaque rang soit correct au moins une fois, et
+    qu'aucun ne dépasse le tiers des questions. Quatre propositions donnent
+    25 % au hasard pur : tant que le meilleur rang reste sous le tiers, le
+    cocher systématiquement ne rapporte pas sensiblement plus que le hasard,
+    et ne remplace jamais la lecture de la question.
+    """
+    chemin = config.RACINE / "formateur" / "quiz.yaml"
+    if not chemin.exists():
+        pytest.skip("NON EXÉCUTÉ : formateur/quiz.yaml absent.")
+
+    quiz = yaml.safe_load(chemin.read_text(encoding="utf-8")) or []
+    assert quiz, "quiz.yaml ne contient aucune question"
+
+    nb_propositions = {len(q["propositions"]) for q in quiz}
+    assert nb_propositions == {4}, (
+        f"toutes les questions n'offrent pas quatre propositions : {sorted(nb_propositions)}"
+    )
+
+    rangs = [q["reponse"] for q in quiz]
+    hors_bornes = [q["id"] for q in quiz if not 0 <= q["reponse"] < len(q["propositions"])]
+    assert not hors_bornes, f"« reponse » hors des propositions : {hors_bornes}"
+
+    compte = collections.Counter(rangs)
+    repartition = ", ".join(f"rang {r} : {compte.get(r, 0)}" for r in range(4))
+
+    vides = [r for r in range(4) if compte.get(r, 0) < 1]
+    assert not vides, (
+        f"rang(s) jamais correct(s) : {vides} — {repartition}. Un stagiaire qui "
+        "repère un rang délaissé élimine gratuitement une proposition sur "
+        "chaque question."
+    )
+
+    # Cocher toujours le même rang doit rester loin du hasard utile : au plus
+    # le tiers des points, alors que quatre propositions en donnent un quart
+    # au hasard pur. Au-delà, le rang devient une stratégie payante.
+    meilleur = max(compte.values())
+    assert meilleur / len(quiz) <= PART_MAXIMALE_D_UN_RANG, (
+        f"cocher toujours le même rang rapporte {meilleur}/{len(quiz)} = "
+        f"{meilleur / len(quiz):.0%}, au-delà des "
+        f"{PART_MAXIMALE_D_UN_RANG:.0%} tolérés — {repartition}"
     )
 
 
