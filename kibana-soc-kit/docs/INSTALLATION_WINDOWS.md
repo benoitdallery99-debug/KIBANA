@@ -57,6 +57,19 @@ comportement **[lu]**.
 
 ## 2. Ce qu'il faut faire autoriser AVANT de préparer quoi que ce soit
 
+**Commencez par le diagnostic.** `outils/diagnostic-windows.ps1` relève en
+une minute tout ce que ce paragraphe énumère — build de Windows, architecture,
+RAM, disque, virtualisation, WSL, stratégies de groupe, ports, antivirus,
+accès réseau — sans rien modifier ni exiger de droits d'administration :
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\diagnostic-windows.ps1
+```
+
+Il écrit `diagnostic-kit-kibana.txt` sur le Bureau. Statut honnête : sa
+syntaxe est vérifiée par l'analyseur de PowerShell 7 ; il n'a **pas** encore
+été exécuté sur un Windows **[lu]**.
+
 Quatre verrous. Si l'un ne cède pas, le kit ne tournera pas sur ce poste,
 quels que soient les fichiers emportés. Faites-les instruire en **une seule
 demande**, formulée en fonctionnalités Windows nommées.
