@@ -275,13 +275,20 @@ if [ ! -x .venv/bin/python ]; then
     echo "  Indiquez un interpréteur récent :  PYTHON=/chemin/vers/python3.12 ./installer.sh" >&2
     exit 1
   fi
-  if ! "${{PYTHON:-python3}}" -m venv .venv 2>/tmp/kit-venv.err; then
+  # Fichier d'erreur UNIQUE : un nom fixe dans /tmp, créé par un premier
+  # passage en root, n'était plus inscriptible pour un utilisateur ordinaire —
+  # la redirection échouait et l'installateur accusait à tort l'absence de
+  # venv. Mesuré sur un vrai PC Windows, le 23/09.
+  erreurs_venv="$(mktemp)"
+  if ! "${{PYTHON:-python3}}" -m venv .venv 2>"$erreurs_venv"; then
     echo "  ERREUR : « python3 -m venv » a échoué." >&2
-    sed 's/^/    /' /tmp/kit-venv.err >&2
+    sed 's/^/    /' "$erreurs_venv" >&2
     echo "  Sur Debian et Ubuntu, le module venv est dans un paquet séparé :" >&2
     echo "    sudo apt install python3-venv        # ou python3.12-venv" >&2
+    rm -f "$erreurs_venv"
     exit 1
   fi
+  rm -f "$erreurs_venv"
 fi
 if ! .venv/bin/python -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)'; then
   echo "  ERREUR : .venv porte un Python trop ancien. Supprimez-le et relancez." >&2
