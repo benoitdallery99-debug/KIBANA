@@ -68,7 +68,7 @@ def es_stagiaire():
     cloisonnement mené avec le compte « elastic » ne prouverait rien.
     """
     s = requests.Session()
-    s.auth = ("stagiaire", conf.secrets()["STAGIAIRE_PASSWORD"])
+    s.auth = (conf.identifiant("stagiaire"), conf.secrets()["STAGIAIRE_PASSWORD"])
     s.base = conf.url_es()
     return s
 
@@ -77,7 +77,7 @@ def es_stagiaire():
 def kbn_stagiaire():
     """Session HTTP vers Kibana avec le compte du stagiaire."""
     s = requests.Session()
-    s.auth = ("stagiaire", conf.secrets()["STAGIAIRE_PASSWORD"])
+    s.auth = (conf.identifiant("stagiaire"), conf.secrets()["STAGIAIRE_PASSWORD"])
     s.headers.update({"kbn-xsrf": "true", "Content-Type": "application/json"})
     s.base = conf.url_kibana()
     return s

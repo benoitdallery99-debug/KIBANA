@@ -110,4 +110,5 @@ done
 
 "$PY" lab/init/init.py
 
-printf '\n\033[32mLab prêt.\033[0m  Kibana : %s   (compte formateur : « formateur », mot de passe dans .env)\n\n' "$URL_KIBANA"
+COMPTES="$("$PY" -c 'from outils import conf; print("« " + conf.identifiant("stagiaire") + " » (stagiaire) et « " + conf.identifiant("formateur") + " » (formateur)")')"
+printf '\n\033[32mLab prêt.\033[0m  Kibana : %s\n  Comptes : %s — mots de passe dans .env, modifiables par « make mots-de-passe ».\n\n' "$URL_KIBANA" "$COMPTES"

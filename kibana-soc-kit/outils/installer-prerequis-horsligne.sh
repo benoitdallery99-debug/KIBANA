@@ -45,5 +45,33 @@ make --version | head -1
 python3 --version
 python3 -m venv --help >/dev/null && echo "venv disponible"
 [ "$non_configures" = 0 ] || { echo "ÉCHEC : des paquets ne sont pas configurés." >&2; exit 1; }
+
+# Le lab tourne sous un utilisateur ORDINAIRE, jamais en root. MESURÉ le 23/09
+# sur un vrai PC Windows hors ligne : en root, podman publie les ports par
+# iptables, et sous WSL en réseau « mirrored » localhost:9200 ne répondait
+# jamais — Elasticsearch tournait (HTTP 401 depuis le pod), le lab attendait en
+# vain. Sans root, podman relaie les ports lui-même : tout a fonctionné, recette
+# comprise. L'utilisateur devient aussi celui de la distribution par défaut.
+UTILISATEUR="${KIT_UTILISATEUR:-formation}"
+echo "== Utilisateur « $UTILISATEUR » =="
+if id "$UTILISATEUR" >/dev/null 2>&1; then
+  echo "  existe déjà"
+elif [ -n "${KIT_MDP_UBUNTU:-}" ]; then
+  adduser --disabled-password --gecos "" "$UTILISATEUR" >/dev/null
+  echo "$UTILISATEUR:$KIT_MDP_UBUNTU" | chpasswd
+  echo "  créé"
+else
+  echo "  Choisissez son mot de passe Linux (il ne sert qu'à « sudo »), deux fois :"
+  adduser --gecos "" "$UTILISATEUR"
+fi
+usermod -aG sudo "$UTILISATEUR"
+if ! grep -q '^\[user\]' /etc/wsl.conf 2>/dev/null; then
+  printf '\n[user]\ndefault=%s\n' "$UTILISATEUR" >> /etc/wsl.conf
+fi
+echo "  utilisateur par défaut de la distribution : $UTILISATEUR"
+
 echo
-echo "Prérequis installés. Suite : extraire l'archive du kit et lancer ./installer.sh"
+echo "Prérequis installés. Suite, depuis l'invite de commandes WINDOWS :"
+echo "    wsl --terminate ${WSL_DISTRO_NAME:-<nom de la distribution>}"
+echo "    wsl -d ${WSL_DISTRO_NAME:-<nom de la distribution>}"
+echo "Vous entrerez alors en « $UTILISATEUR » : invite en « \$ » et non plus en « # »."

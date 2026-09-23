@@ -196,19 +196,36 @@ def roles() -> None:
 
 
 def comptes() -> None:
+    """Les deux comptes de connexion, identifiants lus dans kit.config.yaml.
+
+    Le compte du formateur s'appelait « formateur » jusqu'au 23/09 ; il se nomme
+    désormais comme le dit la configuration (« admin » par défaut). Sur un lab
+    installé avant ce changement, l'ancien compte subsisterait, avec le rôle du
+    formateur — corrigés compris — et un mot de passe que plus personne ne
+    connaît. Il est donc retiré, en le disant.
+    """
     s = conf.secrets()
+    login_formateur = conf.identifiant("formateur")
     for nom, mdp, role in (
-        ("formateur", s["FORMATEUR_PASSWORD"], "formateur"),
-        ("stagiaire", s["STAGIAIRE_PASSWORD"], "stagiaire"),
+        (login_formateur, s["FORMATEUR_PASSWORD"], "formateur"),
+        (conf.identifiant("stagiaire"), s["STAGIAIRE_PASSWORD"], "stagiaire"),
     ):
         etape(
-            f"Compte « {nom} »",
+            f"Compte « {nom} » (rôle « {role} »)",
             es("PUT", f"/_security/user/{nom}", json={
                 "password": mdp,
                 "roles": [role],
                 "full_name": nom.capitalize(),
             }),
         )
+    if login_formateur != "formateur":
+        ancien = es("GET", "/_security/user/formateur")
+        if ancien.status_code == 200:
+            etape(
+                "Ancien compte « formateur » retiré (remplacé par "
+                f"« {login_formateur} »)",
+                es("DELETE", "/_security/user/formateur"),
+            )
 
 
 def data_views() -> None:

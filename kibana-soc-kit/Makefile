@@ -13,7 +13,7 @@ RUFF    := .venv/bin/ruff
 VERSION := $(shell sed -n 's/^  version:[[:space:]]*"\{0,1\}\([0-9.]*\)"\{0,1\}.*/\1/p' kit.config.yaml | head -1)
 DEPOT   ?= mirror.gcr.io/library
 
-.PHONY: aide lab-images lab-up lab-down lab-reset epreuve-ouvrir epreuve-fermer \
+.PHONY: aide lab-images lab-up lab-down lab-reset epreuve-ouvrir epreuve-fermer mots-de-passe \
         data data-epreuve captures corriges guide package \
         verif verif-lab verif-donnees verif-parcours verif-corriges verif-guide verif-pdf \
         verif-package lint venv
@@ -111,6 +111,12 @@ lab-up:
 
 lab-down:
 	@bash lab/lab-down.sh
+
+# Fixe les mots de passe des comptes stagiaire et formateur (identifiants dans
+# kit.config.yaml). Sans argument, les demande ; avec DEPUIS=<fichier>, les lit
+# dans un comptes.env — celui du support d'installation, jamais le dépôt.
+mots-de-passe:
+	@$(PY) lab/mots_de_passe.py $(if $(DEPUIS),--depuis "$(DEPUIS)")
 
 lab-reset:
 	@bash lab/reset.sh

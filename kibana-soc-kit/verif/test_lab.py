@@ -18,6 +18,11 @@ import yaml
 pytestmark = pytest.mark.lab
 
 
+def config_identifiant(role: str) -> str:
+    from outils import conf
+    return conf.identifiant(role)
+
+
 # --------------------------------------------------------------------------
 # Elasticsearch
 # --------------------------------------------------------------------------
@@ -164,12 +169,44 @@ def test_le_fuseau_d_affichage_est_celui_du_metier(kbn, config, lab_demarre):
 
 
 def test_roles_et_comptes(kbn, es, lab_demarre):
+    """Deux rôles, et deux comptes dont les IDENTIFIANTS viennent de
+    kit.config.yaml (« comptes: ») — « admin » pour le formateur depuis le 23/09,
+    à la demande de l'utilisateur. Chaque compte porte bien le rôle attendu."""
     for role in ("formateur", "stagiaire"):
         r = kbn.get(f"{kbn.base}/api/security/role/{role}", timeout=30)
         assert r.status_code == 200, f"rôle « {role} » absent (HTTP {r.status_code})"
-    for compte in ("formateur", "stagiaire"):
+    for role in ("formateur", "stagiaire"):
+        compte = config_identifiant(role)
         r = es.get(f"{es.base}/_security/user/{compte}", timeout=15)
         assert r.status_code == 200, f"compte « {compte} » absent (HTTP {r.status_code})"
+        roles = r.json()[compte]["roles"]
+        assert role in roles, f"« {compte} » porte {roles}, pas le rôle « {role} »"
+    # L'ancien compte du formateur ne doit pas survivre au changement de nom : il
+    # garderait l'accès aux corrigés, avec un mot de passe que personne ne connaît.
+    if config_identifiant("formateur") != "formateur":
+        r = es.get(f"{es.base}/_security/user/formateur", timeout=15)
+        assert r.status_code == 404, "l'ancien compte « formateur » existe encore"
+
+
+def test_chaque_compte_se_connecte_avec_le_mot_de_passe_de_env(config, lab_demarre):
+    """Les mots de passe de .env sont ceux que les comptes acceptent réellement.
+
+    Ils peuvent désormais être fixés à la main (« make mots-de-passe »), et non
+    plus seulement engendrés : il faut donc prouver que .env et Elasticsearch
+    disent la même chose — sinon le guide annonce un mot de passe que la page de
+    connexion refuse.
+    """
+    import requests
+
+    secrets = config.secrets()
+    for role, cle in (("stagiaire", "STAGIAIRE_PASSWORD"), ("formateur", "FORMATEUR_PASSWORD")):
+        login = config_identifiant(role)
+        r = requests.get(f"{config.url_es()}/_security/_authenticate",
+                         auth=(login, secrets[cle]), timeout=15)
+        assert r.status_code == 200, (
+            f"« {login} » refuse le mot de passe de .env ({cle}) : HTTP {r.status_code}"
+        )
+        assert r.json().get("username") == login
 
 
 def test_kibana_se_connecte_avec_kibana_system(config, lab_demarre):

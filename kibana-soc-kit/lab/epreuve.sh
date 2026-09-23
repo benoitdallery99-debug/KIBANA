@@ -17,7 +17,9 @@ RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$RACINE"
 
 URL_ES="${KIT_URL_ES:-http://localhost:${KIT_PORT_ES:-9200}}"
-COMPTE="stagiaire"
+PY="${KIT_PYTHON:-$RACINE/.venv/bin/python}"
+# Identifiant lu dans kit.config.yaml, comme partout ailleurs.
+COMPTE="$("$PY" -c 'from outils import conf; print(conf.identifiant("stagiaire"))')"
 ROLE_EPREUVE="stagiaire-epreuve"
 
 action="${1:-}"

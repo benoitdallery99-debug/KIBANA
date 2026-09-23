@@ -862,6 +862,32 @@ Ce qui n'est **pas** couvert par la répétition : l'installation de WSL lui-mê
 
 ---
 
+### Comptes « stagiaire » et « admin », clé USB complète
+
+À la demande de l'utilisateur : comptes `stagiaire` et `admin` (rôle
+formateur ; l'ancien compte `formateur` est retiré automatiquement). Mot de
+passe demandé pour `admin` : `cdri` — **refusé par Elasticsearch, mesuré** :
+6 caractères au moins ; l'utilisateur a choisi un mot de passe plus long.
+Les identifiants vont dans `kit.config.yaml` ; les mots de passe **jamais dans
+le dépôt**, qui est public : `make mots-de-passe` les demande ou les lit dans
+un `comptes.env` posé sur la clé. Vérifié : connexion Elasticsearch et écran
+de connexion Kibana acceptés pour les deux comptes, refusés pour un mauvais
+mot de passe ; nouveau contrôle `test_chaque_compte_se_connecte_avec_le_mot_de_passe_de_env`.
+
+La clé embarque désormais l'installateur de WSL 2.6.1 (non éprouvé sur un PC
+sans WSL), `comptes.env`, `VERSION.txt` et le guide en HTML. Le lab tourne
+sous un utilisateur ordinaire `formation`, créé par
+`installer-prerequis-horsligne.sh` — correction du défaut mesuré sur le PC
+réel (en root, localhost injoignable sous WSL « mirrored »).
+
+Recette : machine de fabrication, lab 20 (+1 non exécuté, mémoire), données
+14, parcours 33, corrigés 9, guide 25 ; simulation hors ligne du guide
+définitif, lab 19 (+2 non exécutés, réseau et mémoire), données 14, 0 échec.
+**Écart ouvert** : le tableau de `RAPPORT_RECETTE.md` annonce encore 20
+contrôles de lab pour 21 écrits ; `verif-package` le signale. Il sera mis à
+jour avec une exécution où les 21 passent — ce qui demande 12 Go de mémoire
+disponible, que la machine de fabrication n'a pas.
+
 ---
 
 ## P3 — Parcours — ARCHIVE DE L'ENTRÉE PRÉCÉDENTE

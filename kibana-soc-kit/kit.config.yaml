@@ -9,6 +9,14 @@ kibana:
   locale: fr-FR          # langue de la cible : les libellés cités dans le guide en dépendent
   vue_solution: classic       # vue de solution du Space (8.16+) : identique à la cible
 
+# Identifiants de connexion à Kibana. Les MOTS DE PASSE ne sont PAS ici : ce
+# dépôt est public. Ils vivent dans .env — engendrés au hasard à l'installation,
+# ou fixés par « make mots-de-passe » (qui peut les lire dans un comptes.env posé
+# sur le support d'installation, jamais dans le dépôt).
+comptes:
+  stagiaire: stagiaire        # compte du stagiaire : Spaces formation et reseau
+  formateur: admin            # compte du formateur : les quatre Spaces, corrigés compris
+
 formation:
   space_id: formation
   # Durée du parcours, en heures, et dérive admise. SPEC §1 annonçait 6 h ;

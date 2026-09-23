@@ -177,6 +177,15 @@ make corriges
 
 Attendu : `[OK] Santé de la collecte`, `[OK] Vue IDS`, `[OK] export ndjson`.
 
+Fixez enfin les mots de passe des deux comptes — `stagiaire` et `admin`,
+identifiants définis dans `kit.config.yaml`. La commande les demande, deux
+fois chacun, sans les afficher ; 6 caractères au moins, Elasticsearch refuse
+en dessous (mesuré) :
+
+```
+make mots-de-passe
+```
+
 ---
 
 ## 5. Ouvrir — côté Windows
@@ -184,10 +193,11 @@ Attendu : `[OK] Santé de la collecte`, `[OK] Vue IDS`, `[OK] export ndjson`.
 Dans Edge ou Chrome : **http://localhost:5601**
 
 - identifiant : `stagiaire`
-- mot de passe, à lire dans Ubuntu : `grep STAGIAIRE_PASSWORD .env`
+- mot de passe : celui fixé par `make mots-de-passe` ; sinon, engendré au
+  hasard et lisible dans Ubuntu par `grep STAGIAIRE_PASSWORD .env`
 - Space : **formation**
 
-N'utilisez pas le compte `formateur` pour suivre le parcours : il voit les
+N'utilisez pas le compte du formateur (`admin`) pour suivre le parcours : il voit les
 corrigés.
 
 Le guide se copie sur le Bureau Windows :

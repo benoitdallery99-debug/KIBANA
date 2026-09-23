@@ -39,6 +39,25 @@ def cle() -> str:
     return _secrets.token_hex(32)
 
 
+def mot_de_passe_fourni(variable: str) -> str | None:
+    """Mot de passe imposé à l'installation par une variable d'environnement.
+
+    Le dépôt est public : aucun mot de passe n'y est écrit. Pour qu'une salle
+    retrouve des identifiants connus d'avance, on les fournit au moment
+    d'engendrer .env (KIT_MDP_STAGIAIRE, KIT_MDP_FORMATEUR), ou ensuite par
+    « make mots-de-passe ».
+    """
+    v = os.environ.get(variable, "")
+    if not v:
+        return None
+    if len(v) < conf.MDP_LONGUEUR_MIN:
+        raise SystemExit(
+            f"{variable} : {len(v)} caractères, or Elasticsearch en exige au moins "
+            f"{conf.MDP_LONGUEUR_MIN}."
+        )
+    return v
+
+
 def assurer_env() -> dict[str, str]:
     """Crée .env au premier appel, puis le relit. Idempotent : ne réécrit jamais."""
     if not ENV.exists():
@@ -48,8 +67,8 @@ def assurer_env() -> dict[str, str]:
             "# (le lab sera alors reconstruit de zéro).",
             f"ELASTIC_PASSWORD={mot_de_passe()}",
             f"KIBANA_SYSTEM_PASSWORD={mot_de_passe()}",
-            f"FORMATEUR_PASSWORD={mot_de_passe()}",
-            f"STAGIAIRE_PASSWORD={mot_de_passe()}",
+            f"FORMATEUR_PASSWORD={mot_de_passe_fourni('KIT_MDP_FORMATEUR') or mot_de_passe()}",
+            f"STAGIAIRE_PASSWORD={mot_de_passe_fourni('KIT_MDP_STAGIAIRE') or mot_de_passe()}",
             f"CLE_SAVED_OBJECTS={cle()}",
             f"CLE_REPORTING={cle()}",
             f"CLE_SECURITY={cle()}",

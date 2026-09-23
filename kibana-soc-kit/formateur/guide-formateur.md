@@ -41,8 +41,9 @@ journée.
 collecte » et « Vue IDS » — vivent dans un Space à part,
 **Corrigés (formateur)**, que le compte « stagiaire » ne voit pas : c'est ce
 cloisonnement qui empêche d'aller y chercher les réponses entre deux exercices,
-et `make verif-lab` le vérifie. Vous y accédez avec le compte formateur, par le
-sélecteur de Space du bandeau. `corriges.pdf`, à la racine de l'archive, ne
+et `make verif-lab` le vérifie. Vous y accédez avec le compte du formateur —
+« admin » par défaut, identifiant fixé dans `kit.config.yaml`, mot de passe
+fixé par `make mots-de-passe` —, par le sélecteur de Space du bandeau. `corriges.pdf`, à la racine de l'archive, ne
 reproduit pas ces écrans : il donne la DÉMARCHE et les requêtes de chaque
 exercice, M4-E1 et M4-E2 compris, et les captures du parcours. Les écrans
 eux-mêmes se projettent depuis le Space. Gardez ce document pour vous, ce n'est

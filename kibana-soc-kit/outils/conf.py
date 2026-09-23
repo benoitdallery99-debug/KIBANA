@@ -89,6 +89,19 @@ def version() -> str:
     return str(valeur("stack.version"))
 
 
+# Longueur minimale qu'Elasticsearch impose à un mot de passe du realm natif.
+# MESURÉ le 23/09 : « cdri » et « cdri2 » refusés (« passwords must be at least
+# [6] characters long »), « cdri26 » accepté. Vérifiée AVANT l'appel, pour que
+# le refus se dise en français et à l'endroit où l'on tape le mot de passe.
+MDP_LONGUEUR_MIN = 6
+
+
+def identifiant(role: str) -> str:
+    """Identifiant de connexion du compte qui porte ce rôle (« stagiaire » ou
+    « formateur »), lu dans kit.config.yaml — seule source de vérité."""
+    return str(valeur(f"comptes.{role}"))
+
+
 def majeure() -> int:
     return int(version().split(".")[0])
 
