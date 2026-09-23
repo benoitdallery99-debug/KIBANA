@@ -76,6 +76,17 @@ wsl --status
 
 ### B2. Importer l'Ubuntu du lab — invite de commandes Windows
 
+Ces deux commandes se tapent dans **Windows** (`C:\…>`), pas dans Ubuntu : dans
+Ubuntu, `wsl` n'existe pas.
+
+```
+mkdir C:\wsl\kibana-horsligne
+```
+
+**Mesuré le 23/09 sur un vrai PC** : sans ce dossier, `wsl --import` échoue
+sur `Wsl/ERROR_PATH_NOT_FOUND`, un message qui laisse croire que c'est
+l'image Ubuntu qui manque.
+
 ```
 wsl --import kibana-horsligne C:\wsl\kibana-horsligne C:\kit-media\ubuntu-noble-wsl-amd64-24.04lts.rootfs.tar.gz --version 2
 ```
@@ -217,6 +228,8 @@ C'est ainsi que cette procédure se teste avant de partir en salle blanche.
 |---|---|---|
 | `sha256sum` signale un fichier `FAILED` | support abîmé pendant le transfert | recopier le dossier depuis la source |
 | `wsl --import` : « WSL n'est pas installé » | WSL absent du PC | `INSTALLATION_WINDOWS.md` §4.2 |
+| `wsl --import` : `Wsl/ERROR_PATH_NOT_FOUND` | le dossier de destination n'existe pas | `mkdir C:\wsl\kibana-horsligne`, puis relancer |
+| `wsl` : « Command not found » | tapé dans Ubuntu | `exit`, puis la retaper dans l'invite de commandes Windows |
 | `installer-prerequis-horsligne.sh` : « À lancer en root » | vous n'êtes pas root | `sudo bash /mnt/c/kit-media/installer-prerequis-horsligne.sh` |
 | `make lab-up` : « iptables est introuvable » | prérequis incomplets | relancer B4 |
 | `make lab-up` : port 9200 ou 5601 occupé | un autre lab tourne dans une autre distribution | `make lab-down` dans celle-ci |

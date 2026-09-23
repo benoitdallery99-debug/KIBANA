@@ -249,6 +249,7 @@ Redémarrer. Puis installer le MSI WSL (double-clic), et importer la
 distribution **sans passer par le Microsoft Store**, qui n'est pas joignable :
 
 ```powershell
+mkdir C:\wsl\kibana-lab
 wsl --import kibana-lab C:\wsl\kibana-lab C:\media\ubuntu-24.04-rootfs.tar --version 2
 wsl -d kibana-lab
 ```
