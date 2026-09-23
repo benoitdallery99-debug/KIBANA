@@ -727,6 +727,48 @@ que fait un installateur.
 
 ---
 
+### Première installation sur un vrai Windows — l'étiquette avait bougé
+
+Poste de l'utilisateur, 23/09 : Windows 11 Pro 24H2 (build 26100), x86_64,
+63,7 Go de RAM, WSL 2.6.1 déjà en place, Docker Desktop installé (arrêté),
+`.wslconfig` en `networkingMode=mirrored`. `outils/diagnostic-windows.ps1` y a
+tourné sans erreur, en session non administrateur — sa première exécution
+réelle. Distribution dédiée `Ubuntu-24.04` créée à côté de l'`Ubuntu`
+existante, qu'on n'a pas touchée : podman 4.9.3, Python 3.12.3.
+
+Deux faits mesurés, et tous deux contredisent ce qui était écrit :
+
+- **`vm.max_map_count` valait déjà 1048576.** Ubuntu 24.04 relève lui-même ce
+  paramètre au démarrage. `docs/INSTALLATION_WINDOWS.md` affirmait, marqué
+  [connu], que WSL2 démarrait à 65530 et qu'il fallait deux fichiers de
+  configuration : faux pour la distribution même qu'il recommande. Corrigé :
+  on mesure d'abord, on ne règle que si la valeur est insuffisante.
+- **L'étiquette `9.5.3` a été reconstruite en amont entre le 22 et le 23/09.**
+  `make lab-images` sur WSL2 a tiré des images d'ID `4e43ad1a87`
+  (Elasticsearch) et `bc4df8c9c6` (Kibana), quand la fabrication avait
+  `d43d5775b18d` et `9a7aeccade0a`. Vérifié sur le miroir : l'index de
+  `elasticsearch:9.5.3` pointe désormais sur le manifeste amd64 `0b989b4d…`,
+  l'index épinglé `9020a0ab…` sur `935cc8d8…` — et ce dernier reste servi
+  (HTTP 200). Les images officielles sont recompilées sous la même étiquette
+  quand leur système de base reçoit un correctif.
+
+  Deux conséquences. Avec le code poussé la veille, `make lab-up` aurait
+  échoué sur `image not known` : le défaut des digests corrigé pour le cas
+  HORS LIGNE frappait aussi le cas EN LIGNE. Et même réancré, le lab aurait
+  tourné sur une image que les 122 contrôles n'avaient jamais vue.
+  `make lab-images` tire donc désormais **par digest** depuis
+  `lab/images.yaml`, puis rend l'étiquette à l'image, et ne se replie sur
+  l'étiquette qu'en l'absence d'épinglage pour la version. Testé en
+  reproduisant sur la machine de fabrication l'état exact du magasin de
+  l'utilisateur — étiquette sur `bc4df8c9c6`, digest épinglé absent : après
+  correction, l'étiquette revient sur `9a7aeccade0a` et le digest épinglé
+  résout.
+
+« Reproductible à l'octet près » était une promesse du kit. Elle tenait
+vingt-quatre heures.
+
+---
+
 ---
 
 ## P3 — Parcours — ARCHIVE DE L'ENTRÉE PRÉCÉDENTE

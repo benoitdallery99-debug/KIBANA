@@ -77,10 +77,33 @@ venv:
 	@$(PY) -m pip install -q -r exigences.txt
 
 # Chaîne de fabrication uniquement : le lab, lui, ne télécharge jamais rien.
+# Tirage PAR DIGEST, pas par étiquette. MESURÉ le 23/09 : l'image officielle
+# elasticsearch:9.5.3 a été reconstruite en amont SOUS LA MÊME ÉTIQUETTE entre
+# la fabrication (22/09) et une installation sur WSL2 le lendemain — autre
+# manifeste amd64 (0b989b4d… au lieu de 935cc8d8…), autre ID d'image, et de
+# même pour Kibana. Tirer l'étiquette, c'était installer une image que la
+# recette n'avait jamais vue, et un pod qui la cherchait sous son ancien digest
+# ne démarrait plus. Le digest épinglé dans lab/images.yaml reste servi par le
+# miroir : on tire celui-là, puis on lui rend son étiquette, que le pré-vol et
+# « podman save » cherchent. Sans épinglage pour cette version (première
+# fabrication, ou montée de version), on tire l'étiquette, et rendre_pod.py
+# épingle ce qu'il trouve.
 lab-images:
 	@echo "Tirage des images officielles Elastic $(VERSION) depuis $(DEPOT)"
-	podman pull $(DEPOT)/elasticsearch:$(VERSION)
-	podman pull $(DEPOT)/kibana:$(VERSION)
+	@epingle="$$(sed -n 's/^version:[[:space:]]*//p' lab/images.yaml 2>/dev/null)"; \
+	for image in elasticsearch kibana; do \
+	  ref=""; \
+	  if [ "$$epingle" = "$(VERSION)" ]; then \
+	    ref="$$(sed -n "s/^$$image:[[:space:]]*//p" lab/images.yaml)"; \
+	  fi; \
+	  if [ -n "$$ref" ] && podman pull "$$ref"; then \
+	    podman tag "$$ref" "$(DEPOT)/$$image:$(VERSION)"; \
+	    echo "  $$image : digest épinglé tiré et étiqueté $(VERSION)"; \
+	  else \
+	    [ -n "$$ref" ] && echo "  $$image : digest épinglé introuvable, repli sur l'étiquette" >&2; \
+	    podman pull "$(DEPOT)/$$image:$(VERSION)"; \
+	  fi; \
+	done
 	@$(PY) lab/rendre_pod.py
 
 lab-up:

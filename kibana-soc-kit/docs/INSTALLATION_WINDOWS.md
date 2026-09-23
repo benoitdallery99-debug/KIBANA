@@ -67,8 +67,9 @@ powershell -ExecutionPolicy Bypass -File .\diagnostic-windows.ps1
 ```
 
 Il écrit `diagnostic-kit-kibana.txt` sur le Bureau. Statut honnête : sa
-syntaxe est vérifiée par l'analyseur de PowerShell 7 ; il n'a **pas** encore
-été exécuté sur un Windows **[lu]**.
+syntaxe est vérifiée par l'analyseur de PowerShell 7, et il a tourné sans
+erreur sur Windows 11 Pro 24H2, build 26100, depuis une session **non**
+administrateur **[mesuré]**.
 
 Quatre verrous. Si l'un ne cède pas, le kit ne tournera pas sur ce poste,
 quels que soient les fichiers emportés. Faites-les instruire en **une seule
@@ -247,7 +248,26 @@ wsl --import kibana-lab C:\wsl\kibana-lab C:\media\ubuntu-24.04-rootfs.tar --ver
 wsl -d kibana-lab
 ```
 
-### 4.3 Régler la VM WSL2 — les deux fichiers qui décident du succès
+### 4.3 Régler la VM WSL2 — d'abord mesurer, souvent rien à faire
+
+**Commencez par lire la valeur**, dans la distribution :
+
+```bash
+cat /proc/sys/vm/max_map_count
+```
+
+**Mesuré le 23/09 sur un poste réel** — Windows 11 Pro 24H2 (build 26100),
+WSL 2.6.1, Ubuntu 24.04 fraîchement installée par `wsl --install -d
+Ubuntu-24.04` : **1048576**. Ubuntu 24.04 relève lui-même ce paramètre au
+démarrage, bien au-dessus des 262144 qu'exige Elasticsearch. Sur cette
+distribution, **il n'y a rien à régler.** La première rédaction de ce
+paragraphe affirmait, marqué [connu], que WSL2 démarrait à 65530 et qu'il
+fallait deux fichiers de configuration : c'était faux pour la distribution
+même que ce document recommande, et c'est la première mesure sur un vrai
+Windows qui l'a montré.
+
+Si la valeur lue est **inférieure à 262144** — autre distribution, systemd
+désactivé — alors, et alors seulement, les deux fichiers suivants.
 
 **`%UserProfile%\.wslconfig`**, côté Windows :
 
@@ -269,13 +289,20 @@ command = sysctl -w vm.max_map_count=262144
 
 Puis, depuis Windows : `wsl --shutdown`, et relancer la distribution.
 
-> **Pourquoi deux fichiers.** Elasticsearch exige `vm.max_map_count ≥ 262144`
-> **[lu]**, et WSL2 démarre à 65530 **[connu]**. Le remède qu'affiche le
+> **Pourquoi deux fichiers, quand il en faut.** Elasticsearch exige
+> `vm.max_map_count ≥ 262144` **[lu]** ; le noyau Linux part de 65530 quand
+> la distribution ne le relève pas **[connu]**. Le remède qu'affiche le
 > pré-vol — `sudo sysctl -w`, puis `/etc/sysctl.d/99-elasticsearch.conf` — est
 > exact mais **ne survit pas à un `wsl --shutdown`** sans `systemd=true`. Les
 > deux lignes ci-dessus le rendent permanent par deux chemins indépendants :
 > si l'un ne prend pas, l'autre tient. C'est le piège le plus coûteux de cette
 > installation, parce qu'il se manifeste le deuxième jour, pas le premier.
+>
+> Attention aussi à `.wslconfig` s'il existe déjà : le poste mesuré en avait
+> un, réglé en `networkingMode=mirrored`. Ajoutez vos lignes à la section
+> `[wsl2]` existante, n'écrasez pas le fichier. Le mode `mirrored` est
+> d'ailleurs favorable : les ports du lab apparaissent directement sur le
+> `localhost` de Windows.
 
 ### 4.4 Installer les prérequis dans la distribution
 
@@ -412,7 +439,9 @@ une date.
 | `bad interpreter: /usr/bin/env bash^M` | fins de ligne CRLF | `sed -i 's/\r$//' lab/*.sh installer.sh` ; un `.gitattributes` protège désormais le dépôt |
 | `./installer.sh: Permission denied` | extraction 7-Zip sur NTFS | `chmod +x installer.sh lab/*.sh` |
 | `python3 -m venv` échoue | `python3-venv` absent | `sudo dpkg -i debs/python3-venv*.deb` — l'installateur le dit maintenant **[mesuré]** |
-| Le pré-vol bloque sur `vm.max_map_count` | réglage non persistant | §4.3, les deux fichiers, puis `wsl --shutdown` |
+| Le pré-vol bloque sur `vm.max_map_count` | distribution qui ne relève pas la valeur (Ubuntu 24.04 le fait, mesuré) | §4.3, les deux fichiers, puis `wsl --shutdown` |
+| `make lab-up` : `image not known` sur un poste EN LIGNE | l'étiquette `9.5.3` a été reconstruite en amont, le digest épinglé n'est pas dans le magasin | `make lab-images` tire désormais par digest ; relancez-le **[mesuré]** |
+| `WARN "/" is not a shared mount` au tirage des images | podman sans root sous WSL2 | `make lab-images` aboutit malgré lui **[mesuré]** ; si un conteneur ne démarre pas : `sudo mount --make-rshared /` **[connu]** |
 | Cluster `red`, shards non alloués | disque plein | libérer de l'espace : Elasticsearch passe en lecture seule sous 5 % |
 | Kibana reste `unavailable` | Elasticsearch pas prêt | attendre ; ES prêt en 36 s, `lab-up` complet sous 2 min sur 4 cœurs **[mesuré]** |
 | Le guide refuse une bonne réponse | `make data` sans reconstruction du guide | `make guide-html` — ou plus rien, c'est automatique depuis |
