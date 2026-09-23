@@ -373,6 +373,23 @@ Ces deux-là suffisent à prouver que le lab est sain et que les données
 correspondent au guide. Les cinq autres suites demandent Playwright et
 WeasyPrint (§3.4).
 
+**Recette complète mesurée sur un poste réel**, le 23/09 — Windows 11 Pro 24H2,
+WSL 2.6.1, Ubuntu 24.04, podman 4.9.3 sans root, en ligne :
+
+```bash
+.venv/bin/python -m playwright install --with-deps chromium
+sudo apt install -y libharfbuzz-subset0 poppler-utils
+make guide
+sudo sysctl -w net.bridge.bridge-nf-call-iptables=0
+make -k verif
+```
+
+108 contrôles passés, 10 non exécutés pour des raisons écrites (pas d'archive
+sur ce poste pour `verif-package`, `pdffonts` absent faute de `poppler-utils`),
+et un échec — un vrai défaut de données, corrigé depuis, voir `docs/JOURNAL.md`
+**[mesuré]**. `bridge-nf-call-iptables` valait 1 sur ce poste : le contrôle du
+réseau isolé exige de le passer à 0, ce que le pré-vol signale.
+
 ### 4.8 Ouvrir
 
 Depuis le navigateur **Windows** : `http://localhost:5601`. WSL2 redirige le

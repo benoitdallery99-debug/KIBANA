@@ -769,6 +769,50 @@ vingt-quatre heures.
 
 ---
 
+### Première recette complète hors de la machine de fabrication
+
+Sur le PC Windows de l'utilisateur (WSL2, Ubuntu 24.04, podman sans root),
+`make -k verif` : **108 passés, 1 échec, 10 non exécutés.**
+
+Les non exécutés le sont pour des raisons écrites : neuf contrôles de
+`verif-package` faute d'archive sur ce poste, et `test_polices_embarquees`
+faute de `pdffonts` (paquet `poppler-utils`). Premières mondiales pour le kit :
+`test_lab_fonctionne_sur_reseau_interne` a tourné ailleurs que chez moi (le Mac
+l'avait sauté faute de mémoire), et les dix-neuf requêtes KQL du parcours ont
+été rejouées dans Discover depuis un Chromium sous WSL2.
+
+**L'échec est un vrai défaut de données, que deux machines avaient laissé
+passer par chance.** `test_determinisme_meme_graine_memes_reponses` : deux
+générations de même graine, lancées à quelques secondes d'intervalle, ont
+donné pour `R.signature_ids_la_plus_frequente` « ET WEB Tentative d'injection
+SQL » puis « ET POLICY Telechargement executable non signe ».
+
+Cause : `ids_alert` tirait les huit signatures uniformément, ~1 870 alertes
+chacune à quelques dizaines près. La tête se jouait à pile ou face et
+basculait avec l'ancre — l'analyse de la veille l'avait mesuré à 38,9 % des
+ancres, sans que personne en tire la conséquence. Pour le stagiaire, c'était
+pire qu'un test rouge : M2-E2 demande « la signature en tête » sur les sept
+derniers jours ; que sa fenêtre glisse de quelques heures après le chargement,
+et sa bonne réponse pouvait être refusée.
+
+Remède : une meneuse tirée par la graine, qui pèse double (~22 % des alertes
+contre ~11 %). Les sept autres restent au coude à coude — la leçon de M2 sur
+les classements serrés reste sous les yeux, juste en dessous de la tête.
+**Premier essai raté, et instructif** : tirée dans le flux du bruit, la
+meneuse dépendait du nombre de tirages déjà consommés, donc de l'ancre — trois
+générations, trois meneuses. Elle vient désormais d'un générateur dédié
+(`graine + 2`) qui ne sert qu'aux choix de structure. Mesuré sur **48 ancres**
+réparties sur deux jours : 48 fois la même tête, avance minimale de **1 613
+alertes**. Formation et épreuve gardent des meneuses différentes.
+
+Deux contournements propres à la machine de fabrication, rejoués sans surprise
+après le redémarrage de son conteneur : `vm.max_map_count` retombé à 65530
+(écart E3, rétabli sans `sudo`, la session étant root), et `podman kube play`
+figé (écart E12, conteneurs démarrés un à un). Le poste Windows n'a présenté
+ni l'un ni l'autre.
+
+---
+
 ---
 
 ## P3 — Parcours — ARCHIVE DE L'ENTRÉE PRÉCÉDENTE

@@ -1,5 +1,5 @@
 {
-  "engendre_le": "2026-09-22T16:04:50.000Z",
+  "engendre_le": "2026-09-23T11:07:57.000Z",
   "jeu": "epreuve",
   "graine": 7310,
   "namespace": "epreuve",
@@ -9,14 +9,14 @@
   "index_mode": "standard",
   "avertissement": "Données entièrement synthétiques. Adresses réservées à la documentation (RFC 5737, RFC 1918), domaines réservés (RFC 2606), personnes inventées. Aucune donnée réelle (SPEC §5.1, CLAUDE.md).",
   "volumes": {
-    "logs-windows.security-epreuve": 90044,
-    "logs-linux.auth-epreuve": 35533,
-    "logs-ids.alert-epreuve": 14354,
-    "logs-network.dns-epreuve": 99635,
-    "logs-proxy.web-epreuve": 72265,
-    "logs-firewall.traffic-epreuve": 70312
+    "logs-windows.security-epreuve": 89486,
+    "logs-linux.auth-epreuve": 35297,
+    "logs-ids.alert-epreuve": 14690,
+    "logs-network.dns-epreuve": 99002,
+    "logs-proxy.web-epreuve": 71715,
+    "logs-firewall.traffic-epreuve": 69865
   },
-  "total_documents": 382143,
+  "total_documents": 380055,
   "contexte": {
     "organisation": "Groupe Méridien",
     "domaine_ad": "MERIDIEN",
@@ -1102,8 +1102,8 @@
       "titre": "Trou de collecte de deux heures",
       "recit": "Une source n'a rien envoyé pendant deux heures, au milieu de la période.",
       "_fenetre": {
-        "debut": "2026-09-18T11:00:00.000Z",
-        "fin": "2026-09-18T13:00:00.000Z"
+        "debut": "2026-09-19T11:00:00.000Z",
+        "fin": "2026-09-19T13:00:00.000Z"
       },
       "reponses": [
         {
@@ -1120,8 +1120,8 @@
               "query": {
                 "range": {
                   "@timestamp": {
-                    "gte": "2026-09-18T11:00:00.000Z",
-                    "lt": "2026-09-18T13:00:00.000Z"
+                    "gte": "2026-09-19T11:00:00.000Z",
+                    "lt": "2026-09-19T13:00:00.000Z"
                   }
                 }
               }
@@ -1163,7 +1163,7 @@
               "query": {
                 "range": {
                   "@timestamp": {
-                    "gte": "2026-09-18T13:00:00.000Z"
+                    "gte": "2026-09-19T13:00:00.000Z"
                   }
                 }
               },

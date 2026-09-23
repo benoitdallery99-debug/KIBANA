@@ -471,12 +471,19 @@ def main() -> int:
     # l'autre. Les réponses ne dépendent ainsi pas du volume de bruit.
     rng_bruit = random.Random(graine)
     rng_scenarios = random.Random(graine + 1)
+    # Un troisième, pour les choix de STRUCTURE qu'une réponse lit : il ne sert
+    # qu'à eux, avant tout tirage de volume, donc ne dépend que de la graine.
+    rng_structure = random.Random(graine + 2)
+    meneuse_ids = rng_structure.randrange(len(E.SIGNATURES))
 
     print("Bruit de fond :")
     base: dict[str, list[dict]] = {}
     for dataset, combien in VOLUMES.items():
         instants = T.horodatages(rng_bruit, combien, t0, jours, fuseau)
-        base[dataset] = E.GENERATEURS[dataset](rng_bruit, instants)
+        if dataset == "ids.alert":
+            base[dataset] = E.ids_alert(rng_bruit, instants, meneuse=meneuse_ids)
+        else:
+            base[dataset] = E.GENERATEURS[dataset](rng_bruit, instants)
         print(f"  {dataset:20s} {len(base[dataset]):7d}")
 
     # Le jeu de l'épreuve doit différer de celui du parcours partout où le

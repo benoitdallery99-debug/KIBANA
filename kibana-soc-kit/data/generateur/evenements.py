@@ -146,10 +146,26 @@ SIGNATURES = [
 ]
 
 
-def ids_alert(rng: random.Random, instants: list[datetime]) -> list[dict]:
+def ids_alert(rng: random.Random, instants: list[datetime],
+              meneuse: int = 0) -> list[dict]:
+    # La signature en tête est une RÉPONSE du parcours (M1, M2-E2, M3). Tirées
+    # uniformément, les huit signatures se tenaient à quelques dizaines
+    # d'alertes près sur ~1 870 chacune : la tête se jouait à pile ou face, et
+    # basculait avec l'ancre temporelle dans 38,9 % des cas mesurés. Deux
+    # générations de même graine en désaccord l'ont montré sur un poste
+    # Windows, et un stagiaire dont la fenêtre « sept derniers jours » glisse
+    # de quelques heures après le chargement aurait vu sa bonne réponse
+    # refusée. La meneuse est donc tirée par la graine — elle diffère entre
+    # formation et épreuve — et pèse double : ~22 % des alertes contre ~11 %.
+    # Les sept autres restent au coude à coude, ce qui garde sous les yeux la
+    # leçon de M2 sur les classements serrés. Elle est tirée par l'APPELANT,
+    # sur un générateur qui ne dépend que de la graine : tirée ici, sur le
+    # flux du bruit, elle dépendait du nombre de tirages déjà consommés, donc
+    # de l'ancre — mesuré, trois générations successives, trois meneuses.
+    poids = [2.0 if i == meneuse else 1.0 for i in range(len(SIGNATURES))]
     evenements = []
     for instant in instants:
-        nom, identifiant, gravite, tactique = rng.choice(SIGNATURES)
+        nom, identifiant, gravite, tactique = rng.choices(SIGNATURES, weights=poids)[0]
         interne = rng.random() < 0.55
         src = rng.choice(ctx.POSTES)["ip"] if interne else f"192.0.2.{rng.randrange(1, 254)}"
         dst = rng.choice(ctx.HOTES)["ip"]
