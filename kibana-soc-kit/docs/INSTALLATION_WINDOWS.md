@@ -1,5 +1,10 @@
 # Installer le kit sur un poste Windows déconnecté du réseau
 
+> **Poste connecté à Internet ?** Suivez plutôt `INSTALLATION_WINDOWS_UBUNTU.md` :
+> c'est la procédure déroulée de bout en bout sur un vrai Windows, recette
+> complète à l'appui. Le présent document traite le cas **sans réseau**, dont
+> une partie seulement a été éprouvée.
+
 Ce document répond à une question posée telle quelle : « ça va être facile
 d'installer tout ça sur un poste déconnecté du réseau, sous Windows ? »
 
@@ -176,7 +181,7 @@ Windows vierge et hors réseau, rien ne l'est.
 | L'archive reconstruite `.tar.gz` + son `.sha256` | ~1,5 Go **[mesuré]** | obligatoire |
 | Paquet WSL au format MSI (`wsl.2.x.y.0.x64.msi`, releases GitHub `microsoft/WSL`) | ~100 Mo | **[connu]** |
 | Racine de distribution Ubuntu 24.04 en tarball, pour `wsl --import` | 300–700 Mo | **[connu]** |
-| Paquets `.deb` : `podman uidmap netavark aardvark-dns passt slirp4netns catatonit conmon fuse-overlayfs golang-github-containers-common make curl gawk iproute2 python3-venv` | ~300 Mo | **[connu]** |
+| Paquets `.deb` : `podman uidmap netavark aardvark-dns passt slirp4netns catatonit conmon fuse-overlayfs golang-github-containers-common make curl gawk iproute2 python3-venv` | 63 Mo, 118 paquets **[mesuré]** | voir l'avertissement du §4.4 |
 | Les deux fichiers de configuration écrits d'avance (§4.3) | 1 Ko | — |
 
 Les `.deb` se rapatrient depuis un Ubuntu 24.04 connecté :
@@ -309,12 +314,25 @@ Puis, depuis Windows : `wsl --shutdown`, et relancer la distribution.
 Dans `wsl -d kibana-lab` :
 
 ```bash
-sudo dpkg -i /mnt/c/media/debs/*.deb
-sudo apt-get install -f          # sans réseau, doit ne rien avoir à faire
+sudo dpkg -i /mnt/c/media/debs/*.deb   # NE FONCTIONNE PAS — voir ci-dessous
 podman --version                 # doit afficher 4.4 ou plus
 python3 --version                # doit correspondre à wheels/CIBLES.txt
 make --version
 ```
+
+> **Défaut mesuré le 23/09 dans cette procédure.** Les 118 paquets (63 Mo,
+> et non ~300) rapatriés par `apt-get install --download-only` dans un Ubuntu
+> 24.04 vierge ont été installés dans un Ubuntu 24.04 vierge **sans réseau** :
+> `dpkg -i debs/*.deb` échoue — dpkg traite les fichiers dans l'ordre
+> alphabétique et bute sur les pré-dépendances de `python3-minimal`, `gawk` et
+> `systemd-sysv` ; il ne reste ni `python3` ni `gawk`, et `python3-venv` n'est
+> pas configuré. `apt-get install ./debs/*.deb` échoue aussi, sur les noms de
+> fichiers portant une époque (`%3a`). La voie à éprouver est un dépôt local
+> indexé côté connecté (`apt-ftparchive packages . > Packages`), déclaré hors
+> ligne par `deb [trusted=yes] file:/chemin ./` : **non encore vérifiée**.
+> Rapatriez aussi les paquets depuis la racine de distribution que vous
+> importerez, et non depuis une autre image, pour ne jamais rétrograder un
+> paquet déjà présent.
 
 ### 4.5 Poser le kit — dans le système de fichiers Linux
 
