@@ -127,6 +127,22 @@ else
   echec "${dispo_go:-0} Go libres sur l'hôte, minimum ${besoin_hote_go} Go."
   faire "Libérez de l'espace, ou déplacez le kit sur un volume plus grand."
 fi
+# TROISIÈME PIÈGE, relevé à la première installation sur un vrai Windows : sous
+# WSL2, « df » mesure le disque VIRTUEL de la distribution, extensible jusqu'à
+# 1 To. Le pré-vol y annonçait « 946 Go libres » sur un poste dont le disque C:
+# en avait 57. La vraie limite est le disque Windows qui porte ce disque
+# virtuel — C: par défaut, où WSL range ses distributions. Plein, il fait
+# échouer Elasticsearch en pleine séance, quoi qu'ait dit la mesure précédente.
+if grep -qi microsoft /proc/version 2>/dev/null && [ -d /mnt/c ]; then
+  win_go="$(df -Pk /mnt/c 2>/dev/null | awk 'NR==2 {print int($4 / 1048576)}')"
+  if [ -n "$win_go" ] && [ "$win_go" -ge "$MIN_DISQUE_GO" ]; then
+    ok "${win_go} Go libres sur C: (sous WSL2, c'est lui qui borne le disque de la distribution)"
+  else
+    echec "${win_go:-0} Go libres sur C:, minimum ${MIN_DISQUE_GO} Go : sous WSL2, le disque de la distribution"
+    faire "grandit sur C:, et la mesure ci-dessus (son disque virtuel) ne le voit pas."
+    faire "Libérez de l'espace sur C:, ou déplacez la distribution : wsl --manage <distribution> --move <dossier>"
+  fi
+fi
 # Hors Linux, on contrôle EN PLUS le disque de la machine podman, qui est celui
 # où Elasticsearch écrira réellement.
 if [ ! -r /proc/meminfo ]; then
