@@ -33,7 +33,11 @@ mkdir -p "$MEDIA" "$TRAVAIL"
 
 titre "1/4 Ubuntu 24.04 pour WSL, image officielle"
 curl -fsSL "$UBUNTU_URL/SHA256SUMS" | grep " \*\{0,1\}$ROOTFS\$" > "$TRAVAIL/$ROOTFS.sha256"
-if ! (cd "$TRAVAIL" && sha256sum -c --quiet "$ROOTFS.sha256" 2>/dev/null); then
+# Vérifié seulement s'il est déjà là : sinon « sha256sum -c » affichait
+# « FAILED open or read » avant même le téléchargement — mesuré au premier
+# usage réel, et de quoi inquiéter pour rien.
+if [ ! -f "$TRAVAIL/$ROOTFS" ] \
+   || ! (cd "$TRAVAIL" && sha256sum -c --quiet "$ROOTFS.sha256" >/dev/null 2>&1); then
   echo "  téléchargement de $ROOTFS (~340 Mo)…"
   curl -fL --progress-bar -o "$TRAVAIL/$ROOTFS" "$UBUNTU_URL/$ROOTFS"
   (cd "$TRAVAIL" && sha256sum -c --quiet "$ROOTFS.sha256")
@@ -75,7 +79,10 @@ cp docs/INSTALLATION_WINDOWS_HORS_LIGNE.md "$MEDIA/LISEZMOI.md"
 EMPREINTES="$(mktemp)"
 (cd "$MEDIA" && find . -type f ! -name MEDIA.SHA256 -print0 | sort -z \
   | xargs -0 sha256sum) > "$EMPREINTES"
-mv "$EMPREINTES" "$MEDIA/MEDIA.SHA256"
+# « cat » et non « mv » : sur /mnt/c, mv ne peut pas recopier date et droits et
+# le signalait par deux « Operation not permitted », sans conséquence mais
+# alarmants — relevé au premier usage réel, sur un PC Windows.
+cat "$EMPREINTES" > "$MEDIA/MEDIA.SHA256" && rm -f "$EMPREINTES"
 echo "  $(wc -l < "$MEDIA/MEDIA.SHA256") fichiers empreintés dans MEDIA.SHA256"
 
 printf '\n\033[32mSupport prêt\033[0m : %s (%s)\n' "$MEDIA" "$(du -sh "$MEDIA" | cut -f1)"
