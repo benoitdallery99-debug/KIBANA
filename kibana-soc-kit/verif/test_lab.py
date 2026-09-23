@@ -430,6 +430,20 @@ def test_reseau_interne_interdit_toute_sortie(config, reseau_interne):
     assert "rc=0" not in interne.stdout, (
         f"le réseau « --internal » laisse sortir : {interne.stdout.strip()!r}"
     )
+    # Sans aucune route sortante sur le poste, le témoin échoue comme le réseau
+    # interne, et la comparaison ne prouve plus rien. MESURÉ le 23/09 en
+    # répétant l'installation hors ligne : c'est précisément la situation d'un
+    # poste déconnecté. Le contrôle s'y annonçait ÉCHOUÉ alors qu'il n'avait rien
+    # pu établir ; il s'annonce désormais NON EXÉCUTÉ, avec sa raison. Là où le
+    # témoin sort, le critère est inchangé ; et partout, une sortie réussie
+    # depuis le réseau interne reste un échec (assertion ci-dessus).
+    if "rc=7" in temoin.stdout:
+        pytest.skip(
+            "NON EXÉCUTÉ : le poste n'a aucune route sortante — le témoin sur le "
+            "réseau par défaut ne sort pas non plus, donc l'isolation du réseau "
+            "interne ne peut pas se démontrer ici. C'est la situation normale d'un "
+            f"poste hors ligne. Témoin : {temoin.stdout.strip()!r}"
+        )
     assert "rc=7" in interne.stdout, (
         "sur un réseau interne, la connexion doit échouer faute de route (rc=7) ; "
         f"obtenu : {interne.stdout.strip()!r}"

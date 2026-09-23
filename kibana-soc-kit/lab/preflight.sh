@@ -45,6 +45,20 @@ else
     echec "podman $v est trop ancien (minimum $MIN_PODMAN pour « kube play »)."
     faire "Mettez podman à jour."
   fi
+  # MESURÉ le 23/09, en répétant l'installation hors ligne dans l'image WSL
+  # officielle d'Ubuntu 24.04 : le pré-vol déclarait tout conforme, puis
+  # « kube play » échouait sur « netavark: No such file or directory ».
+  # netavark, le réseau de podman, appelle iptables pour publier les ports, et
+  # cette image ne l'a pas. En ligne, « apt install podman » l'amène au
+  # passage ; hors ligne, rien ne le signalait. Sous Linux seulement : sous
+  # macOS, c'est l'affaire de la machine podman.
+  if [ -r /proc/meminfo ] \
+     && [ "$(podman info --format '{{.Host.NetworkBackend}}' 2>/dev/null)" = "netavark" ] \
+     && ! command -v iptables >/dev/null 2>&1 && [ ! -x /usr/sbin/iptables ]; then
+    echec "iptables est introuvable : netavark, le réseau de podman, ne pourra pas publier les ports du lab."
+    faire "sudo apt install iptables"
+    faire "Hors ligne : relancez installer-prerequis-horsligne.sh depuis un support à jour."
+  fi
 fi
 
 titre "2. Paramètres noyau"

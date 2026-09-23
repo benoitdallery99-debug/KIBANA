@@ -813,6 +813,55 @@ ni l'un ni l'autre.
 
 ---
 
+### Installation Windows hors ligne : répétée sans réseau, trois défauts
+
+La question « tu es sûr que ça fonctionnera hors ligne ? » appelait une
+répétition, pas une réponse. Elle a été faite dans une copie neuve de l'Ubuntu
+24.04 **officielle pour WSL** (celle qu'on importera, empreinte vérifiée contre
+Canonical), privée de réseau (`--network none`), avec le support monté là où il
+sera sur le PC, `/mnt/c/kit-media`. Deux nouveaux outils :
+`outils/preparer-media-windows.sh` constitue le support sur un poste connecté ;
+`outils/installer-prerequis-horsligne.sh` installe les paquets sans réseau.
+
+Trois défauts, tous trouvés par cette répétition et par aucune relecture :
+
+- **`dpkg -i debs/*.deb` échouait hors ligne** — c'est pourtant ce que
+  prescrivait `INSTALLATION_WINDOWS.md`. dpkg traite les fichiers dans l'ordre
+  alphabétique et bute sur les pré-dépendances (`python3-minimal`, `gawk`,
+  `systemd-sysv`) : ni `python3` ni `gawk` à l'arrivée. `apt-get install
+  ./debs/*.deb` échouait aussi, sur les noms à époque (`%3a`). Remède : un
+  dépôt local indexé côté connecté (`apt-ftparchive`), qu'apt lit hors ligne en
+  résolvant l'ordre. Et les paquets sont tirés **de l'image même** qu'on
+  importera : depuis l'image Docker d'Ubuntu 24.04, il en fallait 118 ; depuis
+  l'image WSL, 39 — et un paquet tiré ailleurs peut rétrograder une
+  bibliothèque présente.
+- **`iptables` manquait, et le pré-vol ne le voyait pas.** netavark l'appelle
+  pour publier les ports ; l'image WSL ne l'a pas. Le pré-vol déclarait tout
+  conforme, puis `kube play` échouait sur `netavark: No such file or
+  directory` — message qui ne nomme pas la cause. En ligne, `apt install
+  podman` l'amenait au passage, d'où le succès sur le PC de l'utilisateur. Ajouté
+  au support (47 paquets), et vérifié par le pré-vol sous Linux.
+- **`test_reseau_interne_interdit_toute_sortie` s'annonçait ÉCHOUÉ hors ligne
+  alors qu'il n'avait rien pu établir.** Il compare le réseau isolé à un témoin
+  qui doit pouvoir sortir ; sans aucune route, le témoin échoue aussi, et le
+  test disait lui-même « le contrôle ne prouve donc rien ». Un contrôle qui ne
+  prouve rien est NON EXÉCUTÉ, avec sa raison (CLAUDE.md). Le critère est
+  inchangé là où le témoin sort — vérifié : toujours PASSÉ sur la machine de
+  fabrication — et une sortie réussie depuis le réseau interne reste partout un
+  échec. Ce n'est pas un assouplissement pour obtenir un vert : c'est le statut
+  honnête d'une comparaison impossible.
+
+Artefact de simulation, consigné pour qu'on ne le prenne pas pour une
+exigence : le conteneur de répétition n'a pas de systemd, d'où un
+`cgroup_manager = "cgroupfs"` posé pour la seule simulation ; sous WSL, systemd
+tourne (`/etc/wsl.conf` de l'image : `systemd=true`).
+
+Ce qui n'est **pas** couvert par la répétition : l'installation de WSL lui-même
+(MSI, fonctionnalités Windows) et le navigateur Windows. La procédure
+`docs/INSTALLATION_WINDOWS_HORS_LIGNE.md` le dit en tête.
+
+---
+
 ---
 
 ## P3 — Parcours — ARCHIVE DE L'ENTRÉE PRÉCÉDENTE
